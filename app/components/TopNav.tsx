@@ -17,7 +17,7 @@ import {
 const navigation = [
   { name: 'Home', href: '/home', icon: HomeIcon },
   { name: 'Groups', href: '/groups', icon: UserGroupIcon },
-  { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
+  { name: 'Messages', href: '/chat', icon: ChatBubbleLeftRightIcon },
   { name: 'Activities', href: '/activities', icon: ClipboardDocumentListIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
 ]
