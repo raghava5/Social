@@ -11,12 +11,14 @@ import {
   UserCircleIcon,
   PlusIcon,
   MagnifyingGlassIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline'
 
 const navigation = [
   { name: 'Home', href: '/home', icon: HomeIcon },
   { name: 'Groups', href: '/groups', icon: UserGroupIcon },
   { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
+  { name: 'Activities', href: '/activities', icon: ClipboardDocumentListIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
 ]
 
