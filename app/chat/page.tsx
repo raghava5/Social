@@ -34,28 +34,55 @@ const conversations = [
     type: 'direct',
     status: 'online',
     role: 'friend',
+    category: 'direct',
   },
   {
     id: 2,
-    name: 'Tech Group',
+    name: 'Dr. Michael Chen',
     avatar: 'https://i.pravatar.cc/150?img=2',
+    lastMessage: 'Your meditation progress looks great!',
+    timestamp: '5 hours ago',
+    unread: false,
+    type: 'direct',
+    status: 'offline',
+    role: 'expert',
+    category: 'expert',
+  },
+  {
+    id: 3,
+    name: 'John Doe',
+    avatar: 'https://i.pravatar.cc/150?img=3',
+    lastMessage: 'Hi, I saw your post about mindfulness...',
+    timestamp: '1 day ago',
+    unread: false,
+    type: 'direct',
+    status: 'online',
+    role: 'stranger',
+    category: 'stranger',
+  },
+  {
+    id: 4,
+    name: 'Tech Group',
+    avatar: 'https://i.pravatar.cc/150?img=4',
     lastMessage: 'Mike: Check out this new framework!',
     timestamp: '5 hours ago',
     unread: false,
     type: 'group',
     members: 12,
     role: 'member',
+    category: 'direct',
   },
   {
-    id: 3,
+    id: 5,
     name: 'Meditation Circle',
-    avatar: 'https://i.pravatar.cc/150?img=3',
+    avatar: 'https://i.pravatar.cc/150?img=5',
     lastMessage: 'Daily meditation session starting in 10 minutes',
     timestamp: '1 day ago',
     unread: false,
     type: 'event',
     members: 25,
     role: 'participant',
+    category: 'direct',
   },
 ]
 
@@ -161,6 +188,7 @@ const messages = [
 
 export default function Chat() {
   const [activeTab, setActiveTab] = useState('messages')
+  const [messageCategory, setMessageCategory] = useState('direct')
   const [selectedConversation, setSelectedConversation] = useState(conversations[0])
   const [newMessage, setNewMessage] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -226,49 +254,87 @@ export default function Chat() {
           </div>
 
           {activeTab === 'messages' && (
-            <div className="overflow-y-auto h-[calc(100%-4rem)]">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${
-                    selectedConversation.id === conversation.id ? 'bg-gray-50' : ''
-                  }`}
-                  onClick={() => setSelectedConversation(conversation)}
-                >
-                  <div className="flex items-center">
-                    <div className="relative">
-                      <img
-                        src={conversation.avatar}
-                        alt={conversation.name}
-                        className="h-10 w-10 rounded-full"
-                      />
-                      {conversation.status === 'online' && (
-                        <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white" />
-                      )}
-                    </div>
-                    <div className="ml-3 flex-1">
-                      <div className="flex justify-between items-center">
-                        <h3 className="font-medium">{conversation.name}</h3>
-                        <span className="text-xs text-gray-500">
-                          {conversation.timestamp}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-500 truncate">
-                        {conversation.lastMessage}
-                      </p>
-                      {conversation.type === 'group' && (
-                        <span className="text-xs text-gray-500">
-                          {conversation.members} members
-                        </span>
-                      )}
-                    </div>
-                    {conversation.unread && (
-                      <div className="ml-2 h-2 w-2 rounded-full bg-primary-500" />
-                    )}
-                  </div>
+            <>
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex space-x-2">
+                  <button
+                    className={`flex-1 py-2 text-sm font-medium rounded-md ${
+                      messageCategory === 'direct'
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setMessageCategory('direct')}
+                  >
+                    Direct
+                  </button>
+                  <button
+                    className={`flex-1 py-2 text-sm font-medium rounded-md ${
+                      messageCategory === 'stranger'
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setMessageCategory('stranger')}
+                  >
+                    Stranger
+                  </button>
+                  <button
+                    className={`flex-1 py-2 text-sm font-medium rounded-md ${
+                      messageCategory === 'expert'
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setMessageCategory('expert')}
+                  >
+                    Expert
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+              <div className="overflow-y-auto h-[calc(100%-8rem)]">
+                {conversations
+                  .filter((conversation) => conversation.category === messageCategory)
+                  .map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${
+                        selectedConversation.id === conversation.id ? 'bg-gray-50' : ''
+                      }`}
+                      onClick={() => setSelectedConversation(conversation)}
+                    >
+                      <div className="flex items-center">
+                        <div className="relative">
+                          <img
+                            src={conversation.avatar}
+                            alt={conversation.name}
+                            className="h-10 w-10 rounded-full"
+                          />
+                          {conversation.status === 'online' && (
+                            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white" />
+                          )}
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{conversation.name}</h3>
+                            <span className="text-xs text-gray-500">
+                              {conversation.timestamp}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 truncate">
+                            {conversation.lastMessage}
+                          </p>
+                          {conversation.type === 'group' && (
+                            <span className="text-xs text-gray-500">
+                              {conversation.members} members
+                            </span>
+                          )}
+                        </div>
+                        {conversation.unread && (
+                          <div className="ml-2 h-2 w-2 rounded-full bg-primary-500" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </>
           )}
 
           {activeTab === 'groups' && (
