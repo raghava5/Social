@@ -1,6 +1,6 @@
 'use client'
 
-import Layout from '../components/Layout'
+import TopNav from '../components/TopNav'
 import { useState } from 'react'
 import { UserGroupIcon, PlusIcon } from '@heroicons/react/24/outline'
 
@@ -63,7 +63,8 @@ export default function Groups() {
   const [activeTab, setActiveTab] = useState<'groups' | 'communities'>('groups')
 
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-100">
+      <TopNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Groups & Communities</h1>
@@ -136,6 +137,6 @@ export default function Groups() {
           ))}
         </div>
       </div>
-    </Layout>
+    </div>
   )
 } 

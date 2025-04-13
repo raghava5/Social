@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import TopNav from '../components/TopNav'
 import {
   UserIcon,
   ChartBarIcon,
@@ -56,6 +57,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <TopNav />
       {/* Profile Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-6">

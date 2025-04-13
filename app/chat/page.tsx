@@ -1,14 +1,21 @@
 'use client'
 
-import TopNav from '../components/TopNav'
 import { useState } from 'react'
+import TopNav from '../components/TopNav'
+import {
+  PaperAirplaneIcon,
+  PaperClipIcon,
+  FaceSmileIcon,
+  VideoCameraIcon,
+  PhoneIcon,
+} from '@heroicons/react/24/outline'
 
-// Dummy data
+// Dummy data for demonstration
 const conversations = [
   {
     id: 1,
     name: 'Sarah Wilson',
-    avatar: 'https://i.pravatar.cc/150?img=8',
+    avatar: 'https://i.pravatar.cc/150?img=1',
     lastMessage: 'Hey, how are you doing?',
     timestamp: '2 hours ago',
     unread: true,
@@ -16,7 +23,7 @@ const conversations = [
   {
     id: 2,
     name: 'Tech Group',
-    avatar: 'https://i.pravatar.cc/150?img=9',
+    avatar: 'https://i.pravatar.cc/150?img=2',
     lastMessage: 'Mike: Check out this new framework!',
     timestamp: '5 hours ago',
     unread: false,
@@ -24,7 +31,7 @@ const conversations = [
   {
     id: 3,
     name: 'David Brown',
-    avatar: 'https://i.pravatar.cc/150?img=10',
+    avatar: 'https://i.pravatar.cc/150?img=3',
     lastMessage: 'Thanks for the help yesterday!',
     timestamp: '1 day ago',
     unread: false,
@@ -42,7 +49,7 @@ const messages = [
   {
     id: 2,
     sender: 'You',
-    content: 'I\'m good, thanks! How about you?',
+    content: "I'm good, thanks! How about you?",
     timestamp: '2 hours ago',
     isMe: true,
   },
@@ -56,7 +63,7 @@ const messages = [
   {
     id: 4,
     sender: 'You',
-    content: 'That\'s great! How did it go?',
+    content: "That's great! How did it go?",
     timestamp: '1 hour ago',
     isMe: true,
   },
@@ -69,7 +76,7 @@ const messages = [
   },
 ]
 
-export default function Messages() {
+export default function Chat() {
   const [selectedConversation, setSelectedConversation] = useState(conversations[0])
   const [newMessage, setNewMessage] = useState('')
 
@@ -130,15 +137,25 @@ export default function Messages() {
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
           <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center">
-              <img
-                src={selectedConversation.avatar}
-                alt={selectedConversation.name}
-                className="h-10 w-10 rounded-full"
-              />
-              <div className="ml-3">
-                <h3 className="font-medium">{selectedConversation.name}</h3>
-                <p className="text-sm text-gray-500">Active now</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <img
+                  src={selectedConversation.avatar}
+                  alt={selectedConversation.name}
+                  className="h-10 w-10 rounded-full"
+                />
+                <div className="ml-3">
+                  <h3 className="font-medium">{selectedConversation.name}</h3>
+                  <p className="text-sm text-gray-500">Active now</p>
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <button className="text-gray-500 hover:text-gray-700">
+                  <VideoCameraIcon className="h-5 w-5" />
+                </button>
+                <button className="text-gray-500 hover:text-gray-700">
+                  <PhoneIcon className="h-5 w-5" />
+                </button>
               </div>
             </div>
           </div>
@@ -171,15 +188,23 @@ export default function Messages() {
           {/* Message Input */}
           <div className="p-4 border-t border-gray-200">
             <form onSubmit={handleSendMessage} className="flex space-x-4">
-              <input
-                type="text"
-                className="input-field flex-1"
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
+              <div className="flex-1 flex items-center space-x-2">
+                <button type="button" className="text-gray-500 hover:text-gray-700">
+                  <PaperClipIcon className="h-5 w-5" />
+                </button>
+                <input
+                  type="text"
+                  className="input-field flex-1"
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                />
+                <button type="button" className="text-gray-500 hover:text-gray-700">
+                  <FaceSmileIcon className="h-5 w-5" />
+                </button>
+              </div>
               <button type="submit" className="btn-primary">
-                Send
+                <PaperAirplaneIcon className="h-5 w-5" />
               </button>
             </form>
           </div>

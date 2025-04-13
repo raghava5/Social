@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Layout from '../components/Layout'
+import TopNav from '../components/TopNav'
 import {
   BellIcon,
   ChatBubbleLeftIcon,
@@ -95,7 +95,8 @@ export default function Notifications() {
   }
 
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-100">
+      <TopNav />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">Notifications</h1>
@@ -171,6 +172,6 @@ export default function Notifications() {
           })}
         </div>
       </div>
-    </Layout>
+    </div>
   )
 } 
