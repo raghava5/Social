@@ -1,26 +1,51 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-gray-100;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 bg-gray-100 border-none rounded-lg focus:ring-0 focus:bg-white;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-0;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:ring-0;
+  }
+
+  .nav-link {
+    @apply flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100;
+  }
+
+  .nav-link.active {
+    @apply bg-gray-100;
+  }
+
+  .post-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+  }
+
+  .comment-box {
+    @apply flex items-center space-x-2 p-2 bg-gray-100 rounded-full;
+  }
+
+  .story-card {
+    @apply relative rounded-lg overflow-hidden shadow-sm cursor-pointer;
+  }
+
+  .story-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-black/60 to-transparent;
+  }
 }
