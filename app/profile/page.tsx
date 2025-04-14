@@ -58,6 +58,7 @@ const moodHistory = [
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeSection, setActiveSection] = useState('overview')
 
   const navigationItems = [
     { id: 'dashboard', name: 'Dashboard', icon: ChartBarIcon },
@@ -68,6 +69,725 @@ export default function Profile() {
     { id: 'videos', name: 'Videos', icon: VideoCameraIcon },
     { id: 'more', name: 'More', icon: ClipboardDocumentListIcon },
   ]
+
+  const aboutSections = [
+    { id: 'overview', name: 'Overview', icon: ChartBarIcon },
+    { id: 'general', name: 'General', icon: UserIcon },
+    { id: 'spiritual', name: 'Spiritual', icon: SparklesIcon },
+    { id: 'mental', name: 'Mental', icon: LightBulbIcon },
+    { id: 'physical', name: 'Physical', icon: UserIcon },
+    { id: 'personal', name: 'Personal', icon: HeartIcon },
+    { id: 'professional', name: 'Professional', icon: AcademicCapIcon },
+    { id: 'financial', name: 'Financial', icon: CogIcon },
+    { id: 'social', name: 'Social', icon: UserGroupIcon },
+    { id: 'interests', name: 'Interests', icon: BookmarkIcon },
+  ]
+
+  const renderAboutContent = () => {
+    switch (activeSection) {
+      case 'overview':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Profile Overview</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium">Spiritual</h4>
+                  <p className="text-gray-600">Daily meditation practitioner, Buddhist</p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Mental</h4>
+                  <p className="text-gray-600">Excellent mental health, regular mindfulness practice</p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Physical</h4>
+                  <p className="text-gray-600">Very active, regular exercise routine</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium">Personal</h4>
+                  <p className="text-gray-600">Enjoys reading, traveling, and photography</p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Professional</h4>
+                  <p className="text-gray-600">Software Engineer with 5+ years experience</p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Financial</h4>
+                  <p className="text-gray-600">Regular saver, diverse investment portfolio</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'general':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">General Information</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Username</label>
+                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                  <input type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                  <input type="tel" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                  <input type="date" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Gender</label>
+                  <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                    <option>Prefer not to say</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Location</label>
+                  <input type="text" placeholder="City, State, Country" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Preferred Language</label>
+                  <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option>English</option>
+                    <option>Hindi</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'spiritual':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">🧘 Spiritual Spoke</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Religious/Spiritual Affiliation</label>
+                <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                  <option>Hinduism</option>
+                  <option>Christianity</option>
+                  <option>Islam</option>
+                  <option>Buddhism</option>
+                  <option>Sikhism</option>
+                  <option>Jainism</option>
+                  <option>Other</option>
+                  <option>None</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frequency of Spiritual Practices</label>
+                <div className="space-y-2">
+                  {['Daily', 'Weekly', 'Monthly', 'Rarely', 'Never'].map((option) => (
+                    <div key={option} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="spiritual-frequency"
+                        value={option.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{option}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Participation in Spiritual Communities</label>
+                <div className="space-x-4">
+                  <label className="inline-flex items-center">
+                    <input type="radio" name="spiritual-participation" value="yes" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                    <span className="ml-2">Yes</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input type="radio" name="spiritual-participation" value="no" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                    <span className="ml-2">No</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Spiritual Practices</label>
+                <div className="space-y-2">
+                  {['Meditation', 'Prayer', 'Yoga', 'Chanting', 'Reading Scriptures', 'Other'].map((practice) => (
+                    <div key={practice} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={practice.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{practice}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Duration of Daily Spiritual Practice</label>
+                <div className="space-y-2">
+                  {[
+                    'Less than 15 minutes',
+                    '15–30 minutes',
+                    '30–60 minutes',
+                    'More than 1 hour'
+                  ].map((duration) => (
+                    <div key={duration} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="spiritual-duration"
+                        value={duration.toLowerCase().replace(/\s+/g, '-')}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{duration}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Spiritual Goals</label>
+                <textarea
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Enter your spiritual goals..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Belief in a Higher Power</label>
+                <div className="space-y-2">
+                  {[
+                    'Strongly Agree',
+                    'Agree',
+                    'Neutral',
+                    'Disagree',
+                    'Strongly Disagree'
+                  ].map((option) => (
+                    <div key={option} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="spiritual-belief"
+                        value={option.toLowerCase().replace(/\s+/g, '-')}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{option}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Experience of Inner Peace</label>
+                <div className="space-y-2">
+                  {['Always', 'Often', 'Sometimes', 'Rarely', 'Never'].map((option) => (
+                    <div key={option} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="inner-peace"
+                        value={option.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{option}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Engagement in Religious/Spiritual Events</label>
+                <div className="space-y-2">
+                  {['Frequently', 'Occasionally', 'Rarely', 'Never'].map((option) => (
+                    <div key={option} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="spiritual-events"
+                        value={option.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{option}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Open to Exploring Other Spiritual Beliefs</label>
+                <div className="space-x-4">
+                  {['Yes', 'No', 'Maybe'].map((option) => (
+                    <label key={option} className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="spiritual-openness"
+                        value={option.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <span className="ml-2">{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'mental':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">🧠 Mental Spoke</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Mental Health Status</label>
+                <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                  <option>Excellent</option>
+                  <option>Good</option>
+                  <option>Fair</option>
+                  <option>Needs Attention</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Stress Management Techniques</label>
+                <div className="space-y-2">
+                  {['Meditation', 'Exercise', 'Reading', 'Music', 'Therapy', 'Other'].map((technique) => (
+                    <div key={technique} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={technique.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{technique}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'physical':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">💪 Physical Spoke</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Exercise Frequency</label>
+                <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                  <option>Daily</option>
+                  <option>3-4 times a week</option>
+                  <option>1-2 times a week</option>
+                  <option>Rarely</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Preferred Exercise Types</label>
+                <div className="space-y-2">
+                  {['Running', 'Weightlifting', 'Yoga', 'Swimming', 'Cycling', 'Team Sports', 'Other'].map((exercise) => (
+                    <div key={exercise} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={exercise.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{exercise}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'personal':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">👤 Personal Spoke</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Personal Goals</label>
+                <textarea
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Enter your personal goals..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Life Values</label>
+                <div className="space-y-2">
+                  {['Family', 'Health', 'Career', 'Education', 'Relationships', 'Other'].map((value) => (
+                    <div key={value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={value.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{value}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'professional':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">💼 Professional Spoke</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Current Profession</label>
+                <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Skills</label>
+                <div className="space-y-2">
+                  {['Leadership', 'Communication', 'Technical', 'Creative', 'Analytical', 'Other'].map((skill) => (
+                    <div key={skill} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={skill.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{skill}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'financial':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">💰 Financial Spoke</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Financial Goals</label>
+                <textarea
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="Enter your financial goals..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Investment Preferences</label>
+                <div className="space-y-2">
+                  {['Stocks', 'Bonds', 'Real Estate', 'Cryptocurrency', 'Mutual Funds', 'Other'].map((investment) => (
+                    <div key={investment} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={investment.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{investment}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      case 'social':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">👥 Social Spoke</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Social Activities</label>
+                <div className="space-y-2">
+                  {['Networking Events', 'Community Service', 'Social Clubs', 'Sports Teams', 'Other'].map((activity) => (
+                    <div key={activity} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={activity.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{activity}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Communication Style</label>
+                <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                  <option>Extroverted</option>
+                  <option>Introverted</option>
+                  <option>Balanced</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )
+      case 'interests':
+        return (
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">🎯 Interests</h3>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Preferred Hobbies</label>
+                <div className="space-y-2">
+                  {['Reading', 'Traveling', 'Cooking', 'Gardening', 'Painting', 'Photography', 'Writing', 'DIY Crafts', 'Other'].map((hobby) => (
+                    <div key={hobby} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={hobby.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{hobby}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Favorite Music Genres</label>
+                <div className="space-y-2">
+                  {['Pop', 'Rock', 'Jazz', 'Classical', 'Hip-Hop', 'Country', 'Electronic', 'Folk', 'Other'].map((genre) => (
+                    <div key={genre} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={genre.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{genre}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Favorite Movie Genres</label>
+                <div className="space-y-2">
+                  {['Action', 'Comedy', 'Drama', 'Horror', 'Romance', 'Sci-Fi', 'Documentary', 'Animation', 'Other'].map((genre) => (
+                    <div key={genre} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={genre.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{genre}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Sports Participation</label>
+                <div className="space-y-2">
+                  {['Football', 'Basketball', 'Tennis', 'Swimming', 'Running', 'Cycling', 'Yoga', 'Gymnastics', 'None'].map((sport) => (
+                    <div key={sport} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={sport.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{sport}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Preferred Reading Genres</label>
+                <div className="space-y-2">
+                  {['Fiction', 'Non-Fiction', 'Mystery', 'Science Fiction', 'Biography', 'Self-Help', 'History', 'Fantasy', 'Other'].map((genre) => (
+                    <div key={genre} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={genre.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{genre}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Artistic Interests</label>
+                <div className="space-y-2">
+                  {['Drawing', 'Painting', 'Sculpting', 'Digital Art', 'Photography', 'Music', 'Dance', 'Theater', 'Other'].map((art) => (
+                    <div key={art} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={art.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{art}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Culinary Preferences</label>
+                <div className="space-y-2">
+                  {['Baking', 'Grilling', 'Vegetarian Cooking', 'International Cuisine', 'Desserts', 'Healthy Eating', 'Other'].map((cuisine) => (
+                    <div key={cuisine} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={cuisine.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{cuisine}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Travel Preferences</label>
+                <div className="space-y-2">
+                  {['Adventure Travel', 'Cultural Exploration', 'Beach Vacations', 'Mountain Trekking', 'Urban Exploration', 'Cruise Travel', 'Other'].map((travel) => (
+                    <div key={travel} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={travel.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{travel}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Language Proficiency</label>
+                <div className="space-y-2">
+                  {['English', 'Spanish', 'French', 'Mandarin', 'Hindi', 'Arabic', 'German', 'Japanese', 'Other'].map((language) => (
+                    <div key={language} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={language.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{language}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Technology Interests</label>
+                <div className="space-y-2">
+                  {['Gadgets', 'Programming', 'Gaming', 'Artificial Intelligence', 'Virtual Reality', 'Robotics', 'Other'].map((tech) => (
+                    <div key={tech} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={tech.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{tech}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Environmental Interests</label>
+                <div className="space-y-2">
+                  {['Recycling', 'Sustainable Living', 'Wildlife Conservation', 'Renewable Energy', 'Gardening', 'Other'].map((env) => (
+                    <div key={env} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={env.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{env}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Community Involvement</label>
+                <div className="space-y-2">
+                  {['Volunteering', 'Local Events', 'Fundraising', 'Community Clean-up', 'Mentoring', 'Other'].map((community) => (
+                    <div key={community} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={community.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{community}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Gaming Preferences</label>
+                <div className="space-y-2">
+                  {['Console Gaming', 'PC Gaming', 'Mobile Gaming', 'Board Games', 'Role-Playing Games', 'Other'].map((gaming) => (
+                    <div key={gaming} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={gaming.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{gaming}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Fitness Activities</label>
+                <div className="space-y-2">
+                  {['Gym Workouts', 'Yoga', 'Pilates', 'Running', 'Cycling', 'Swimming', 'Hiking', 'Other'].map((fitness) => (
+                    <div key={fitness} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={fitness.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{fitness}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Pet Preferences</label>
+                <div className="space-y-2">
+                  {['Dogs', 'Cats', 'Birds', 'Fish', 'Reptiles', 'Small Mammals', 'None'].map((pet) => (
+                    <div key={pet} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        value={pet.toLowerCase()}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label className="ml-3 text-sm text-gray-700">{pet}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -268,9 +988,31 @@ export default function Profile() {
         )}
 
         {activeTab === 'about' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">About</h2>
-            {/* About content */}
+          <div className="flex gap-6">
+            {/* Left Sidebar */}
+            <div className="w-64 bg-white rounded-lg shadow p-4">
+              <nav className="space-y-1">
+                {aboutSections.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                      activeSection === section.id
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <section.icon className="h-5 w-5 mr-3" />
+                    {section.name}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* Right Content */}
+            <div className="flex-1 bg-white rounded-lg shadow p-6">
+              {renderAboutContent()}
+            </div>
           </div>
         )}
 
