@@ -138,7 +138,7 @@ const helpOffers = [
 
 export default function Activities() {
   const [activeTab, setActiveTab] = useState('spokes')
-  const [selectedSpoke, setSelectedSpoke] = useState(spokes[0])
+  const [selectedSpoke, setSelectedSpoke] = useState<typeof spokes[0] | null>(spokes[0])
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -167,7 +167,115 @@ export default function Activities() {
           </div>
         </div>
 
-        {activeTab === 'spokes' ? (
+        {/* Horizontal Menu Bar */}
+        <div className="bg-white rounded-lg shadow-sm mb-8">
+          <div className="flex overflow-x-auto">
+            {[
+              'Help Others',
+              'Spiritual',
+              'Mental',
+              'Physical',
+              'Personal',
+              'Professional',
+              'Financial',
+              'Social',
+            ].map((item) => (
+              <button
+                key={item}
+                className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
+                  selectedSpoke?.name === item || (item === 'Help Others' && selectedSpoke === null)
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+                onClick={() => {
+                  if (item === 'Help Others') {
+                    setSelectedSpoke(null)
+                  } else {
+                    setSelectedSpoke(spokes.find(spoke => spoke.name === item) || spokes[0])
+                  }
+                }}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {selectedSpoke === null ? (
+          <div className="space-y-8">
+            {/* Help Requests */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold">Help Requests</h2>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                  Create Request
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {helpRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-lg font-medium">{request.title}</h3>
+                      <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                        {request.karmaPoints} KP
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mb-4">
+                      {request.description}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">
+                        {request.category}
+                      </span>
+                      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                        Offer Help
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Help Offers */}
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-semibold">Help Offers</h2>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                  Create Offer
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {helpOffers.map((offer) => (
+                  <div
+                    key={offer.id}
+                    className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-lg font-medium">{offer.title}</h3>
+                      <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                        {offer.karmaPoints} KP
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mb-4">
+                      {offer.description}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <span className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">
+                        {offer.category}
+                      </span>
+                      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                        Request Help
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {spokes.map((spoke) => (
               <div
@@ -209,67 +317,6 @@ export default function Activities() {
                 </div>
               </div>
             ))}
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {/* Help Requests */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Help Requests</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {helpRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="bg-white rounded-lg shadow p-4"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium">{request.title}</h3>
-                      <span className="text-sm text-gray-500">
-                        {request.karmaPoints} KP
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      {request.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">
-                        {request.category}
-                      </span>
-                      <button className="btn-primary text-sm">
-                        Offer Help
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Help Offers */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Help Offers</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {helpOffers.map((offer) => (
-                  <div key={offer.id} className="bg-white rounded-lg shadow p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-medium">{offer.title}</h3>
-                      <span className="text-sm text-gray-500">
-                        {offer.karmaPoints} KP
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      {offer.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">
-                        {offer.category}
-                      </span>
-                      <button className="btn-primary text-sm">
-                        Request Help
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
       </div>
