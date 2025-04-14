@@ -20,6 +20,7 @@ import {
   BuildingOfficeIcon,
   BanknotesIcon,
   UsersIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline'
 
 // Types for activities data structure
@@ -46,274 +47,6 @@ type Spoke = {
 
 // Dummy data for demonstration
 const spokes: Spoke[] = [
-  {
-    id: 'personal',
-    name: 'Personal',
-    icon: UserCircleIcon,
-    progress: 0,
-    subcategories: [
-      {
-        id: 'self-care',
-        name: 'Self-Care & Wellbeing',
-        activities: [
-          { id: 1, name: 'Get 7–8 hours of sleep', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Drink water after waking', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Take a relaxing bath or shower', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Take a mindful walk alone', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Set a tech-free evening', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Journal your self-care needs', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Establish a morning routine', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Create a calming nighttime ritual', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Schedule a "me" hour weekly', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Say no to unnecessary obligations', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Plan a solo date or hobby time', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Visit a spa or wellness center', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Read a self-care book', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Identify and replace draining habits', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Build a personalized care plan', completed: false, level: 'Professional' },
-          { id: 16, name: 'Try a digital detox weekend', completed: false, level: 'Professional' },
-          { id: 17, name: 'Learn skincare or grooming basics', completed: false, level: 'Professional' },
-          { id: 18, name: 'Create a DIY self-care kit', completed: false, level: 'Professional' },
-          { id: 19, name: 'Celebrate personal wins', completed: false, level: 'Professional' },
-          { id: 20, name: 'Host a self-care workshop', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'family-bonding',
-        name: 'Family Bonding',
-        activities: [
-          { id: 1, name: 'Call a family member just to talk', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Share a meal with family', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Ask about a family story', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Write a note of appreciation', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Watch a family movie together', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Schedule weekly family time', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Create a family group chat', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Take a family photo', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Plan a small family outing', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Cook a meal with a family member', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Start a shared hobby or game', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Host a family gratitude circle', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Organize a mini family reunion', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Create a family vision board', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Learn your family tree', completed: false, level: 'Professional' },
-          { id: 16, name: 'Plan a surprise for a relative', completed: false, level: 'Professional' },
-          { id: 17, name: 'Have a tech-free family day', completed: false, level: 'Professional' },
-          { id: 18, name: 'Address a long-standing issue with empathy', completed: false, level: 'Professional' },
-          { id: 19, name: 'Write a family newsletter', completed: false, level: 'Professional' },
-          { id: 20, name: 'Facilitate a family traditions revival', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'romantic-relationships',
-        name: 'Romantic Relationships',
-        activities: [
-          { id: 1, name: 'Send a thoughtful message or compliment', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Have a no-device dinner', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Express appreciation daily', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Go on a walk together', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Share your love languages', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Write a handwritten note', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Plan a simple surprise date', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Share a personal story', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Do a relationship check-in', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Explore a new hobby as a couple', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Cook or build something together', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Read a relationship book', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Set shared relationship goals', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Resolve a conflict calmly', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Try couple meditation', completed: false, level: 'Professional' },
-          { id: 16, name: 'Attend a relationship workshop', completed: false, level: 'Professional' },
-          { id: 17, name: 'Volunteer together', completed: false, level: 'Professional' },
-          { id: 18, name: 'Celebrate milestones creatively', completed: false, level: 'Professional' },
-          { id: 19, name: 'Create a shared vision board', completed: false, level: 'Professional' },
-          { id: 20, name: 'Mentor younger couples together', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'parenting-childcare',
-        name: 'Parenting & Childcare',
-        activities: [
-          { id: 1, name: 'Spend 10 uninterrupted minutes playing', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Read a story to your child', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Learn about their favorite interests', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Create a daily routine chart', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Pack a lunch with a loving note', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Use positive reinforcement', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Introduce a gratitude ritual', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Teach them one life skill', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Take them on a one-on-one outing', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Limit screen time together', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Journal your parenting wins and challenges', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Attend a parenting seminar or webinar', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Involve them in family decisions', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Encourage curiosity and questions', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Establish healthy boundaries', completed: false, level: 'Professional' },
-          { id: 16, name: 'Share childhood stories with them', completed: false, level: 'Professional' },
-          { id: 17, name: 'Teach emotional expression', completed: false, level: 'Professional' },
-          { id: 18, name: 'Practice conscious/intentional parenting', completed: false, level: 'Professional' },
-          { id: 19, name: 'Create a legacy scrapbook together', completed: false, level: 'Professional' },
-          { id: 20, name: 'Mentor other parents', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'personal-boundaries',
-        name: 'Personal Boundaries',
-        activities: [
-          { id: 1, name: 'Say "no" to something small', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Reflect on your energy drains', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Identify your comfort zones', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Write your boundary priorities', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Discuss one boundary with someone close', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Avoid overcommitting for a week', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Practice setting a time boundary', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Create a boundaries checklist', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Respond instead of react when pushed', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Communicate a boundary clearly', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Learn about assertiveness', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Share boundaries in a group setting', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Read books on emotional boundaries', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Journal about boundary violations', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Use "I feel" statements', completed: false, level: 'Professional' },
-          { id: 16, name: 'Develop a support script', completed: false, level: 'Professional' },
-          { id: 17, name: 'Visualize boundary enforcement', completed: false, level: 'Professional' },
-          { id: 18, name: 'Role-play boundary scenarios', completed: false, level: 'Professional' },
-          { id: 19, name: 'Teach someone about boundaries', completed: false, level: 'Professional' },
-          { id: 20, name: 'Create a boundary coaching module', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'relationship-communication',
-        name: 'Relationship Communication',
-        activities: [
-          { id: 1, name: 'Listen without interrupting', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Use open-ended questions', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Practice active listening daily', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Reflect back what others say', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Avoid "you" accusations in arguments', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Express feelings with vulnerability', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Write a heartfelt letter', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Try a weekly check-in ritual', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Join a communication skills class', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Understand nonverbal cues', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Learn conflict de-escalation techniques', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Use humor mindfully', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Acknowledge others\' needs and triggers', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Mediate a simple conflict', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Teach empathetic communication', completed: false, level: 'Professional' },
-          { id: 16, name: 'Practice radical honesty (with safety)', completed: false, level: 'Professional' },
-          { id: 17, name: 'Lead a communication circle', completed: false, level: 'Professional' },
-          { id: 18, name: 'Read about conscious communication', completed: false, level: 'Professional' },
-          { id: 19, name: 'Co-develop communication rules at home', completed: false, level: 'Professional' },
-          { id: 20, name: 'Run a workshop on mindful dialogue', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'self-reflection',
-        name: 'Self-Reflection & Growth',
-        activities: [
-          { id: 1, name: 'Answer one reflection question', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Journal your mood daily', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Create a list of personal strengths', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Acknowledge a personal challenge', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Write a letter to your future self', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Ask for feedback', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Take a personality test', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Identify core values', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Reflect on a recent decision', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Create a personal growth journal', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Study a personal growth book', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Track your emotional patterns', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Develop a personal mantra', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Set a 30-day growth challenge', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Review your life quarterly', completed: false, level: 'Professional' },
-          { id: 16, name: 'Work with a life coach', completed: false, level: 'Professional' },
-          { id: 17, name: 'Facilitate reflection groups', completed: false, level: 'Professional' },
-          { id: 18, name: 'Map your growth journey visually', completed: false, level: 'Professional' },
-          { id: 19, name: 'Build a growth-based content series', completed: false, level: 'Professional' },
-          { id: 20, name: 'Develop your own self-reflection guide', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'hobbies-passions',
-        name: 'Hobbies & Passions',
-        activities: [
-          { id: 1, name: 'Make a list of things you love doing', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Try a new hobby for one hour', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Revisit a past interest', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Buy materials for a creative hobby', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Set aside hobby time weekly', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Follow a tutorial or how-to video', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Share your hobby online', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Join a local club or class', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Host a hobby night with friends', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Teach your hobby to someone', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Read a book about your passion', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Challenge yourself to improve at it', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Document your progress', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Attend a hobby-based event', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Create content around your passion', completed: false, level: 'Professional' },
-          { id: 16, name: 'Monetize a passion project', completed: false, level: 'Professional' },
-          { id: 17, name: 'Build a portfolio or display', completed: false, level: 'Professional' },
-          { id: 18, name: 'Coach others in your skill', completed: false, level: 'Professional' },
-          { id: 19, name: 'Collaborate with other hobbyists', completed: false, level: 'Professional' },
-          { id: 20, name: 'Launch a hobby-based community', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'home-environment',
-        name: 'Home Environment Organization',
-        activities: [
-          { id: 1, name: 'Make your bed every morning', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Clear one cluttered surface', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Declutter one drawer', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Clean your room mindfully', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Light a candle or incense', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Organize your digital space', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Create a dedicated work or peace area', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Display one item that inspires joy', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Clean with relaxing music', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Set a 15-minute tidy-up timer', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Implement a weekly cleaning routine', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Read about feng shui or home flow', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Rearrange furniture for better flow', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Use storage creatively', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Create a "no-clutter" zone', completed: false, level: 'Professional' },
-          { id: 16, name: 'Start a seasonal decluttering ritual', completed: false, level: 'Professional' },
-          { id: 17, name: 'Host a minimalism challenge', completed: false, level: 'Professional' },
-          { id: 18, name: 'Redesign a corner to reflect your goals', completed: false, level: 'Professional' },
-          { id: 19, name: 'Add personalized decor with meaning', completed: false, level: 'Professional' },
-          { id: 20, name: 'Teach space organization to others', completed: false, level: 'Professional' }
-        ]
-      },
-      {
-        id: 'emotional-connection',
-        name: 'Emotional Connection with Loved Ones',
-        activities: [
-          { id: 1, name: 'Hug someone for 10+ seconds', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Say "I love you" more often', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Share a meaningful memory', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Give a genuine compliment', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Write a letter of appreciation', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Plan a spontaneous outing', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Discuss dreams and fears', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Apologize sincerely when needed', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Offer emotional support', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Do a check-in call or visit', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Create a "You Matter" gift', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Celebrate their achievements', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Start a connection ritual', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Learn their love language', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Share what you admire in them', completed: false, level: 'Professional' },
-          { id: 16, name: 'Do a gratitude exchange', completed: false, level: 'Professional' },
-          { id: 17, name: 'Create a memory scrapbook', completed: false, level: 'Professional' },
-          { id: 18, name: 'Resolve an old misunderstanding', completed: false, level: 'Professional' },
-          { id: 19, name: 'Record joint video messages', completed: false, level: 'Professional' },
-          { id: 20, name: 'Facilitate a family or friends\' connection circle', completed: false, level: 'Professional' }
-        ]
-      }
-    ]
-  },
   {
     id: 'spiritual',
     name: 'Spiritual',
@@ -853,11 +586,11 @@ const spokes: Spoke[] = [
   {
     id: 'physical',
     name: 'Physical',
-    icon: BoltIcon,
+    icon: HeartIcon,
     progress: 60,
     subcategories: [
       {
-        id: 'exercise',
+        id: 'exercise-movement',
         name: 'Exercise & Movement',
         activities: [
           { id: 1, name: 'Stretch for 5 minutes after waking up', completed: false, level: 'Beginner' },
@@ -909,7 +642,7 @@ const spokes: Spoke[] = [
         ]
       },
       {
-        id: 'sleep',
+        id: 'sleep-hygiene',
         name: 'Sleep Hygiene',
         activities: [
           { id: 1, name: 'Go to bed at the same time for 3 days', completed: false, level: 'Beginner' },
@@ -961,7 +694,7 @@ const spokes: Spoke[] = [
         ]
       },
       {
-        id: 'health-checkups',
+        id: 'preventive-health',
         name: 'Preventive Health Checkups',
         activities: [
           { id: 1, name: 'Schedule a routine dental check-up', completed: false, level: 'Beginner' },
@@ -987,7 +720,7 @@ const spokes: Spoke[] = [
         ]
       },
       {
-        id: 'posture',
+        id: 'posture-ergonomics',
         name: 'Posture & Ergonomics',
         activities: [
           { id: 1, name: 'Check your sitting posture at work', completed: false, level: 'Beginner' },
@@ -1013,7 +746,7 @@ const spokes: Spoke[] = [
         ]
       },
       {
-        id: 'strength',
+        id: 'strength-flexibility',
         name: 'Strength & Flexibility',
         activities: [
           { id: 1, name: 'Perform static stretching after a walk', completed: false, level: 'Beginner' },
@@ -1039,7 +772,7 @@ const spokes: Spoke[] = [
         ]
       },
       {
-        id: 'breathing',
+        id: 'breathing-practices',
         name: 'Breathing Practices',
         activities: [
           { id: 1, name: 'Practice deep belly breathing', completed: false, level: 'Beginner' },
@@ -1065,7 +798,7 @@ const spokes: Spoke[] = [
         ]
       },
       {
-        id: 'weight',
+        id: 'body-weight-management',
         name: 'Body Weight Management',
         activities: [
           { id: 1, name: 'Record your current weight', completed: false, level: 'Beginner' },
@@ -1091,7 +824,7 @@ const spokes: Spoke[] = [
         ]
       },
       {
-        id: 'recreation',
+        id: 'physical-recreation',
         name: 'Physical Recreation',
         activities: [
           { id: 1, name: 'Take a nature walk', completed: false, level: 'Beginner' },
@@ -1122,143 +855,7 @@ const spokes: Spoke[] = [
     id: 'personal',
     name: 'Personal',
     icon: UserCircleIcon,
-    progress: 50,
-    subcategories: [
-      {
-        id: 'self-care',
-        name: 'Self-Care & Wellbeing',
-        activities: [
-          { id: 1, name: 'Take a relaxing bath', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Practice good sleep hygiene', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Set personal boundaries', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Create a morning routine', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Practice saying no', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Take regular breaks', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Declutter your space', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Develop a self-care plan', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Create a personal sanctuary', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Practice digital detox', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Learn stress management', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Set up a self-care budget', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Create a wellness journal', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Develop healthy habits', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Become a wellness coach', completed: false, level: 'Professional' },
-          { id: 16, name: 'Create self-care programs', completed: false, level: 'Professional' },
-          { id: 17, name: 'Lead wellness workshops', completed: false, level: 'Professional' },
-          { id: 18, name: 'Develop wellness products', completed: false, level: 'Professional' },
-          { id: 19, name: 'Research wellness trends', completed: false, level: 'Professional' },
-          { id: 20, name: 'Create a wellness brand', completed: false, level: 'Professional' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'professional',
-    name: 'Professional',
-    icon: BriefcaseIcon,
-    progress: 70,
-    subcategories: [
-      {
-        id: 'career',
-        name: 'Career Development',
-        activities: [
-          { id: 1, name: 'Update your resume', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Set career goals', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Research job opportunities', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Create a LinkedIn profile', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Practice interview skills', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Learn a new software tool', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Attend a networking event', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Develop a career plan', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Build a professional portfolio', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Take a professional course', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Join a professional association', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Find a mentor', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Develop leadership skills', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Create a personal brand', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Get professional certification', completed: false, level: 'Professional' },
-          { id: 16, name: 'Start a business', completed: false, level: 'Professional' },
-          { id: 17, name: 'Become a mentor', completed: false, level: 'Professional' },
-          { id: 18, name: 'Lead professional workshops', completed: false, level: 'Professional' },
-          { id: 19, name: 'Publish professional articles', completed: false, level: 'Professional' },
-          { id: 20, name: 'Develop training programs', completed: false, level: 'Professional' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'financial',
-    name: 'Financial',
-    icon: CurrencyDollarIcon,
-    progress: 40,
-    subcategories: [
-      {
-        id: 'money',
-        name: 'Financial Management',
-        activities: [
-          { id: 1, name: 'Create a budget', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Track daily expenses', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Set up automatic savings', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Review bank statements', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Learn about credit scores', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Create an emergency fund', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Pay off small debts', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Develop an investment plan', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Learn about retirement accounts', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Create a debt repayment plan', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Research investment options', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Set financial goals', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Learn about taxes', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Create a financial plan', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Get financial certification', completed: false, level: 'Professional' },
-          { id: 16, name: 'Start a financial blog', completed: false, level: 'Professional' },
-          { id: 17, name: 'Become a financial advisor', completed: false, level: 'Professional' },
-          { id: 18, name: 'Create financial courses', completed: false, level: 'Professional' },
-          { id: 19, name: 'Develop investment strategies', completed: false, level: 'Professional' },
-          { id: 20, name: 'Start a financial business', completed: false, level: 'Professional' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'social',
-    name: 'Social',
-    icon: UsersIcon,
-    progress: 65,
-    subcategories: [
-      {
-        id: 'relationships',
-        name: 'Relationships & Community',
-        activities: [
-          { id: 1, name: 'Call a friend or family member', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Join a social group', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Practice active listening', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Attend a community event', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Volunteer for a cause', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Practice gratitude in relationships', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Set healthy boundaries', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Develop communication skills', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Join a support group', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Practice conflict resolution', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Build a professional network', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Learn about different cultures', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Develop empathy skills', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Create a social support plan', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Become a community leader', completed: false, level: 'Professional' },
-          { id: 16, name: 'Start a social initiative', completed: false, level: 'Professional' },
-          { id: 17, name: 'Lead social workshops', completed: false, level: 'Professional' },
-          { id: 18, name: 'Create community programs', completed: false, level: 'Professional' },
-          { id: 19, name: 'Develop social skills curriculum', completed: false, level: 'Professional' },
-          { id: 20, name: 'Build a social enterprise', completed: false, level: 'Professional' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'personal',
-    name: 'Personal',
-    icon: UserCircleIcon,
-    progress: 0,
+    progress: 60,
     subcategories: [
       {
         id: 'family-bonding',
@@ -1337,187 +934,263 @@ const spokes: Spoke[] = [
           { id: 19, name: 'Create a legacy scrapbook together', completed: false, level: 'Professional' },
           { id: 20, name: 'Mentor other parents', completed: false, level: 'Professional' }
         ]
-      },
+      }
+    ]
+  },
+  {
+    id: 'professional',
+    name: 'Professional',
+    icon: BriefcaseIcon,
+    progress: 0,
+    subcategories: [
       {
-        id: 'self-care',
-        name: 'Self-Care Routines',
+        id: 'career-development',
+        name: 'Career Development',
         activities: [
-          { id: 1, name: 'Get 7–8 hours of sleep', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Drink water after waking', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Take a relaxing bath or shower', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Take a mindful walk alone', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Set a tech-free evening', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Journal your self-care needs', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Establish a morning routine', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Create a calming nighttime ritual', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Schedule a "me" hour weekly', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Say no to unnecessary obligations', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Plan a solo date or hobby time', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Visit a spa or wellness center', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Read a self-care book', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Identify and replace draining habits', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Build a personalized care plan', completed: false, level: 'Professional' },
-          { id: 16, name: 'Try a digital detox weekend', completed: false, level: 'Professional' },
-          { id: 17, name: 'Learn skincare or grooming basics', completed: false, level: 'Professional' },
-          { id: 18, name: 'Create a DIY self-care kit', completed: false, level: 'Professional' },
-          { id: 19, name: 'Celebrate personal wins', completed: false, level: 'Professional' },
-          { id: 20, name: 'Host a self-care workshop', completed: false, level: 'Professional' }
+          { id: 1, name: 'Update your resume', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Set SMART career goals', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Join a professional network', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Create a LinkedIn profile', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Research industry trends', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Attend a career workshop', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Find a career mentor', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Take an online course in your field', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Get a professional certification', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Present at a work meeting', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Lead a project team', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Write industry articles', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Develop a side project', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Create a career development plan', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Speak at a conference', completed: false, level: 'Professional' },
+          { id: 16, name: 'Start a mentoring program', completed: false, level: 'Professional' },
+          { id: 17, name: 'Build a personal brand', completed: false, level: 'Professional' },
+          { id: 18, name: 'Write a book or whitepaper', completed: false, level: 'Professional' },
+          { id: 19, name: 'Create an online course', completed: false, level: 'Professional' },
+          { id: 20, name: 'Start a consulting practice', completed: false, level: 'Professional' }
         ]
       },
       {
-        id: 'personal-boundaries',
-        name: 'Personal Boundaries',
+        id: 'leadership-skills',
+        name: 'Leadership Skills',
         activities: [
-          { id: 1, name: 'Say "no" to something small', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Reflect on your energy drains', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Identify your comfort zones', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Write your boundary priorities', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Discuss one boundary with someone close', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Avoid overcommitting for a week', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Practice setting a time boundary', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Create a boundaries checklist', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Respond instead of react when pushed', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Communicate a boundary clearly', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Learn about assertiveness', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Share boundaries in a group setting', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Read books on emotional boundaries', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Journal about boundary violations', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Use "I feel" statements', completed: false, level: 'Professional' },
-          { id: 16, name: 'Develop a support script', completed: false, level: 'Professional' },
-          { id: 17, name: 'Visualize boundary enforcement', completed: false, level: 'Professional' },
-          { id: 18, name: 'Role-play boundary scenarios', completed: false, level: 'Professional' },
-          { id: 19, name: 'Teach someone about boundaries', completed: false, level: 'Professional' },
-          { id: 20, name: 'Create a boundary coaching module', completed: false, level: 'Professional' }
+          { id: 1, name: 'Read leadership books', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Practice active listening', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Give constructive feedback', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Learn delegation skills', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Study different leadership styles', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Take initiative in meetings', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Volunteer to lead small tasks', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Develop conflict resolution skills', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Create team building activities', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Practice public speaking', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Mentor junior colleagues', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Lead cross-functional projects', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Develop strategic thinking', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Build high-performing teams', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Lead organizational change', completed: false, level: 'Professional' },
+          { id: 16, name: 'Create leadership workshops', completed: false, level: 'Professional' },
+          { id: 17, name: 'Develop executive presence', completed: false, level: 'Professional' },
+          { id: 18, name: 'Coach other leaders', completed: false, level: 'Professional' },
+          { id: 19, name: 'Build strategic partnerships', completed: false, level: 'Professional' },
+          { id: 20, name: 'Lead company initiatives', completed: false, level: 'Professional' }
         ]
       },
       {
-        id: 'relationship-communication',
-        name: 'Relationship Communication',
+        id: 'business-acumen',
+        name: 'Business Acumen',
         activities: [
-          { id: 1, name: 'Listen without interrupting', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Use open-ended questions', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Practice active listening daily', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Reflect back what others say', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Avoid "you" accusations in arguments', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Express feelings with vulnerability', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Write a heartfelt letter', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Try a weekly check-in ritual', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Join a communication skills class', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Understand nonverbal cues', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Learn conflict de-escalation techniques', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Use humor mindfully', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Acknowledge others\' needs and triggers', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Mediate a simple conflict', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Teach empathetic communication', completed: false, level: 'Professional' },
-          { id: 16, name: 'Practice radical honesty (with safety)', completed: false, level: 'Professional' },
-          { id: 17, name: 'Lead a communication circle', completed: false, level: 'Professional' },
-          { id: 18, name: 'Read about conscious communication', completed: false, level: 'Professional' },
-          { id: 19, name: 'Co-develop communication rules at home', completed: false, level: 'Professional' },
-          { id: 20, name: 'Run a workshop on mindful dialogue', completed: false, level: 'Professional' }
+          { id: 1, name: 'Learn basic business terms', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Study company financials', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Understand market analysis', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Research competitors', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Learn about business models', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Study industry metrics', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Take business courses', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Analyze business cases', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Create business proposals', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Develop pricing strategies', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Study market trends', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Learn project management', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Understand risk management', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Create business plans', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Lead business strategy', completed: false, level: 'Professional' },
+          { id: 16, name: 'Develop new business models', completed: false, level: 'Professional' },
+          { id: 17, name: 'Create growth strategies', completed: false, level: 'Professional' },
+          { id: 18, name: 'Lead market expansion', completed: false, level: 'Professional' },
+          { id: 19, name: 'Drive innovation initiatives', completed: false, level: 'Professional' },
+          { id: 20, name: 'Build strategic alliances', completed: false, level: 'Professional' }
         ]
       },
       {
-        id: 'self-reflection',
-        name: 'Self-Reflection & Growth',
+        id: 'innovation-creativity',
+        name: 'Innovation & Creativity',
         activities: [
-          { id: 1, name: 'Answer one reflection question', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Journal your mood daily', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Create a list of personal strengths', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Acknowledge a personal challenge', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Write a letter to your future self', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Ask for feedback', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Take a personality test', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Identify core values', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Reflect on a recent decision', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Create a personal growth journal', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Study a personal growth book', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Track your emotional patterns', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Develop a personal mantra', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Set a 30-day growth challenge', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Review your life quarterly', completed: false, level: 'Professional' },
-          { id: 16, name: 'Work with a life coach', completed: false, level: 'Professional' },
-          { id: 17, name: 'Facilitate reflection groups', completed: false, level: 'Professional' },
-          { id: 18, name: 'Map your growth journey visually', completed: false, level: 'Professional' },
-          { id: 19, name: 'Build a growth-based content series', completed: false, level: 'Professional' },
-          { id: 20, name: 'Develop your own self-reflection guide', completed: false, level: 'Professional' }
+          { id: 1, name: 'Practice brainstorming', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Learn design thinking', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Study innovation methods', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Keep an idea journal', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Try mind mapping', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Explore creative tools', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Join innovation groups', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Lead ideation sessions', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Prototype new ideas', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Solve complex problems', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Create innovative solutions', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Develop new processes', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Lead innovation projects', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Build creative teams', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Drive organizational innovation', completed: false, level: 'Professional' },
+          { id: 16, name: 'Create innovation programs', completed: false, level: 'Professional' },
+          { id: 17, name: 'Lead R&D initiatives', completed: false, level: 'Professional' },
+          { id: 18, name: 'Develop patents', completed: false, level: 'Professional' },
+          { id: 19, name: 'Build innovation culture', completed: false, level: 'Professional' },
+          { id: 20, name: 'Lead digital transformation', completed: false, level: 'Professional' }
         ]
       },
       {
-        id: 'hobbies-passions',
-        name: 'Hobbies & Passions',
+        id: 'networking',
+        name: 'Professional Networking',
         activities: [
-          { id: 1, name: 'Make a list of things you love doing', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Try a new hobby for one hour', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Revisit a past interest', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Buy materials for a creative hobby', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Set aside hobby time weekly', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Follow a tutorial or how-to video', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Share your hobby online', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Join a local club or class', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Host a hobby night with friends', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Teach your hobby to someone', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Read a book about your passion', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Challenge yourself to improve at it', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Document your progress', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Attend a hobby-based event', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Create content around your passion', completed: false, level: 'Professional' },
-          { id: 16, name: 'Monetize a passion project', completed: false, level: 'Professional' },
-          { id: 17, name: 'Build a portfolio or display', completed: false, level: 'Professional' },
-          { id: 18, name: 'Coach others in your skill', completed: false, level: 'Professional' },
-          { id: 19, name: 'Collaborate with other hobbyists', completed: false, level: 'Professional' },
-          { id: 20, name: 'Launch a hobby-based community', completed: false, level: 'Professional' }
+          { id: 1, name: 'Join professional groups', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Attend industry events', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Create networking goals', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Practice elevator pitch', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Connect with colleagues', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Use networking platforms', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Follow industry leaders', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Organize networking events', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Build strategic relationships', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Join professional boards', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Speak at industry events', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Create content networks', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Build online presence', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Lead industry groups', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Create industry partnerships', completed: false, level: 'Professional' },
+          { id: 16, name: 'Build global networks', completed: false, level: 'Professional' },
+          { id: 17, name: 'Develop thought leadership', completed: false, level: 'Professional' },
+          { id: 18, name: 'Create networking platforms', completed: false, level: 'Professional' },
+          { id: 19, name: 'Lead industry associations', completed: false, level: 'Professional' },
+          { id: 20, name: 'Build business ecosystems', completed: false, level: 'Professional' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'financial',
+    name: 'Financial',
+    icon: CurrencyDollarIcon,
+    progress: 40,
+    subcategories: [
+      {
+        id: 'budgeting',
+        name: 'Budgeting & Expense Tracking',
+        activities: [
+          { id: 1, name: 'List monthly income and expenses', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Track daily spending for a week', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Categorize your expenses (needs vs. wants)', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Use a basic spreadsheet for budgeting', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Create a monthly budget plan', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Identify one area to cut spending', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Track all subscriptions and memberships', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Set a weekly grocery budget', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Install and explore a budgeting app', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Evaluate your spending patterns', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Practice envelope budgeting for cash', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Join a 30-day no-spend challenge', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Review and revise your budget monthly', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Use percentage-based budgeting (50/30/20 rule)', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Automate bills and savings', completed: false, level: 'Professional' },
+          { id: 16, name: 'Compare budget vs. actuals', completed: false, level: 'Professional' },
+          { id: 17, name: 'Plan for irregular expenses', completed: false, level: 'Professional' },
+          { id: 18, name: 'Track ROI on large purchases', completed: false, level: 'Professional' },
+          { id: 19, name: 'Present your budget strategy to a group', completed: false, level: 'Professional' },
+          { id: 20, name: 'Build a personal finance budget planner', completed: false, level: 'Professional' }
         ]
       },
       {
-        id: 'home-environment',
-        name: 'Home Environment Organization',
+        id: 'saving',
+        name: 'Saving Habits',
         activities: [
-          { id: 1, name: 'Make your bed every morning', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Clear one cluttered surface', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Declutter one drawer', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Clean your room mindfully', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Light a candle or incense', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Organize your digital space', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Create a dedicated work or peace area', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Display one item that inspires joy', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Clean with relaxing music', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Set a 15-minute tidy-up timer', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Implement a weekly cleaning routine', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Read about feng shui or home flow', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Rearrange furniture for better flow', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Use storage creatively', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Create a "no-clutter" zone', completed: false, level: 'Professional' },
-          { id: 16, name: 'Start a seasonal decluttering ritual', completed: false, level: 'Professional' },
-          { id: 17, name: 'Host a minimalism challenge', completed: false, level: 'Professional' },
-          { id: 18, name: 'Redesign a corner to reflect your goals', completed: false, level: 'Professional' },
-          { id: 19, name: 'Add personalized decor with meaning', completed: false, level: 'Professional' },
-          { id: 20, name: 'Teach space organization to others', completed: false, level: 'Professional' }
+          { id: 1, name: 'Save a small amount weekly ($1–$5)', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Open a savings account', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Set a savings goal (e.g., $100 in 1 month)', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Skip one purchase and save instead', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Track savings in a journal or app', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Learn about emergency funds', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Automate recurring transfers to savings', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Create a visual savings tracker', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Save 10% of all income for one month', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Join a savings challenge (e.g., 52-week)', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Research high-interest savings options', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Create a multi-goal savings plan', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Build a 1-month expense reserve', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Open a high-yield savings account', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Save for a specific purchase or trip', completed: false, level: 'Professional' },
+          { id: 16, name: 'Build a 3-month emergency fund', completed: false, level: 'Professional' },
+          { id: 17, name: 'Teach saving habits to others', completed: false, level: 'Professional' },
+          { id: 18, name: 'Compare savings products from banks', completed: false, level: 'Professional' },
+          { id: 19, name: 'Share a savings success story', completed: false, level: 'Professional' },
+          { id: 20, name: 'Reach 6–12 months in emergency reserves', completed: false, level: 'Professional' }
         ]
       },
       {
-        id: 'emotional-connection',
-        name: 'Emotional Connection with Loved Ones',
+        id: 'debt',
+        name: 'Debt Management',
         activities: [
-          { id: 1, name: 'Hug someone for 10+ seconds', completed: false, level: 'Beginner' },
-          { id: 2, name: 'Say "I love you" more often', completed: false, level: 'Beginner' },
-          { id: 3, name: 'Share a meaningful memory', completed: false, level: 'Beginner' },
-          { id: 4, name: 'Give a genuine compliment', completed: false, level: 'Beginner' },
-          { id: 5, name: 'Write a letter of appreciation', completed: false, level: 'Beginner' },
-          { id: 6, name: 'Plan a spontaneous outing', completed: false, level: 'Beginner' },
-          { id: 7, name: 'Discuss dreams and fears', completed: false, level: 'Beginner' },
-          { id: 8, name: 'Apologize sincerely when needed', completed: false, level: 'Intermediate' },
-          { id: 9, name: 'Offer emotional support', completed: false, level: 'Intermediate' },
-          { id: 10, name: 'Do a check-in call or visit', completed: false, level: 'Intermediate' },
-          { id: 11, name: 'Create a "You Matter" gift', completed: false, level: 'Intermediate' },
-          { id: 12, name: 'Celebrate their achievements', completed: false, level: 'Intermediate' },
-          { id: 13, name: 'Start a connection ritual', completed: false, level: 'Intermediate' },
-          { id: 14, name: 'Learn their love language', completed: false, level: 'Intermediate' },
-          { id: 15, name: 'Share what you admire in them', completed: false, level: 'Professional' },
-          { id: 16, name: 'Do a gratitude exchange', completed: false, level: 'Professional' },
-          { id: 17, name: 'Create a memory scrapbook', completed: false, level: 'Professional' },
-          { id: 18, name: 'Resolve an old misunderstanding', completed: false, level: 'Professional' },
-          { id: 19, name: 'Record joint video messages', completed: false, level: 'Professional' },
-          { id: 20, name: 'Facilitate a family or friends\' connection circle', completed: false, level: 'Professional' }
+          { id: 1, name: 'List all current debts', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Identify interest rates and due dates', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Pay more than the minimum on one debt', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Read about snowball vs. avalanche methods', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Make one extra payment this month', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Negotiate a lower rate or deferment', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Track monthly debt payments', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Consolidate small debts', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Cancel unused credit lines', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Avoid new debt for 30 days', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Use a debt payoff calculator', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Automate debt payments', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Build a debt-free payoff timeline', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Find an accountability partner', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Attend a debt management workshop', completed: false, level: 'Professional' },
+          { id: 16, name: 'Join a debt-free community', completed: false, level: 'Professional' },
+          { id: 17, name: 'Write about your debt-free journey', completed: false, level: 'Professional' },
+          { id: 18, name: 'Help a friend organize their debt', completed: false, level: 'Professional' },
+          { id: 19, name: 'Celebrate each payoff milestone', completed: false, level: 'Professional' },
+          { id: 20, name: 'Become 100% debt-free', completed: false, level: 'Professional' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'social',
+    name: 'Social',
+    icon: UsersIcon,
+    progress: 65,
+    subcategories: [
+      {
+        id: 'relationships',
+        name: 'Relationships & Community',
+        activities: [
+          { id: 1, name: 'Call a friend or family member', completed: false, level: 'Beginner' },
+          { id: 2, name: 'Join a social group', completed: false, level: 'Beginner' },
+          { id: 3, name: 'Practice active listening', completed: false, level: 'Beginner' },
+          { id: 4, name: 'Attend a community event', completed: false, level: 'Beginner' },
+          { id: 5, name: 'Volunteer for a cause', completed: false, level: 'Beginner' },
+          { id: 6, name: 'Practice gratitude in relationships', completed: false, level: 'Beginner' },
+          { id: 7, name: 'Set healthy boundaries', completed: false, level: 'Beginner' },
+          { id: 8, name: 'Develop communication skills', completed: false, level: 'Intermediate' },
+          { id: 9, name: 'Join a support group', completed: false, level: 'Intermediate' },
+          { id: 10, name: 'Practice conflict resolution', completed: false, level: 'Intermediate' },
+          { id: 11, name: 'Build a professional network', completed: false, level: 'Intermediate' },
+          { id: 12, name: 'Learn about different cultures', completed: false, level: 'Intermediate' },
+          { id: 13, name: 'Develop empathy skills', completed: false, level: 'Intermediate' },
+          { id: 14, name: 'Create a social support plan', completed: false, level: 'Intermediate' },
+          { id: 15, name: 'Become a community leader', completed: false, level: 'Professional' },
+          { id: 16, name: 'Start a social initiative', completed: false, level: 'Professional' },
+          { id: 17, name: 'Lead social workshops', completed: false, level: 'Professional' },
+          { id: 18, name: 'Create community programs', completed: false, level: 'Professional' },
+          { id: 19, name: 'Develop social skills curriculum', completed: false, level: 'Professional' },
+          { id: 20, name: 'Build a social enterprise', completed: false, level: 'Professional' }
         ]
       }
     ]
@@ -1562,70 +1235,119 @@ const helpOffers = [
   },
 ]
 
-export default function Activities() {
-  const [activeTab, setActiveTab] = useState('spokes')
-  const [selectedSpoke, setSelectedSpoke] = useState<typeof spokes[0] | null>(null)
+export default function ActivitiesPage() {
+  const [selectedSpoke, setSelectedSpoke] = useState<Spoke | null>(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null)
+  const [activities, setActivities] = useState<Spoke[]>(spokes)
+  const [showHelpSupport, setShowHelpSupport] = useState(false)
+  const [showHelpRequests, setShowHelpRequests] = useState(false)
+  const [showHelpOffers, setShowHelpOffers] = useState(false)
 
-  // Initialize the view with the first subcategory of the selected spoke
-  const initializeSpoke = (spokeName: string) => {
-    const spoke = spokes.find(s => s.name === spokeName)
-    if (spoke) {
-      setSelectedSpoke(spoke)
-      setSelectedSubcategory(spoke.subcategories[0])
-    }
+  const handleSpokeClick = (spoke: Spoke) => {
+    setSelectedSpoke(spoke)
+    setSelectedSubcategory(null)
+    setShowHelpSupport(false)
+    setShowHelpRequests(false)
+    setShowHelpOffers(false)
   }
 
-  // Handle subcategory selection
-  const handleSubcategorySelect = (subcategory: Subcategory) => {
+  const handleSubcategoryClick = (subcategory: Subcategory) => {
     setSelectedSubcategory(subcategory)
+    setShowHelpSupport(false)
+    setShowHelpRequests(false)
+    setShowHelpOffers(false)
+  }
+
+  const handleHelpSupportClick = () => {
+    setShowHelpSupport(true)
+    setShowHelpRequests(false)
+    setShowHelpOffers(false)
+    setSelectedSpoke(null)
+    setSelectedSubcategory(null)
+  }
+
+  const handleHelpRequestsClick = () => {
+    setShowHelpRequests(true)
+    setShowHelpOffers(false)
+    setShowHelpSupport(false)
+    setSelectedSpoke(null)
+    setSelectedSubcategory(null)
+  }
+
+  const handleHelpOffersClick = () => {
+    setShowHelpOffers(true)
+    setShowHelpRequests(false)
+    setShowHelpSupport(false)
+    setSelectedSpoke(null)
+    setSelectedSubcategory(null)
+  }
+
+  const handleActivityClick = (activity: Activity) => {
+    if (!selectedSpoke || !selectedSubcategory) return
+
+    const updatedActivities = activities.map(spoke => {
+      if (spoke.id === selectedSpoke.id) {
+        const updatedSubcategories = spoke.subcategories.map(subcat => {
+          if (subcat.id === selectedSubcategory.id) {
+            const updatedActivities = subcat.activities.map(act => 
+              act.id === activity.id ? { ...act, completed: !act.completed } : act
+            )
+            return { ...subcat, activities: updatedActivities }
+          }
+          return subcat
+        })
+        return { ...spoke, subcategories: updatedSubcategories }
+      }
+      return spoke
+    })
+
+    setActivities(updatedActivities)
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <TopNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Activities</h1>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Activities</h1>
+          <p className="mt-2 text-gray-600">Track and manage your personal growth activities</p>
         </div>
 
-        {/* Horizontal Menu Bar */}
-        <div className="bg-white rounded-lg shadow-sm mb-8">
-          <div className="flex overflow-x-auto">
-            {[
-              'Help Others',
-              'Spiritual',
-              'Mental',
-              'Physical',
-              'Personal',
-              'Professional',
-              'Financial',
-              'Social',
-            ].map((item) => (
+        {/* Combined Menu */}
+        <div className="mb-8">
+          <div className="grid grid-cols-8 gap-4">
+            {/* Help Others Button */}
+            <button
+              className={`flex flex-col items-center p-4 rounded-lg transition-colors ${
+                showHelpSupport || showHelpRequests || showHelpOffers
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'bg-white hover:bg-gray-50'
+              }`}
+              onClick={handleHelpSupportClick}
+            >
+              <UserGroupIcon className="h-8 w-8 mb-2" />
+              <span className="text-sm font-medium">Help Others</span>
+            </button>
+
+            {/* Seven Spokes Buttons */}
+            {activities.map((spoke) => (
               <button
-                key={item}
-                className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
-                  selectedSpoke?.name === item || (item === 'Help Others' && selectedSpoke === null)
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                key={spoke.id}
+                className={`flex flex-col items-center p-4 rounded-lg transition-colors ${
+                  selectedSpoke?.id === spoke.id
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'bg-white hover:bg-gray-50'
                 }`}
-                onClick={() => {
-                  if (item === 'Help Others') {
-                    setSelectedSpoke(null)
-                    setSelectedSubcategory(null)
-                  } else {
-                    initializeSpoke(item)
-                  }
-                }}
+                onClick={() => handleSpokeClick(spoke)}
               >
-                {item}
+                <spoke.icon className="h-8 w-8 mb-2" />
+                <span className="text-sm font-medium">{spoke.name}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {selectedSpoke === null ? (
+        {showHelpSupport && (
           <div className="space-y-8">
             {/* Help Requests */}
             <div>
@@ -1699,25 +1421,29 @@ export default function Activities() {
               </div>
             </div>
           </div>
-        ) : (
+        )}
+
+        {selectedSpoke && (
           <div className="grid grid-cols-12 gap-6">
             {/* Subcategories Sidebar */}
-            <div className="col-span-3 bg-white rounded-lg shadow-sm p-4">
-              <h2 className="text-lg font-semibold mb-4">Categories</h2>
-              <div className="space-y-2">
-                {selectedSpoke.subcategories.map((subcategory) => (
-                  <button
-                    key={subcategory.id}
-                    className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                      selectedSubcategory?.id === subcategory.id
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => handleSubcategorySelect(subcategory)}
-                  >
-                    {subcategory.name}
-                  </button>
-                ))}
+            <div className="col-span-3">
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Subcategories</h3>
+                <div className="space-y-2">
+                  {selectedSpoke.subcategories.map((subcategory) => (
+                    <button
+                      key={subcategory.id}
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                        selectedSubcategory?.id === subcategory.id
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => handleSubcategoryClick(subcategory)}
+                    >
+                      {subcategory.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1743,9 +1469,7 @@ export default function Activities() {
                                     type="checkbox"
                                     checked={activity.completed}
                                     className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                    onChange={() => {
-                                      // TODO: Implement activity completion logic
-                                    }}
+                                    onChange={() => handleActivityClick(activity)}
                                   />
                                   <span className="text-gray-700">{activity.name}</span>
                                 </div>
