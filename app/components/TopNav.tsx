@@ -6,18 +6,18 @@ import { usePathname } from 'next/navigation'
 import {
   HomeIcon,
   UserGroupIcon,
-  ChatBubbleLeftRightIcon,
+  ChatBubbleLeftIcon,
   BellIcon,
-  UserCircleIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
   ClipboardDocumentListIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline'
 
 const navigation = [
   { name: 'Home', href: '/home', icon: HomeIcon },
-  { name: 'Groups', href: '/groups', icon: UserGroupIcon },
-  { name: 'Messages', href: '/chat', icon: ChatBubbleLeftRightIcon },
+  { name: 'People', href: '/people', icon: UserGroupIcon },
+  { name: 'Messages', href: '/messages', icon: ChatBubbleLeftIcon },
   { name: 'Activities', href: '/activities', icon: ClipboardDocumentListIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
 ]
