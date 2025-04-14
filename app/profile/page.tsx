@@ -57,15 +57,16 @@ const moodHistory = [
 ]
 
 export default function Profile() {
-  const [activeTab, setActiveTab] = useState('about')
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   const navigationItems = [
+    { id: 'dashboard', name: 'Dashboard', icon: ChartBarIcon },
     { id: 'about', name: 'About', icon: UserIcon },
     { id: 'timeline', name: 'Timeline', icon: ClockIcon },
     { id: 'friends', name: 'Friends', icon: UserGroupIcon },
     { id: 'photos', name: 'Photos', icon: PhotoIcon },
     { id: 'videos', name: 'Videos', icon: VideoCameraIcon },
-    { id: 'more', name: 'More', icon: ChartBarIcon },
+    { id: 'more', name: 'More', icon: ClipboardDocumentListIcon },
   ]
 
   return (
@@ -116,7 +117,7 @@ export default function Profile() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {activeTab === 'about' && (
+        {activeTab === 'dashboard' && (
           <div className="grid grid-cols-12 gap-6">
             {/* Left Column */}
             <div className="col-span-3 space-y-6">
@@ -263,6 +264,13 @@ export default function Profile() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'about' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">About</h2>
+            {/* About content */}
           </div>
         )}
 
