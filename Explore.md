@@ -348,6 +348,181 @@ Bridging consciousness, awareness, and peak mental states.
 - Ego Detachment & Inner Witness Work
 
 
+## Academic & Intellectual Development
+Structured learning that deepens theoretical and conceptual understanding.
+
+- Formal Education (K–12, University, Post-grad)
+- Liberal Arts Studies (Philosophy, History, Literature, etc.)
+- STEM Subjects (Science, Tech, Engineering, Math)
+- Language & Linguistics
+- Academic Research & Paper Writing
+- Online Degree Programs
+- Critical Thinking & Logic
+- Public Speaking & Rhetoric
+- Exam Preparation (GRE, GMAT, SAT, etc.)
+- Classical Studies & World Civilizations
+- Study Techniques & Memorization Systems
+
+## Mindset & Cognitive Growth
+Mental models and belief systems that shape how we approach challenges and change.
+
+- Growth Mindset vs Fixed Mindset
+- Meta-cognition & Self-awareness
+- Emotional Intelligence (EQ)
+- Resilience & Grit
+- Stoicism & Philosophical Self-Mastery
+- Cognitive Distortions & Reframing
+- Neuroplasticity & Brain Training
+- Mindfulness-Based Learning
+- Critical Reflection & Journaling
+- Self-Limiting Beliefs & Thought Traps
+- Decision-Making & Bias Recognition
+
+## Professional & Career Development
+Learning to advance, pivot, or deepen one’s professional path.
+
+- Soft Skills (Communication, Leadership, Teamwork)
+- Hard Skills (Coding, Analytics, Writing, etc.)
+- Career Exploration & Transition Planning
+- Interview Prep & Resume Building
+- Personal Branding & Online Presence
+- Industry Certifications (PMP, AWS, CFA, etc.)
+- Business Communication & Etiquette
+- Executive Coaching & Mentoring
+- Productivity Systems (GTD, Pomodoro, etc.)
+- Networking & Relationship Building
+- Entrepreneurship Learning Tracks
+
+## Creativity & Innovation
+Expanding one's capacity for original thought, ideation, and artistry.
+
+- Creative Thinking Techniques (SCAMPER, Mind Mapping)
+- Lateral Thinking & Idea Generation
+- Design Thinking & Innovation Frameworks
+- Visual Arts & Design Fundamentals
+- Music Theory & Composition
+- Writing Fiction, Poetry, or Essays
+- Improvisation & Performance
+- Creative Coding & Generative Art
+- Invention, Prototyping & Tinkering
+- Creative Collaboration Methods
+
+## Digital Literacy & Tech Fluency
+Navigating and mastering the digital world with competence.
+
+- Computer & Internet Basics
+- Digital Citizenship & Online Safety
+- Office Suite (Excel, Word, PPT)
+- Web Development (HTML, CSS, JS)
+- App & Software Tools (Notion, Canva, Figma)
+- Data Science & Machine Learning
+- Artificial Intelligence & Automation
+- Cybersecurity Awareness
+- Cloud Computing & DevOps
+- Blockchain & Web3 Basics
+- Tech Ethics & Digital Wellbeing
+
+## Life Skills & Practical Learning
+Useful knowledge and capabilities for real-world functioning.
+
+- Financial Literacy & Budgeting
+- Cooking & Meal Planning
+- Time Management & Scheduling
+- Conflict Resolution
+- Critical Media Literacy
+- DIY & Home Repair Skills
+- Driving & Transportation Basics
+- Emergency Preparedness
+- Civic Knowledge (Voting, Laws, Rights)
+- First Aid & Health Safety
+- Laundry, Cleaning, & Housekeeping
+- Digital Decluttering
+
+## Self-Education & Independent Study
+Learning outside formal systems with autonomy and self-direction.
+
+- Learning How to Learn
+- Personal Knowledge Management (PKM)
+- Online Courses (MOOCs) & Open Education
+- Podcasts, Audiobooks, & YouTube Learning
+- Book Summaries & Learning Apps (Blinkist, etc.)
+- Personal Libraries & Annotation Systems
+- Learning in Public (Blogs, Twitter Threads)
+- Sketchnoting & Visual Notes
+- Self-Paced Mastery Challenges
+- Learning Languages via Immersion Apps (Duolingo, Anki, etc.)
+
+## Purpose-Driven Learning
+Learning tied to values, passion, legacy, and inner clarity.
+
+- Ikigai & Life Purpose Exploration
+- Learning for Service & Contribution
+- Spiritual Growth via Study (Sacred Texts, Teachings)
+- Environmental Education & Sustainability
+- Humanitarian & Social Impact Training
+- Legacy Building Through Writing or Mentorship
+- Learning to Teach or Coach Others
+- Values-Based Goal Setting
+- Meaningful Work & Mission Discovery
+- Inner Leadership & Visioning
+
+## Behavioral & Habitual Learning
+Rewiring patterns through repetition and identity-based growth.
+
+- Habit Formation & Stacking (Atomic Habits)
+- Behavioral Science Principles
+- Habit Trackers & Reflective Tools
+- Systems vs Goals Approach
+- Environment Design for Learning
+- Deliberate Practice & Feedback Loops
+- Morning & Evening Routines
+- Mental Rehearsal & Visualization
+- Self-Monitoring Techniques
+- Microlearning & Bite-Sized Study
+
+## Social Learning & Collaboration
+Learning through people, dialogue, and shared experiences.
+
+- Peer Learning & Study Groups
+- Coaching & Mentorship
+- Mastermind Groups
+- Book Clubs & Learning Circles
+- Online Communities (Reddit, Discord, Forums)
+- Group Projects & Co-Creation
+- Learning Conferences & Retreats
+- Collaborative Intelligence (Collective Wisdom)
+- Participatory Action Research
+- Feedback Culture Development
+
+## Cross-Cultural & Global Learning
+Expanding horizons through exposure to different ways of life.
+
+- Intercultural Competence & Sensitivity
+- Global Citizenship Education
+- Language & Translation Practice
+- Study Abroad & Cultural Exchange
+- International Politics & History
+- Religion & Worldview Diversity
+- Indigenous Knowledge Systems
+- Diaspora Studies
+- Conflict Resolution in Diverse Settings
+- Anthropology & Human Behavior
+- Global Etiquette & Communication Styles
+
+## Embodied & Experiential Learning
+Learning through doing, sensing, and being in the world.
+
+- Experiential Learning Models (Kolb’s Cycle, etc.)
+- Immersive Workshops & Bootcamps
+- Mindfulness-Based Learning
+- Movement-Based Learning (Dance, Martial Arts)
+- Adventure Learning (Outward Bound, etc.)
+- Retreats & Silent Study
+- Learning Through Nature / Outdoor Education
+- Somatic Practices (Feldenkrais, Alexander Technique)
+- Art as a Learning Process
+- Role Playing & Simulation-Based Learning
+
 
 # Physical
 
@@ -2366,3 +2541,375 @@ Integrative and natural approaches to sustaining health.
 - Camel Wrestling
 - Cheese Rolling
 - Bog Snorkeling
+
+# Hobbies
+
+## Creative Arts
+- Painting (Oil, Watercolor, Acrylic)
+- Drawing (Pencil, Charcoal, Ink)
+- Digital Art
+- Sculpting (Clay, Wood, Stone)
+- Pottery & Ceramics
+- Calligraphy & Hand Lettering
+- Photography (Digital, Film)
+- Photo Editing
+- Collage Making
+- Origami & Paper Crafts
+- Scrapbooking
+- Knitting & Crochet
+- Sewing & Quilting
+- Embroidery & Cross-Stitch
+- Jewelry Making
+- Candle Making
+- Soap Making
+- Perfume Making
+- Glass Blowing
+- Wood Burning (Pyrography)
+- Mosaic Art
+- Batik & Fabric Dyeing
+- Leatherworking
+- Metalworking
+- 3D Printing & Modeling
+- Cosplay Creation
+- Model Building (Planes, Ships, etc.)
+- Miniature Painting
+- Toy Customization
+- Face Painting
+- Body Art & Henna
+- Nail Art
+- Tattoo Design
+- Graffiti Art
+- Sand Art
+- Ice Sculpting
+- Balloon Twisting
+- Puppet Making
+- Mask Making
+- Beadwork
+- Basket Weaving
+- Macramé
+- Latch Hook
+- Felting
+- Spinning Yarn
+- Bookbinding
+- Paper Marbling
+- Zentangle
+- Doodle Art
+- Chalk Art
+- Rock Painting
+- Enamel Pins Making
+- Button Making
+- Vinyl Cutting Crafts
+- Resin Art
+- Polymer Clay
+- Upcycling Projects
+- DIY Home Decor
+- Flower Pressing
+- Terrarium Building
+- Bonsai Cultivation
+- Ikebana (Japanese Flower Arrangement)
+- Wreath Making
+- Christmas Decor Crafting
+- Halloween Prop Making
+- Costume Design
+- Fashion Design
+- Hat Making
+- Shoe Customization
+- T-shirt Design
+- Tie-Dye
+- Screen Printing
+- Block Printing
+- Stamp Carving
+- Card Making
+- Gift Wrapping
+- Decoupage
+- Papier-mâché
+- Candlewicking
+- Rug Hooking
+- Lace Making
+- Tatting
+- Kumihimo (Japanese Braiding)
+- Chainmaille
+- Scale Modeling
+- Diorama Creation
+- Model Railroading
+- RC Model Building
+- Lego Building
+- Puzzle Art
+- Shadow Boxes
+- Memory Keeping
+- Journal Decorating
+- Planner Decorating
+- Bullet Journaling
+- Comic Book Art
+- Manga Drawing
+- Cartooning
+- Caricature Drawing
+- Fantasy Map Making
+- Heraldry Design
+- Flag Design
+- Typography
+- Graphic Design
+- UI/UX Design
+- Web Design
+- Animation
+- Stop Motion Animation
+- Claymation
+- Storyboarding
+- Concept Art
+- Digital Sculpting
+- Matte Painting
+- VFX Creation
+- Motion Graphics
+- Infographic Design
+- Meme Creation
+- GIF Making
+- Emoji Design
+- Sticker Creation
+- Tapestry Weaving
+- Silk Painting
+- Encaustic Art
+- Alcohol Ink Art
+- Pour Painting
+- Scratchboard Art
+- Pointillism
+- Stippling
+- Sgraffito
+- Frottage
+- Collagraphy
+- Monotype Printing
+- Linocut
+- Woodcut
+- Etching
+- Engraving
+- Lithography
+- Silkscreen Printing
+- Gilding
+- Marquetry
+- Intarsia
+- Chip Carving
+- Whittling
+- Marquetry
+- Parquetry
+- Veneering
+- Turning (Wood, Metal)
+- Blacksmithing
+- Bladesmithing
+- Coppersmithing
+- Silversmithing
+- Goldsmithing
+- Lapidary
+- Gem Cutting
+- Wire Wrapping
+- Metal Etching
+- Metal Casting
+- Lost Wax Casting
+- Stained Glass
+- Glass Etching
+- Glass Fusing
+- Lampworking
+- Millefiori
+- Pâte de Verre
+- Neon Sign Making
+- Mosaic Glass
+- Faux Finishing
+- Trompe-l'œil
+- Murals
+- Fresco
+- Egg Decorating
+- Pumpkin Carving
+- Ice Carving
+- Snow Sculpting
+- Sand Sculpting
+- Chalkboard Art
+- Whiteboard Art
+- Window Painting
+- Body Painting
+- Face Painting
+- Special FX Makeup
+- Prosthetic Makeup
+- Wig Making
+- Mask Making
+- Puppet Making
+- Marionette Crafting
+- Shadow Puppetry
+- Stop Motion Puppets
+- Automata Making
+- Kinetic Sculpture
+- Mobiles
+- Wind Chime Making
+- Dream Catcher Making
+- Friendship Bracelets
+- Paracord Crafting
+- Sailmaking
+- Rope Making
+- Net Making
+- Fly Tying
+- Taxidermy
+- Bone Carving
+- Horn Carving
+- Ivory Carving
+- Scrimshaw
+- Feather Art
+- Shell Craft
+- Driftwood Art
+- Leaf Art
+- Seed Art
+- Corn Husk Dolls
+- Wheat Weaving
+- Straw Marquetry
+- Pine Needle Basketry
+- Birch Bark Craft
+- Cork Art
+- Eggshell Mosaic
+- Nut Carving
+- Gourd Art
+- Cigar Box Crafts
+- Vinyl Record Art
+- CD Mosaic
+- Circuit Bending
+- Steampunk Crafting
+- Cyberpunk Crafting
+- Fantasy Crafting
+- Medieval Reenactment Crafts
+- Historical Recreation
+- Paleoart
+- Dinosaur Model Making
+- Alien Creature Design
+- Sci-Fi Prop Making
+- Movie Replica Making
+- Game Prop Making
+- LARP Gear Making
+- Board Game Design
+- Card Game Design
+- RPG Map Making
+- Miniature Terrain Building
+- Warhammer Painting
+- Toy Photography
+- Food Art
+- Cake Decorating
+- Chocolate Sculpting
+- Fruit Carving
+- Vegetable Carving
+- Cheese Sculpting
+- Butter Sculpting
+- Ice Sculpting
+- Sugar Art
+- Marzipan Modeling
+- Gingerbread House Making
+- Cookie Decorating
+- Candy Making
+- Chocolate Making
+- Jam Making
+- Pickling
+- Fermentation
+- Brewing
+- Winemaking
+- Distilling
+- Mixology
+- Coffee Art
+- Tea Blending
+- Perfume Making
+- Soap Making
+- Candle Making
+- Bath Bomb Making
+- Lip Balm Making
+- Lotion Making
+- Potpourri Making
+- Sachet Making
+- Dream Pillow Making
+- Incense Making
+- Essential Oil Blending
+- Herbalism
+- Foraging
+- Mushroom Hunting
+- Berry Picking
+- Herb Gardening
+- Vegetable Gardening
+- Flower Gardening
+- Bonsai
+- Terrarium Making
+- Aquascaping
+- Fairy Garden Making
+- Zen Garden Making
+- Rock Balancing
+- Stone Stacking
+- Sand Painting
+- Water Marbling
+- Nail Art
+- Hair Styling
+- Makeup Art
+- Special FX Makeup
+- Prosthetic Makeup
+- Wig Making
+- Costume Design
+- Fashion Design
+- Shoe Making
+- Hat Making
+- Bag Making
+- Leatherworking
+- Chainmaille
+- Armor Making
+- Weapon Replicas
+- Shield Making
+- Heraldry
+- Flag Making
+- Banner Making
+- Pennant Making
+- Patch Collecting
+- Pin Collecting
+- Button Collecting
+- Badge Making
+- Trophy Making
+- Award Design
+- Medal Design
+- Coin Design
+- Stamp Design
+- Banknote Design
+- Map Making
+- Globe Making
+- Compass Making
+- Sundial Making
+- Astrolabe Making
+- Orrery Making
+- Telescope Making
+- Microscope Making
+- Camera Making
+- Watch Making
+- Clock Making
+- Automata Making
+- Robot Building
+- Drone Building
+- RC Vehicles
+- Model Rocketry
+- Kite Making
+- Boomerang Making
+- Yo-yo Making
+- Top Making
+- Puzzle Making
+- Board Game Making
+- Card Game Making
+- Dice Making
+- RPG Design
+- Video Game Design
+- App Development
+- Website Building
+- Blogging
+- Vlogging
+- Podcasting
+- Voice Acting
+- Audiobook Narration
+- Sound Design
+- Foley Art
+- Music Production
+- DJing
+- Beatboxing
+- Songwriting
+- Composing
+- Arranging
+- Orchestration
+- Conducting
+- Choir Directing
+- Band Leading
+- Music Teaching
+- Instrument Making
+- Instrument Repair
