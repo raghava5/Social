@@ -1790,6 +1790,16 @@ Integrative and natural approaches to sustaining health.
 - Emotional Detox from Draining Groups  
 - Social Life vs Personal Goals Balance  
 
+## Patriotism
+
+- Independence & Freedom Struggles
+- Respecting the Ruling Government
+- Respect Towards the Army & National Forces
+- Cultural Inclusiveness & Global Citizenship
+- Informed Patriotism & Intellectual Engagement
+- Community-Level Patriotism
+
+
 
 # Societal
 
