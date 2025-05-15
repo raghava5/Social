@@ -1199,8 +1199,8 @@ export default function DiscoverPage() {
               </button>
             </div>
           </div>
-        )}
-      </div>
+        )
+      }
     </div>
   )
 } 
