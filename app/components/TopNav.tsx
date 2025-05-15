@@ -12,6 +12,8 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
   UserCircleIcon,
+  SparklesIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline'
 
 const navigation = [
@@ -19,6 +21,8 @@ const navigation = [
   { name: 'People', href: '/people', icon: UserGroupIcon },
   { name: 'Messages', href: '/messages', icon: ChatBubbleLeftIcon },
   { name: 'Activities', href: '/activities', icon: ClipboardDocumentListIcon },
+  { name: 'Explore', href: '/explore', icon: SparklesIcon },
+  { name: 'Discover', href: '/discover', icon: GlobeAltIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
 ]
 

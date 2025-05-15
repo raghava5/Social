@@ -1236,6 +1236,7 @@ const helpOffers = [
 ]
 
 export default function ActivitiesPage() {
+  const [activeTab, setActiveTab] = useState('explore') // 'explore' or 'activities'
   const [selectedSpoke, setSelectedSpoke] = useState<Spoke | null>(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null)
   const [activities, setActivities] = useState<Spoke[]>(spokes)
@@ -1305,183 +1306,115 @@ export default function ActivitiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <TopNav />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Activities</h1>
-          <p className="mt-2 text-gray-600">Track and manage your personal growth activities</p>
+        {/* Main Tabs */}
+        <div className="flex space-x-4 mb-8">
+          <button
+            onClick={() => setActiveTab('explore')}
+            className={`px-4 py-2 rounded-lg ${
+              activeTab === 'explore'
+                ? 'bg-primary-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Explore
+          </button>
+          <button
+            onClick={() => setActiveTab('activities')}
+            className={`px-4 py-2 rounded-lg ${
+              activeTab === 'activities'
+                ? 'bg-primary-600 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Activities
+          </button>
         </div>
 
-        {/* Combined Menu */}
-        <div className="mb-8">
-          <div className="grid grid-cols-8 gap-4">
-            {/* Help Others Button */}
-            <button
-              className={`flex flex-col items-center p-4 rounded-lg transition-colors ${
-                showHelpSupport || showHelpRequests || showHelpOffers
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'bg-white hover:bg-gray-50'
-              }`}
-              onClick={handleHelpSupportClick}
-            >
-              <UserGroupIcon className="h-8 w-8 mb-2" />
-              <span className="text-sm font-medium">Help Others</span>
-            </button>
-
-            {/* Seven Spokes Buttons */}
-            {activities.map((spoke) => (
-              <button
-                key={spoke.id}
-                className={`flex flex-col items-center p-4 rounded-lg transition-colors ${
-                  selectedSpoke?.id === spoke.id
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'bg-white hover:bg-gray-50'
-                }`}
-                onClick={() => handleSpokeClick(spoke)}
-              >
-                <spoke.icon className="h-8 w-8 mb-2" />
-                <span className="text-sm font-medium">{spoke.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {showHelpSupport && (
-          <div className="space-y-8">
-            {/* Help Requests */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-semibold">Help Requests</h2>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                  Create Request
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {helpRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-lg font-medium">{request.title}</h3>
-                      <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                        {request.karmaPoints} KP
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mb-4">
-                      {request.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">
-                        {request.category}
-                      </span>
-                      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                        Offer Help
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Help Offers */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-semibold">Help Offers</h2>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                  Create Offer
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {helpOffers.map((offer) => (
-                  <div
-                    key={offer.id}
-                    className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-lg font-medium">{offer.title}</h3>
-                      <span className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                        {offer.karmaPoints} KP
-                      </span>
-                    </div>
-                    <p className="text-gray-600 mb-4">
-                      {offer.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="bg-gray-100 text-gray-600 text-sm px-3 py-1 rounded-full">
-                        {offer.category}
-                      </span>
-                      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                        Request Help
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {selectedSpoke && (
-          <div className="grid grid-cols-12 gap-6">
-            {/* Subcategories Sidebar */}
-            <div className="col-span-3">
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <h3 className="text-lg font-semibold mb-4">Subcategories</h3>
+        {/* Tab Content */}
+        {activeTab === 'explore' ? (
+          <div>
+            {/* Existing Activities Content */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Left Column - Spokes */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Life Spokes</h2>
                 <div className="space-y-2">
-                  {selectedSpoke.subcategories.map((subcategory) => (
+                  {spokes.map((spoke) => (
                     <button
-                      key={subcategory.id}
-                      className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
-                        selectedSubcategory?.id === subcategory.id
-                          ? 'bg-blue-50 text-blue-600'
+                      key={spoke.id}
+                      onClick={() => {
+                        setSelectedSpoke(spoke)
+                        setSelectedSubcategory(null)
+                      }}
+                      className={`w-full text-left px-4 py-2 rounded ${
+                        selectedSpoke?.id === spoke.id
+                          ? 'bg-primary-50 text-primary-600'
                           : 'hover:bg-gray-50'
                       }`}
-                      onClick={() => handleSubcategoryClick(subcategory)}
                     >
-                      {subcategory.name}
+                      <div className="flex items-center">
+                        <spoke.icon className="h-5 w-5 mr-2" />
+                        <span>{spoke.name}</span>
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* Activities List */}
-            <div className="col-span-9 bg-white rounded-lg shadow-sm p-6">
-              {selectedSubcategory && (
-                <>
-                  <h2 className="text-2xl font-semibold mb-6">{selectedSubcategory.name}</h2>
-                  <div className="space-y-6">
-                    {['Beginner', 'Intermediate', 'Professional'].map((level) => (
-                      <div key={level}>
-                        <h3 className="text-lg font-medium mb-4">{level}</h3>
-                        <div className="grid gap-4">
-                          {selectedSubcategory.activities
-                            .filter((activity) => activity.level === level)
-                            .map((activity) => (
-                              <div
-                                key={activity.id}
-                                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                              >
-                                <div className="flex items-center space-x-4">
-                                  <input
-                                    type="checkbox"
-                                    checked={activity.completed}
-                                    className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                    onChange={() => handleActivityClick(activity)}
-                                  />
-                                  <span className="text-gray-700">{activity.name}</span>
-                                </div>
-                              </div>
-                            ))}
+              {/* Middle Column - Subcategories */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Categories</h2>
+                {selectedSpoke ? (
+                  <div className="space-y-2">
+                    {selectedSpoke.subcategories.map((subcategory) => (
+                      <button
+                        key={subcategory.id}
+                        onClick={() => setSelectedSubcategory(subcategory)}
+                        className={`w-full text-left px-4 py-2 rounded ${
+                          selectedSubcategory?.id === subcategory.id
+                            ? 'bg-primary-50 text-primary-600'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        {subcategory.name}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">Select a life spoke to view categories</p>
+                )}
+              </div>
+
+              {/* Right Column - Activities */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Activities</h2>
+                {selectedSubcategory ? (
+                  <div className="space-y-2">
+                    {selectedSubcategory.activities.map((activity) => (
+                      <div
+                        key={activity.id}
+                        className="p-3 rounded border hover:bg-gray-50 cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">{activity.name}</span>
+                          <span className="text-xs text-gray-500">{activity.level}</span>
                         </div>
                       </div>
                     ))}
                   </div>
-                </>
-              )}
+                ) : (
+                  <p className="text-gray-500">Select a category to view activities</p>
+                )}
+              </div>
             </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Activities</h2>
+            <p className="text-gray-600">Coming soon...</p>
           </div>
         )}
       </div>
