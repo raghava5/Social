@@ -21,7 +21,11 @@ import {
   BanknotesIcon,
   UsersIcon,
   UserIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  StarIcon,
+  ShareIcon,
+  BellIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
 
 // Types for activities data structure
@@ -157,6 +161,16 @@ export default function DiscoverPage() {
           >
             Mini Games
           </button>
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-6 py-2 rounded-lg text-sm font-medium ${
+              activeTab === 'dashboard'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600'
+            }`}
+          >
+            Dashboard
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -177,60 +191,57 @@ export default function DiscoverPage() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="h-40 bg-blue-100 relative">
-                    <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                      Physical
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <HeartIcon className="h-16 w-16 text-blue-500 opacity-50" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Nutrition Basics</h4>
-                    <p className="text-gray-600 text-sm mb-4">Learn the fundamentals of a balanced diet and how nutrition affects your overall health.</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">15 min • Beginner</span>
-                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Start</button>
+                {/* Nutrition Course */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="h-40 bg-gradient-to-r from-blue-500 to-blue-700 flex items-end p-4">
+                    <div className="text-white">
+                      <div className="text-xs font-medium bg-blue-800 inline-block px-2 py-1 rounded mb-2">PHYSICAL</div>
+                      <h3 className="text-lg font-bold">Nutrition Fundamentals</h3>
+                      <p className="text-sm opacity-90">Master the basics of healthy eating</p>
                     </div>
                   </div>
-                </div>
-                
-                <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="h-40 bg-purple-100 relative">
-                    <div className="absolute top-2 right-2 bg-purple-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                      Mental
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">4 modules • Beginner</span>
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Popular</span>
                     </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <AcademicCapIcon className="h-16 w-16 text-purple-500 opacity-50" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Mindfulness 101</h4>
-                    <p className="text-gray-600 text-sm mb-4">Introduction to mindfulness practices and how they can reduce stress and improve focus.</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">10 min • Beginner</span>
-                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Start</button>
-                    </div>
+                    <button className="mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Start Learning</button>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="h-40 bg-green-100 relative">
-                    <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                      Financial
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BanknotesIcon className="h-16 w-16 text-green-500 opacity-50" />
+                {/* Mindfulness Course */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="h-40 bg-gradient-to-r from-purple-500 to-purple-700 flex items-end p-4">
+                    <div className="text-white">
+                      <div className="text-xs font-medium bg-purple-800 inline-block px-2 py-1 rounded mb-2">MENTAL</div>
+                      <h3 className="text-lg font-bold">Mindfulness Meditation</h3>
+                      <p className="text-sm opacity-90">Reduce stress through mindfulness</p>
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Budgeting Essentials</h4>
-                    <p className="text-gray-600 text-sm mb-4">Learn how to create and stick to a budget that aligns with your financial goals.</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">20 min • Beginner</span>
-                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Start</button>
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">6 modules • All levels</span>
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">New</span>
                     </div>
+                    <button className="mt-2 w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Start Learning</button>
+                  </div>
+                </div>
+                
+                {/* Financial Course */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="h-40 bg-gradient-to-r from-green-500 to-green-700 flex items-end p-4">
+                    <div className="text-white">
+                      <div className="text-xs font-medium bg-green-800 inline-block px-2 py-1 rounded mb-2">FINANCIAL</div>
+                      <h3 className="text-lg font-bold">Personal Finance 101</h3>
+                      <p className="text-sm opacity-90">Build wealth with smart money habits</p>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">5 modules • Beginner</span>
+                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Featured</span>
+                    </div>
+                    <button className="mt-2 w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Start Learning</button>
                   </div>
                 </div>
               </div>
@@ -240,240 +251,66 @@ export default function DiscoverPage() {
             <div className="mb-10">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold">Expert Insights</h3>
-                <button className="text-blue-600 text-sm hover:underline">View All</button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white rounded-lg p-5 shadow flex">
-                  <div className="flex-shrink-0 mr-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
-                      <div className="flex items-center justify-center h-full bg-blue-100">
-                        <UserCircleIcon className="h-14 w-14 text-blue-500" />
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Sleep Science Decoded</h4>
-                    <p className="text-sm text-gray-500 mb-2">Dr. Sarah Johnson, Sleep Specialist</p>
-                    <p className="text-sm text-gray-600 mb-3">Learn about the biology of sleep and practical tips for better rest.</p>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <span className="flex items-center"><CalendarIcon className="h-3 w-3 mr-1" /> Podcast • 25 min</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-lg p-5 shadow flex">
-                  <div className="flex-shrink-0 mr-4">
-                    <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
-                      <div className="flex items-center justify-center h-full bg-green-100">
-                        <UserCircleIcon className="h-14 w-14 text-green-500" />
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Investing for Beginners</h4>
-                    <p className="text-sm text-gray-500 mb-2">Mark Roberts, Financial Advisor</p>
-                    <p className="text-sm text-gray-600 mb-3">Simple strategies to start building wealth through smart investments.</p>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <span className="flex items-center"><CalendarIcon className="h-3 w-3 mr-1" /> Video • 15 min</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Two-column layout for personalized and progress */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-              {/* Personalized Content */}
-              <div className="bg-white rounded-lg shadow p-5">
-                <h3 className="text-xl font-semibold mb-4">Recommended For You</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <SparklesIcon className="h-6 w-6 text-blue-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">5-Minute Meditation</h4>
-                      <p className="text-sm text-gray-600">Perfect for your busy schedule - reduce stress with this quick practice.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <HeartIcon className="h-6 w-6 text-purple-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Desk Stretches</h4>
-                      <p className="text-sm text-gray-600">Based on your interest in physical health and work habits.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <BriefcaseIcon className="h-6 w-6 text-green-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Work-Life Balance Guide</h4>
-                      <p className="text-sm text-gray-600">Practical tips for maintaining equilibrium in your busy life.</p>
-                    </div>
-                  </div>
-                </div>
+                <button className="text-sm text-blue-600 hover:underline">View All</button>
               </div>
               
-              {/* Progress Tracking */}
-              <div className="bg-white rounded-lg shadow p-5">
-                <h3 className="text-xl font-semibold mb-4">Your Progress</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-2">
-                      <span className="text-xl font-bold text-blue-600">3</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Video Interview */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="aspect-video bg-gray-800 relative">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-14 w-14 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600">Modules Completed</p>
                   </div>
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-2">
-                      <span className="text-xl font-bold text-green-600">2</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Badges Earned</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mb-2">
-                      <span className="text-xl font-bold text-purple-600">5</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Days Streak</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 mb-2">
-                      <span className="text-xl font-bold text-yellow-600">35</span>
-                    </div>
-                    <p className="text-sm text-gray-600">Points Earned</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* 30-Day Challenges */}
-            <div className="mb-10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">30-Day Challenges</h3>
-                <button className="text-blue-600 text-sm hover:underline">View All</button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="h-3 bg-blue-600"></div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Gratitude Journal</h4>
-                    <p className="text-gray-600 text-sm mb-4">Strengthen relationships by practicing daily gratitude for 30 days.</p>
-                    <div className="mb-3 bg-gray-200 h-2 rounded-full">
-                      <div className="bg-blue-600 h-2 rounded-full w-1/4"></div>
-                    </div>
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span>Day 8 of 30</span>
-                      <span>Social Spoke</span>
-                    </div>
+                  <div className="p-4">
+                    <h4 className="font-medium">The Science of Happiness</h4>
+                    <p className="text-sm text-gray-500 mt-1">Dr. Emily Chen shares research-backed happiness strategies</p>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="h-3 bg-green-600"></div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">No-Spend Month</h4>
-                    <p className="text-gray-600 text-sm mb-4">Track your spending and find ways to reduce non-essential purchases.</p>
-                    <div className="mb-3 bg-gray-200 h-2 rounded-full">
-                      <div className="bg-green-600 h-2 rounded-full w-1/2"></div>
+                {/* Podcast */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center">
+                      <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className="font-medium">Mindful Career Choices</h4>
+                        <p className="text-xs text-gray-500">Career & Mental • 43 min</p>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span>Day 15 of 30</span>
-                      <span>Financial Spoke</span>
-                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600">Listen to career expert Mark Johnson discuss aligning your career with your values and mental wellbeing.</p>
+                    <button className="mt-3 text-blue-600 text-sm hover:underline">Listen Now</button>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="h-3 bg-purple-600"></div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Morning Meditation</h4>
-                    <p className="text-gray-600 text-sm mb-4">Build a consistent meditation practice in just 5 minutes per day.</p>
-                    <div className="mb-3 bg-gray-200 h-2 rounded-full">
-                      <div className="bg-purple-600 h-2 rounded-full w-3/4"></div>
-                    </div>
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span>Day 23 of 30</span>
-                      <span>Mental Spoke</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Microlearning Tip */}
-            <div className="mb-10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">Today's Microlearning</h3>
-                <button className="text-blue-600 text-sm hover:underline">Next Tip</button>
-              </div>
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow text-white p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="inline-block px-2 py-1 bg-white bg-opacity-20 rounded-full text-xs mb-4">Did You Know?</span>
-                    <h4 className="text-xl font-semibold mb-2">10 Minutes of Stretching</h4>
-                    <p className="mb-4">Just 10 minutes of morning stretching can increase your energy levels for hours and improve circulation throughout the day.</p>
-                    <button className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm">Learn More</button>
-                  </div>
-                  <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center flex-shrink-0">
-                    <HeartIcon className="h-8 w-8 text-white" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Community Wisdom */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">Community Wisdom</h3>
-                <button className="text-blue-600 text-sm hover:underline">See All</button>
-              </div>
-              <div className="bg-white rounded-lg shadow">
-                <div className="p-5 border-b">
-                  <h4 className="font-semibold mb-3">Top Discussions</h4>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <span className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                          <UserIcon className="h-4 w-4 text-blue-600" />
-                        </span>
-                        <div>
-                          <p className="text-sm font-medium">How I balanced work and family</p>
-                          <p className="text-xs text-gray-500">32 comments • Work-Life Balance</p>
-                        </div>
+                {/* Expert Article */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-gray-200 flex-shrink-0"></div>
+                      <div className="ml-3">
+                        <h4 className="font-medium">Sarah Williams</h4>
+                        <p className="text-xs text-gray-500">Financial Advisor • May 4, 2023</p>
                       </div>
-                      <span className="text-xs bg-gray-100 py-1 px-2 rounded-full">Social</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <span className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                          <UserIcon className="h-4 w-4 text-green-600" />
-                        </span>
-                        <div>
-                          <p className="text-sm font-medium">My debt-free journey: 5 lessons learned</p>
-                          <p className="text-xs text-gray-500">18 comments • Financial Freedom</p>
-                        </div>
-                      </div>
-                      <span className="text-xs bg-gray-100 py-1 px-2 rounded-full">Financial</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <span className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                          <UserIcon className="h-4 w-4 text-purple-600" />
-                        </span>
-                        <div>
-                          <p className="text-sm font-medium">Morning routines that changed my life</p>
-                          <p className="text-xs text-gray-500">47 comments • Habits & Routines</p>
-                        </div>
-                      </div>
-                      <span className="text-xs bg-gray-100 py-1 px-2 rounded-full">Mental</span>
                     </div>
                   </div>
-                </div>
-                <div className="p-5">
-                  <button className="w-full py-2 text-blue-600 font-medium text-sm hover:bg-blue-50 rounded-lg transition-colors">Join the Community</button>
+                  <div className="p-4">
+                    <h3 className="font-medium mb-2">5 Investment Strategies for Beginners</h3>
+                    <p className="text-sm text-gray-600 line-clamp-3">Learn the fundamental approaches to investing that can set you up for long-term financial success, even with minimal starting capital.</p>
+                    <button className="mt-3 text-blue-600 text-sm hover:underline">Read Article</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -481,722 +318,575 @@ export default function DiscoverPage() {
         ) : activeTab === 'explore' ? (
           <div>
             {/* Three-column layout */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Left Column - Life Spokes */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4">Life Spokes</h2>
-                <div className="space-y-2">
-                  {spokes.map((spoke) => (
-                    <button
-                      key={spoke.id}
-                      onClick={() => {
-                        setSelectedSpoke(spoke)
-                        setSelectedSubcategory(null)
-                      }}
-                      className={`w-full text-left px-4 py-2 rounded ${
-                        selectedSpoke?.id === spoke.id
-                          ? 'bg-blue-50 text-blue-600 border border-blue-600'
-                          : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <spoke.icon className="h-5 w-5 mr-2" />
-                        <span>{spoke.name}</span>
-                      </div>
-                    </button>
-                  ))}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Spokes Column */}
+              <div className="bg-white rounded-lg shadow p-5">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Life Spokes</h3>
+                
+                <div className="space-y-3">
+                  {spokes.map((spoke) => {
+                    const Icon = spoke.icon
+                    return (
+                      <button
+                        key={spoke.id}
+                        onClick={() => setSelectedSpoke(spoke)}
+                        className={`w-full flex items-center p-3 rounded-lg transition-colors ${
+                          selectedSpoke?.id === spoke.id
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 mr-3 ${selectedSpoke?.id === spoke.id ? 'text-blue-600' : 'text-gray-500'}`} />
+                        <span className="font-medium">{spoke.name}</span>
+                        <span className="ml-auto text-xs font-semibold">
+                          {spoke.progress}%
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
-
-              {/* Middle Column - Categories */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4">Categories</h2>
+              
+              {/* Subcategories Column */}
+              <div className="bg-white rounded-lg shadow p-5">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {selectedSpoke ? `${selectedSpoke.name} Categories` : 'Select a Spoke'}
+                </h3>
+                
                 {selectedSpoke ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {selectedSpoke.subcategories.map((subcategory) => (
                       <button
                         key={subcategory.id}
                         onClick={() => setSelectedSubcategory(subcategory)}
-                        className={`w-full text-left px-4 py-2 rounded ${
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
                           selectedSubcategory?.id === subcategory.id
-                            ? 'bg-blue-50 text-blue-600'
+                            ? 'bg-blue-50 text-blue-700'
                             : 'hover:bg-gray-50'
                         }`}
                       >
-                        {subcategory.name}
+                        <span className="font-medium">{subcategory.name}</span>
+                        <span className="text-xs text-gray-500 block mt-1">
+                          {subcategory.activities.length} activities
+                        </span>
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">Select a life spoke to view categories</p>
+                  <div className="flex flex-col items-center justify-center h-48 text-center p-4">
+                    <UserGroupIcon className="h-10 w-10 text-gray-300 mb-2" />
+                    <p className="text-gray-500">Select a spoke to view its categories</p>
+                  </div>
                 )}
               </div>
-
-              {/* Right Column - Activities */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4">Activities</h2>
+              
+              {/* Activities Column */}
+              <div className="bg-white rounded-lg shadow p-5">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {selectedSubcategory
+                    ? `${selectedSubcategory.name} Activities`
+                    : 'Select a Category'}
+                </h3>
+                
                 {selectedSubcategory ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {selectedSubcategory.activities.map((activity) => (
                       <div
                         key={activity.id}
-                        className="p-3 rounded border hover:bg-gray-50 cursor-pointer"
+                        className="p-3 rounded-lg border border-gray-100 hover:border-gray-200"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm">{activity.name}</span>
-                          <span className="text-xs text-gray-500">{activity.level}</span>
+                        <div className="flex items-center mb-1">
+                          <span className="text-sm font-medium">{activity.name}</span>
+                          <span
+                            className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
+                              activity.level === 'Beginner'
+                                ? 'bg-green-100 text-green-700'
+                                : activity.level === 'Intermediate'
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-purple-100 text-purple-700'
+                            }`}
+                          >
+                            {activity.level}
+                          </span>
+                        </div>
+                        <div className="flex items-center mt-2">
+                          <span className="text-xs text-gray-500">
+                            {activity.completed ? 'Completed' : 'Not started'}
+                          </span>
+                          <button className="ml-auto text-xs text-blue-600 hover:underline">
+                            {activity.completed ? 'View' : 'Start'}
+                          </button>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">Select a category to view activities</p>
+                  <div className="flex flex-col items-center justify-center h-48 text-center p-4">
+                    <ClipboardDocumentListIcon className="h-10 w-10 text-gray-300 mb-2" />
+                    <p className="text-gray-500">Select a category to view its activities</p>
+                  </div>
                 )}
               </div>
             </div>
           </div>
         ) : activeTab === 'tools' ? (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Personal Growth Tools</h2>
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Comprehensive Tools</h2>
             
-            {/* Tool Categories */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-8">
-              <button className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-4 py-2 text-blue-700 font-medium text-sm flex items-center justify-center">
-                <HeartIcon className="h-5 w-5 mr-2" />
-                Physical 
-              </button>
-              <button className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg px-4 py-2 text-purple-700 font-medium text-sm flex items-center justify-center">
-                <AcademicCapIcon className="h-5 w-5 mr-2" />
-                Mental
-              </button>
-              <button className="bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-lg px-4 py-2 text-pink-700 font-medium text-sm flex items-center justify-center">
-                <UsersIcon className="h-5 w-5 mr-2" />
-                Relationships
-              </button>
-              <button className="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-4 py-2 text-amber-700 font-medium text-sm flex items-center justify-center">
-                <BriefcaseIcon className="h-5 w-5 mr-2" />
-                Career
-              </button>
-              <button className="bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg px-4 py-2 text-green-700 font-medium text-sm flex items-center justify-center">
-                <BanknotesIcon className="h-5 w-5 mr-2" />
-                Finances
-              </button>
+            {/* Category selector */}
+            <div className="mb-8">
+              <div className="flex space-x-3 overflow-x-auto pb-2">
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg whitespace-nowrap">
+                  All Categories
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Physical Health
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Mental Well-being
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Relationships
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Career
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Finances
+                </button>
+              </div>
             </div>
-
-            {/* Physical Health */}
+            
+            {/* Physical Health Tools */}
             <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-blue-700">
-                <HeartIcon className="h-6 w-6 mr-2" />
-                Physical Health
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Fitness Planner</h4>
-                  <p className="text-gray-600 text-sm mb-4">Customizable workout routines with video tutorials, tracking for steps, calories, or sleep via integrations.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Workouts</span>
-                    <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Tracking</span>
+              <h3 className="text-xl font-semibold mb-4">Physical Health</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Fitness Planner */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="h-32 bg-gradient-to-r from-blue-400 to-blue-600 p-4 flex items-center">
+                    <div className="h-16 w-16 bg-white rounded-xl flex items-center justify-center">
+                      <CalendarIcon className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <div className="ml-4 text-white">
+                      <h4 className="font-semibold text-lg">Fitness Planner</h4>
+                      <p className="text-sm opacity-90">Schedule your workouts</p>
+                    </div>
                   </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Create Plan
-                  </button>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-4">Create and manage personalized workout routines with progress tracking and reminders.</p>
+                    <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                      Use Tool
+                    </button>
+                  </div>
                 </div>
                 
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Nutrition Tracker</h4>
-                  <p className="text-gray-600 text-sm mb-4">Meal planning tool with recipes, grocery lists, and calorie/nutrient tracking tailored to dietary preferences.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Recipes</span>
-                    <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Nutrition</span>
+                {/* Nutrition Tracker */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="h-32 bg-gradient-to-r from-green-400 to-green-600 p-4 flex items-center">
+                    <div className="h-16 w-16 bg-white rounded-xl flex items-center justify-center">
+                      <ChartBarIcon className="h-8 w-8 text-green-600" />
+                    </div>
+                    <div className="ml-4 text-white">
+                      <h4 className="font-semibold text-lg">Nutrition Tracker</h4>
+                      <p className="text-sm opacity-90">Monitor your diet</p>
+                    </div>
                   </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Track Meals
-                  </button>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-4">Log meals, track nutrients, and get personalized recommendations for a balanced diet.</p>
+                    <button className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                      Use Tool
+                    </button>
+                  </div>
                 </div>
                 
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Health Reminders</h4>
-                  <p className="text-gray-600 text-sm mb-4">Alerts for hydration, standing up, or doctor appointments with customizable notification methods.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Alerts</span>
-                    <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Scheduling</span>
+                {/* Health Reminders */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="h-32 bg-gradient-to-r from-purple-400 to-purple-600 p-4 flex items-center">
+                    <div className="h-16 w-16 bg-white rounded-xl flex items-center justify-center">
+                      <BellIcon className="h-8 w-8 text-purple-600" />
+                    </div>
+                    <div className="ml-4 text-white">
+                      <h4 className="font-semibold text-lg">Health Reminders</h4>
+                      <p className="text-sm opacity-90">Never miss appointments</p>
+                    </div>
                   </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Set Reminders
-                  </button>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-4">Set up custom reminders for medications, doctor visits, and health-related habits.</p>
+                    <button className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+                      Use Tool
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
             
-            {/* Mental Well-Being */}
+            {/* Mental Well-being Tools */}
             <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-purple-700">
-                <AcademicCapIcon className="h-6 w-6 mr-2" />
-                Mental Well-Being
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Meditation & Mindfulness</h4>
-                  <p className="text-gray-600 text-sm mb-4">Guided sessions, breathing exercises, and mood trackers to manage stress and anxiety for daily mental wellness.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Meditation</span>
-                    <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Stress</span>
+              <h3 className="text-xl font-semibold mb-4">Mental Well-being</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Meditation App */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="h-32 bg-gradient-to-r from-indigo-400 to-indigo-600 p-4 flex items-center">
+                    <div className="h-16 w-16 bg-white rounded-xl flex items-center justify-center">
+                      <SparklesIcon className="h-8 w-8 text-indigo-600" />
+                    </div>
+                    <div className="ml-4 text-white">
+                      <h4 className="font-semibold text-lg">Meditation App</h4>
+                      <p className="text-sm opacity-90">Find your inner peace</p>
+                    </div>
                   </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    Start Session
-                  </button>
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-4">Access guided meditations, breathing exercises, and mindfulness practices for daily mental wellness.</p>
+                    <button className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+                      Use Tool
+                    </button>
+                  </div>
                 </div>
                 
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Journaling Tool</h4>
-                  <p className="text-gray-600 text-sm mb-4">Prompts for gratitude, self-reflection, or goal-setting, with exportable entries for personal records.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Prompts</span>
-                    <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Reflection</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    Write Journal
-                  </button>
-                </div>
-                
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Therapy Connector</h4>
-                  <p className="text-gray-600 text-sm mb-4">Directory of licensed therapists or affordable online counseling platforms with filtering by specialty.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Support</span>
-                    <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Professional</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    Find Support
-                  </button>
-                </div>
+                {/* More mental tools would be here */}
               </div>
-            </div>
-            
-            {/* Relationships */}
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-pink-700">
-                <UsersIcon className="h-6 w-6 mr-2" />
-                Relationships
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Connection Planner</h4>
-                  <p className="text-gray-600 text-sm mb-4">Calendar tool to schedule quality time with family/friends, with reminders for birthdays or anniversaries.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Quality Time</span>
-                    <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Reminders</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-                    Plan Connection
-                  </button>
-                </div>
-                
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Communication Tips</h4>
-                  <p className="text-gray-600 text-sm mb-4">Templates for difficult conversations like resolving conflicts or expressing appreciation effectively.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Templates</span>
-                    <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Conflict</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-                    Get Tips
-                  </button>
-                </div>
-                
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Partner Compatibility Quiz</h4>
-                  <p className="text-gray-600 text-sm mb-4">Fun assessments to understand relationship dynamics and improve communication with your partner.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Quiz</span>
-                    <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Insights</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-                    Take Quiz
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Career */}
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-amber-700">
-                <BriefcaseIcon className="h-6 w-6 mr-2" />
-                Career
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Skill-Building Tracker</h4>
-                  <p className="text-gray-600 text-sm mb-4">Tool to set career goals, track certifications, or log professional development hours with progress metrics.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Skills</span>
-                    <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Growth</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                    Track Skills
-                  </button>
-                </div>
-                
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Resume Builder</h4>
-                  <p className="text-gray-600 text-sm mb-4">Templates and AI-driven feedback to create or improve resumes tailored to specific industries.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Templates</span>
-                    <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">AI Feedback</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                    Build Resume
-                  </button>
-                </div>
-                
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Networking Hub</h4>
-                  <p className="text-gray-600 text-sm mb-4">Integration with platforms like LinkedIn or in-app networking events to expand professional connections.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Connections</span>
-                    <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Events</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                    Connect
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Finances */}
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-green-700">
-                <BanknotesIcon className="h-6 w-6 mr-2" />
-                Finances
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Budget Planner</h4>
-                  <p className="text-gray-600 text-sm mb-4">Interactive tool to track income, expenses, and savings goals, with visualizations of your financial health.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Budgeting</span>
-                    <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Tracking</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Create Budget
-                  </button>
-                </div>
-                
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Investment Simulator</h4>
-                  <p className="text-gray-600 text-sm mb-4">Risk-free environment to learn about stocks, crypto, or mutual funds with virtual portfolio management.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Simulation</span>
-                    <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Learning</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Start Investing
-                  </button>
-                </div>
-                
-                <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <h4 className="text-lg font-semibold mb-2">Debt Payoff Calculator</h4>
-                  <p className="text-gray-600 text-sm mb-4">Tool to strategize debt repayment with timelines and interest calculations for different payment methods.</p>
-                  <div className="flex space-x-2">
-                    <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Planning</span>
-                    <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Debt Free</span>
-                  </div>
-                  <button className="mt-4 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Calculate Plan
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* View More button */}
-            <div className="text-center mt-6">
-              <button className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">
-                Show More Categories
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Growth Games</h2>
+        ) : activeTab === 'games' ? (
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Fun Mini Games</h2>
             
-            {/* Game Categories */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-8">
-              <button className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-4 py-2 text-blue-700 font-medium text-sm flex items-center justify-center">
-                <HeartIcon className="h-5 w-5 mr-2" />
-                Physical
-              </button>
-              <button className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg px-4 py-2 text-purple-700 font-medium text-sm flex items-center justify-center">
-                <AcademicCapIcon className="h-5 w-5 mr-2" />
-                Mental
-              </button>
-              <button className="bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-lg px-4 py-2 text-pink-700 font-medium text-sm flex items-center justify-center">
-                <UsersIcon className="h-5 w-5 mr-2" />
-                Relationships
-              </button>
-              <button className="bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-4 py-2 text-amber-700 font-medium text-sm flex items-center justify-center">
-                <BriefcaseIcon className="h-5 w-5 mr-2" />
-                Career
-              </button>
-              <button className="bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg px-4 py-2 text-green-700 font-medium text-sm flex items-center justify-center">
-                <BanknotesIcon className="h-5 w-5 mr-2" />
-                Finances
-              </button>
+            {/* Category selector */}
+            <div className="mb-8">
+              <div className="flex space-x-3 overflow-x-auto pb-2">
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg whitespace-nowrap">
+                  All Categories
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Physical Health
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Mental Well-being
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Relationships
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Career
+                </button>
+                <button className="px-4 py-2 bg-white text-gray-700 rounded-lg whitespace-nowrap">
+                  Finances
+                </button>
+              </div>
             </div>
             
             {/* Physical Health Games */}
             <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-blue-700">
-                <HeartIcon className="h-6 w-6 mr-2" />
-                Physical Health Games
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-blue-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <HeartIcon className="h-16 w-16 text-blue-500 opacity-30" />
-                    </div>
-                    <div className="absolute top-0 left-0 bg-blue-500 text-white py-1 px-3 text-xs font-semibold">
-                      POPULAR
+              <h3 className="text-xl font-semibold mb-4">Physical Health Games</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Fitness Quest */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="aspect-video bg-blue-600 relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-800/80 flex items-end p-4">
+                      <div>
+                        <h4 className="text-white text-lg font-bold">Fitness Quest</h4>
+                        <div className="flex items-center mt-1">
+                          <TrophyIcon className="h-4 w-4 text-yellow-300 mr-1" />
+                          <span className="text-xs text-white">1,245 Players</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Fitness Quest</h4>
-                    <p className="text-gray-600 text-sm mb-4">A game where users complete virtual "missions" (e.g., 10 push-ups) to unlock rewards or levels.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Exercise</span>
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Missions</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                      Start Quest
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-4">Complete daily fitness challenges in an adventure storyline to unlock rewards and level up your character.</p>
+                    <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                      Play Now
                     </button>
                   </div>
                 </div>
                 
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-blue-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <HeartIcon className="h-16 w-16 text-blue-500 opacity-30" />
+                {/* Nutrition Match */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="aspect-video bg-green-600 relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-green-800/80 flex items-end p-4">
+                      <div>
+                        <h4 className="text-white text-lg font-bold">Nutrition Match</h4>
+                        <div className="flex items-center mt-1">
+                          <TrophyIcon className="h-4 w-4 text-yellow-300 mr-1" />
+                          <span className="text-xs text-white">980 Players</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Nutrition Match</h4>
-                    <p className="text-gray-600 text-sm mb-4">Puzzle game to match foods with their health benefits (e.g., kale with vitamin K).</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Nutrition</span>
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Puzzle</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                      Play Game
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-4">Match foods to their nutritional benefits in this fun, fast-paced game that helps you learn about healthy eating.</p>
+                    <button className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+                      Play Now
                     </button>
                   </div>
                 </div>
                 
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-blue-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <HeartIcon className="h-16 w-16 text-blue-500 opacity-30" />
+                {/* Sleep Challenge */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="aspect-video bg-indigo-600 relative">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-800/80 flex items-end p-4">
+                      <div>
+                        <h4 className="text-white text-lg font-bold">Sleep Challenge</h4>
+                        <div className="flex items-center mt-1">
+                          <TrophyIcon className="h-4 w-4 text-yellow-300 mr-1" />
+                          <span className="text-xs text-white">756 Players</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Sleep Challenge</h4>
-                    <p className="text-gray-600 text-sm mb-4">Trivia game about sleep hygiene, with points for correct answers and sleep improvement tips.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Sleep</span>
-                      <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Trivia</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                      Take Challenge
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-4">Track your sleep patterns and compete with friends to build better sleep habits through gamified challenges.</p>
+                    <button className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+                      Play Now
                     </button>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        ) : (
+          /* Dashboard tab content */
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Personal Growth Dashboard</h2>
             
-            {/* Mental Well-Being Games */}
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-purple-700">
-                <AcademicCapIcon className="h-6 w-6 mr-2" />
-                Mental Well-Being Games
-              </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Life Wheel Visualization */}
+              <div className="bg-gray-50 p-5 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-semibold">Life Balance Wheel</h3>
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Updated Today</span>
+                </div>
+                <div className="aspect-square relative flex items-center justify-center">
+                  <div className="w-full h-full rounded-full border-4 border-blue-100 flex items-center justify-center">
+                    {/* Life wheel chart would go here - simplified with colored sections */}
+                    <div className="w-[90%] h-[90%] rounded-full bg-gray-100 flex items-center justify-center relative overflow-hidden">
+                      {/* Physical Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-0 bg-blue-500 opacity-70"></div>
+                      {/* Mental Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-45 bg-purple-500 opacity-70"></div>
+                      {/* Emotional Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-90 bg-pink-500 opacity-70"></div>
+                      {/* Spiritual Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-[135deg] bg-amber-500 opacity-70"></div>
+                      {/* Financial Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-180 bg-green-500 opacity-70"></div>
+                      {/* Social Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-[225deg] bg-red-500 opacity-70"></div>
+                      {/* Career Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-[270deg] bg-teal-500 opacity-70"></div>
+                      {/* Intellectual Segment */}
+                      <div className="absolute top-0 left-[50%] w-[50%] h-[50%] origin-bottom-left rotate-[315deg] bg-indigo-500 opacity-70"></div>
+                      {/* Center overlay */}
+                      <div className="w-[50%] h-[50%] rounded-full bg-white shadow-sm flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">73%</div>
+                          <div className="text-xs text-gray-500">Life Balance</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 text-center">
+                  <p className="text-sm text-gray-600">Your wheel shows strong <span className="font-medium text-blue-600">Physical</span> and <span className="font-medium text-purple-600">Mental</span> growth</p>
+                  <button className="mt-2 text-xs text-blue-600 font-medium hover:underline">View Detailed Analysis</button>
+                </div>
+              </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-purple-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <AcademicCapIcon className="h-16 w-16 text-purple-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Mind Maze</h4>
-                    <p className="text-gray-600 text-sm mb-4">A puzzle game where users solve mindfulness-themed challenges to "clear their mind."</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Mindfulness</span>
-                      <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Puzzle</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                      Enter Maze
-                    </button>
+              {/* Rewards & Progress */}
+              <div className="bg-gray-50 p-5 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold">Rewards & Progress</h3>
+                  <div className="flex items-center">
+                    <span className="flex items-center text-xs text-gray-600"><StarIcon className="h-4 w-4 text-yellow-500 mr-1" /> 450 Points</span>
                   </div>
                 </div>
                 
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-purple-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <AcademicCapIcon className="h-16 w-16 text-purple-500 opacity-30" />
+                {/* Recent badges */}
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Recently Earned Badges</h4>
+                  <div className="flex space-x-3">
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <BanknotesIcon className="h-6 w-6 text-green-600" />
+                      </div>
+                      <span className="text-xs mt-1">Budget Pro</span>
                     </div>
-                    <div className="absolute top-0 left-0 bg-purple-500 text-white py-1 px-3 text-xs font-semibold">
-                      NEW
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <HeartIcon className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <span className="text-xs mt-1">Fitness Starter</span>
                     </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Emotion Detective</h4>
-                    <p className="text-gray-600 text-sm mb-4">Scenario-based game to identify and manage emotions in virtual situations.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Emotional IQ</span>
-                      <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Scenarios</span>
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                        <AcademicCapIcon className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <span className="text-xs mt-1">Mind Master</span>
                     </div>
-                    <button className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                      Investigate
-                    </button>
                   </div>
                 </div>
                 
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-purple-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <AcademicCapIcon className="h-16 w-16 text-purple-500 opacity-30" />
+                {/* Current challenges */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Current Challenges</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>30-Day Meditation</span>
+                        <span className="font-medium">24/30</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full">
+                        <div className="h-2 bg-purple-500 rounded-full" style={{ width: '80%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Investment Simulator</span>
+                        <span className="font-medium">2/5</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full">
+                        <div className="h-2 bg-green-500 rounded-full" style={{ width: '40%' }}></div>
+                      </div>
                     </div>
                   </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Stress Buster</h4>
-                    <p className="text-gray-600 text-sm mb-4">Quick reflex game where users "pop" stress bubbles by completing relaxation tasks.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Relaxation</span>
-                      <span className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs">Arcade</span>
+                </div>
+                
+                <div className="mt-4 text-center">
+                  <button className="text-blue-600 text-xs font-medium hover:underline">Visit Rewards Shop</button>
+                </div>
+              </div>
+              
+              {/* AI Coach & Spoke Synergy */}
+              <div className="grid grid-rows-2 gap-4">
+                {/* AI Coach */}
+                <div className="bg-gray-50 p-5 rounded-lg shadow-sm">
+                  <div className="flex items-start">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                      <SparklesIcon className="h-6 w-6 text-blue-600" />
                     </div>
-                    <button className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                      Pop Bubbles
-                    </button>
+                    <div className="ml-3">
+                      <h3 className="font-semibold mb-1">AI Growth Coach</h3>
+                      <p className="text-sm text-gray-600">Based on your activity, I recommend focusing on your <span className="font-medium text-amber-600">Financial</span> spoke next - you&apos;re making great progress!</p>
+                      <div className="mt-2 flex">
+                        <button className="text-xs text-blue-600 font-medium mr-3 hover:underline">Get Advice</button>
+                        <button className="text-xs text-gray-500 hover:underline">Dismiss</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Spoke Synergy */}
+                <div className="bg-gray-50 p-5 rounded-lg shadow-sm">
+                  <h3 className="font-semibold mb-2">Spoke Synergy</h3>
+                  <div className="mb-2 bg-blue-50 rounded-lg p-3">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                        <HeartIcon className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="h-8 w-8 rounded-full bg-purple-100 flex-shrink-0 flex items-center justify-center -ml-2">
+                        <AcademicCapIcon className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div className="ml-2">
+                        <span className="text-xs font-medium text-gray-700">Exercise ➔ Mental Clarity</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">Your morning fitness routine enhances focus and productivity throughout the day.</p>
+                  </div>
+                  <button className="text-xs text-blue-600 font-medium hover:underline">Discover More Synergies</button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Additional Dashboard Sections */}
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Monthly Progress Summary */}
+              <div className="bg-gray-50 p-5 rounded-lg shadow-sm">
+                <h3 className="font-semibold mb-4">Monthly Progress Summary</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Activities Completed</span>
+                      <span className="font-medium text-blue-600">28</span>
+                    </div>
+                    <div className="h-1.5 bg-gray-200 rounded-full">
+                      <div className="h-1.5 bg-blue-600 rounded-full" style={{ width: '70%' }}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Points Earned</span>
+                      <span className="font-medium text-green-600">450/600</span>
+                    </div>
+                    <div className="h-1.5 bg-gray-200 rounded-full">
+                      <div className="h-1.5 bg-green-600 rounded-full" style={{ width: '75%' }}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Challenges Joined</span>
+                      <span className="font-medium text-purple-600">3/5</span>
+                    </div>
+                    <div className="h-1.5 bg-gray-200 rounded-full">
+                      <div className="h-1.5 bg-purple-600 rounded-full" style={{ width: '60%' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Suggested Activities */}
+              <div className="bg-gray-50 p-5 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold">Recommended for You</h3>
+                  <button className="text-xs text-blue-600 hover:underline">View All</button>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start p-3 bg-blue-50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mr-3">
+                      <HeartIcon className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium">Morning Stretching Routine</h4>
+                      <p className="text-xs text-gray-600">A quick 10-minute session to boost energy and flexibility</p>
+                      <button className="mt-1 text-xs text-blue-600 hover:underline">Try Now</button>
+                    </div>
+                  </div>
+                  <div className="flex items-start p-3 bg-green-50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center mr-3">
+                      <BanknotesIcon className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium">Savings Goal Planner</h4>
+                      <p className="text-xs text-gray-600">Create a personalized plan to reach your financial targets</p>
+                      <button className="mt-1 text-xs text-blue-600 hover:underline">Start Planning</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Relationships Games */}
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-pink-700">
-                <UsersIcon className="h-6 w-6 mr-2" />
-                Relationships Games
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-pink-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <UsersIcon className="h-16 w-16 text-pink-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Connection Builder</h4>
-                    <p className="text-gray-600 text-sm mb-4">Role-playing game where users practice communication skills in simulated social scenarios.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Communication</span>
-                      <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Role-play</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-                      Build Connection
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-pink-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <UsersIcon className="h-16 w-16 text-pink-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Empathy Match</h4>
-                    <p className="text-gray-600 text-sm mb-4">Card game to pair emotions with appropriate responses (e.g., "Friend is sad" → "Offer support").</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Empathy</span>
-                      <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Cards</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-                      Play Match
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-pink-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <UsersIcon className="h-16 w-16 text-pink-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Family Tree Quest</h4>
-                    <p className="text-gray-600 text-sm mb-4">Game to explore family dynamics or history through storytelling prompts and interactive branches.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Family</span>
-                      <span className="inline-block bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">Storytelling</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">
-                      Start Journey
-                    </button>
-                  </div>
-                </div>
+            {/* Action Bar */}
+            <div className="mt-6 flex flex-wrap justify-between items-center border-t pt-4">
+              <div className="flex space-x-3">
+                <button className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                  <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+                  Download Report
+                </button>
+                <button className="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50">
+                  <ShareIcon className="h-4 w-4 mr-1" />
+                  Share Progress
+                </button>
               </div>
-            </div>
-            
-            {/* Career Games */}
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-amber-700">
-                <BriefcaseIcon className="h-6 w-6 mr-2" />
-                Career Games
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-amber-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BriefcaseIcon className="h-16 w-16 text-amber-500 opacity-30" />
-                    </div>
-                    <div className="absolute top-0 left-0 bg-amber-500 text-white py-1 px-3 text-xs font-semibold">
-                      TRENDING
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Career Climb</h4>
-                    <p className="text-gray-600 text-sm mb-4">Strategy game where users make career decisions (e.g., take a course vs. network) to advance.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Strategy</span>
-                      <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Career Path</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                      Start Climbing
-                    </button>
-                  </div>
+              <div className="flex items-center mt-4 sm:mt-0">
+                <div className="flex items-center mr-4">
+                  <BellIcon className="h-5 w-5 text-gray-400 mr-1" />
+                  <select className="text-xs text-gray-600 bg-transparent border-none focus:ring-0">
+                    <option>Daily Notifications</option>
+                    <option>Weekly Notifications</option>
+                    <option>Disable Notifications</option>
+                  </select>
                 </div>
-                
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-amber-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BriefcaseIcon className="h-16 w-16 text-amber-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Skill Stacker</h4>
-                    <p className="text-gray-600 text-sm mb-4">Tetris-like game where users stack skills to build a "career tower" and unlock achievements.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Skills</span>
-                      <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Arcade</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                      Stack Skills
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-amber-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BriefcaseIcon className="h-16 w-16 text-amber-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Job Interview Sim</h4>
-                    <p className="text-gray-600 text-sm mb-4">Interactive game to practice answering common interview questions with feedback and tips.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Interviews</span>
-                      <span className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs">Simulation</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                      Practice Now
-                    </button>
-                  </div>
-                </div>
+                <button className="text-xs text-gray-600 hover:underline">Settings</button>
               </div>
-            </div>
-            
-            {/* Finances Games */}
-            <div className="mb-10">
-              <h3 className="text-xl font-semibold mb-4 flex items-center text-green-700">
-                <BanknotesIcon className="h-6 w-6 mr-2" />
-                Finances Games
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-green-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BanknotesIcon className="h-16 w-16 text-green-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Money Master</h4>
-                    <p className="text-gray-600 text-sm mb-4">Simulation game where users manage a virtual budget to achieve financial goals and milestones.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Budgeting</span>
-                      <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Simulation</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                      Master Money
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-green-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BanknotesIcon className="h-16 w-16 text-green-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Investment Dash</h4>
-                    <p className="text-gray-600 text-sm mb-4">Time-based game to allocate funds across asset types for maximum returns with market changes.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Investing</span>
-                      <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Strategy</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                      Start Investing
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="h-40 bg-green-100 relative flex items-center justify-center">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BanknotesIcon className="h-16 w-16 text-green-500 opacity-30" />
-                    </div>
-                  </div>
-                  <div className="p-5">
-                    <h4 className="font-semibold text-lg mb-2">Debt Escape</h4>
-                    <p className="text-gray-600 text-sm mb-4">Puzzle game to strategize paying off virtual debts fastest while balancing income and expenses.</p>
-                    <div className="flex space-x-2 mb-4">
-                      <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Debt Free</span>
-                      <span className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Puzzle</span>
-                    </div>
-                    <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                      Escape Debt
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* View More button */}
-            <div className="text-center mt-6">
-              <button className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">
-                Show More Categories
-              </button>
             </div>
           </div>
         )}
