@@ -1311,31 +1311,31 @@ export default function ActivitiesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Main Tabs */}
         <div className="flex space-x-4 mb-8">
-          <button
+            <button
             onClick={() => setActiveTab('explore')}
             className={`px-4 py-2 rounded-lg ${
               activeTab === 'explore'
                 ? 'bg-primary-600 text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
+              }`}
           >
             Explore
-          </button>
-          <button
+            </button>
+              <button
             onClick={() => setActiveTab('activities')}
             className={`px-4 py-2 rounded-lg ${
               activeTab === 'activities'
                 ? 'bg-primary-600 text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
+                }`}
           >
             Activities
-          </button>
+              </button>
         </div>
 
         {/* Tab Content */}
         {activeTab === 'explore' ? (
-          <div>
+            <div>
             {/* Existing Activities Content */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Left Column - Spokes */}
@@ -1354,39 +1354,39 @@ export default function ActivitiesPage() {
                           ? 'bg-primary-50 text-primary-600'
                           : 'hover:bg-gray-50'
                       }`}
-                    >
+                  >
                       <div className="flex items-center">
                         <spoke.icon className="h-5 w-5 mr-2" />
                         <span>{spoke.name}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                      </button>
+                ))}
               </div>
+            </div>
 
               {/* Middle Column - Subcategories */}
               <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold mb-4">Categories</h2>
                 {selectedSpoke ? (
-                  <div className="space-y-2">
-                    {selectedSpoke.subcategories.map((subcategory) => (
-                      <button
-                        key={subcategory.id}
+                <div className="space-y-2">
+                  {selectedSpoke.subcategories.map((subcategory) => (
+                    <button
+                      key={subcategory.id}
                         onClick={() => setSelectedSubcategory(subcategory)}
                         className={`w-full text-left px-4 py-2 rounded ${
-                          selectedSubcategory?.id === subcategory.id
+                        selectedSubcategory?.id === subcategory.id
                             ? 'bg-primary-50 text-primary-600'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        {subcategory.name}
-                      </button>
-                    ))}
-                  </div>
+                          : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      {subcategory.name}
+                    </button>
+                  ))}
+                </div>
                 ) : (
                   <p className="text-gray-500">Select a life spoke to view categories</p>
                 )}
-              </div>
+            </div>
 
               {/* Right Column - Activities */}
               <div className="bg-white rounded-lg shadow p-6">
@@ -1394,23 +1394,23 @@ export default function ActivitiesPage() {
                 {selectedSubcategory ? (
                   <div className="space-y-2">
                     {selectedSubcategory.activities.map((activity) => (
-                      <div
-                        key={activity.id}
+                              <div
+                                key={activity.id}
                         className="p-3 rounded border hover:bg-gray-50 cursor-pointer"
-                      >
+                              >
                         <div className="flex items-center justify-between">
                           <span className="text-sm">{activity.name}</span>
                           <span className="text-xs text-gray-500">{activity.level}</span>
+                                </div>
+                              </div>
+                            ))}
                         </div>
-                      </div>
-                    ))}
-                  </div>
                 ) : (
                   <p className="text-gray-500">Select a category to view activities</p>
                 )}
-              </div>
+                      </div>
+                  </div>
             </div>
-          </div>
         ) : (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Activities</h2>
