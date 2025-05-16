@@ -10,7 +10,28 @@ import {
   PencilSquareIcon,
   AdjustmentsHorizontalIcon,
   SunIcon,
-  MoonIcon
+  MoonIcon,
+  MagnifyingGlassIcon,
+  ListBulletIcon,
+  BookmarkIcon,
+  ShieldCheckIcon,
+  UserGroupIcon,
+  CalendarIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  LifebuoyIcon,
+  HandRaisedIcon,
+  CameraIcon,
+  EyeSlashIcon,
+  MapPinIcon,
+  ArrowsRightLeftIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  FireIcon,
+  ChatBubbleLeftIcon,
+  ShareIcon,
+  HandThumbUpIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 
 // Types
@@ -45,6 +66,13 @@ type Post = {
   upvotes: number
   status: 'open' | 'in-progress' | 'resolved'
   lifeSpoke?: LifeSpoke
+  verification?: {
+    status: VerificationStatus;
+    verifiedBy?: string;
+    verificationDate?: string;
+    notes?: string;
+  }
+  availableTimes?: string[];
 }
 
 type User = {
@@ -583,6 +611,172 @@ const INTEREST_TAGS = [
   'Language Learning', 'Music', 'Sports', 'Outdoor Activities'
 ]
 
+// Add new types for the verified needs and help history
+type VerificationStatus = 'pending' | 'verified' | 'rejected';
+
+type HelpHistory = {
+  id: number;
+  postId: number;
+  date: string;
+  type: 'helped' | 'received';
+  details: string;
+  feedback?: string;
+  rating?: number;
+  testimonial?: string;
+  badge?: string;
+}
+
+// New sidebar component
+function Sidebar({
+  searchQuery,
+  setSearchQuery,
+  viewMode,
+  setViewMode,
+  sidebarView,
+  setSidebarView,
+  user,
+  filteredPosts
+}: {
+  searchQuery: string,
+  setSearchQuery: (query: string) => void,
+  viewMode: 'list' | 'map',
+  setViewMode: (mode: 'list' | 'map') => void,
+  sidebarView: 'safety',
+  setSidebarView: (view: 'safety') => void,
+  user: User,
+  filteredPosts: Post[]
+}) {
+  // Filter posts that match the user's skills and interests
+  const matchingPosts = filteredPosts.filter(post => {
+    if (post.type !== 'problem') return false;
+    
+    // Check if any of the post's tags match user's skills or interests
+    const userSkills = user.profile.skills || [];
+    const userInterests = user.profile.interests || [];
+    
+    return post.tags.some(tag => 
+      userSkills.includes(tag) || 
+      userInterests.includes(tag) ||
+      post.category === "Emergency" // Always include emergency posts
+    );
+  });
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow">
+      {/* Search */}
+      <div className="relative mb-4">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search Requests"
+          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        />
+      </div>
+      
+      {/* View Toggle */}
+      <div className="bg-gray-100 rounded-lg mb-6">
+        <div className="flex p-1">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`flex-1 flex justify-center items-center py-2 px-4 rounded-md ${
+              viewMode === 'list'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <ListBulletIcon className="h-5 w-5 mr-2" />
+            <span>List View</span>
+          </button>
+          <button
+            onClick={() => setViewMode('map')}
+            className={`flex-1 flex justify-center items-center py-2 px-4 rounded-md ${
+              viewMode === 'map'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <MapIcon className="h-5 w-5 mr-2" />
+            <span>Map View</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Safety section */}
+      <div className="mb-4">
+        <h2 className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-2">
+          Safety Resources
+        </h2>
+        <div className="space-y-1">
+          <button
+            onClick={() => setSidebarView('safety')}
+            className={`w-full text-left flex items-center px-3 py-2 rounded-md ${
+              sidebarView === 'safety' 
+                ? 'bg-blue-50 text-blue-700' 
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <ShieldCheckIcon className="h-5 w-5 mr-3 text-gray-400" />
+            <span>Safety & Verification</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Safety Content */}
+      {sidebarView === 'safety' && (
+        <div>
+          <h3 className="font-medium text-gray-900 mb-2">Safety Guidelines</h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start">
+              <div className="p-1 bg-blue-100 rounded-full mt-0.5 mr-2">
+                <CheckCircleIcon className="h-4 w-4 text-blue-700" />
+              </div>
+              <p>Meet in public places for first-time interactions</p>
+            </div>
+            <div className="flex items-start">
+              <div className="p-1 bg-blue-100 rounded-full mt-0.5 mr-2">
+                <CheckCircleIcon className="h-4 w-4 text-blue-700" />
+              </div>
+              <p>Share your meeting details with a trusted contact</p>
+            </div>
+            <div className="flex items-start">
+              <div className="p-1 bg-blue-100 rounded-full mt-0.5 mr-2">
+                <CheckCircleIcon className="h-4 w-4 text-blue-700" />
+              </div>
+              <p>Verify identity through our verification system</p>
+            </div>
+            <div className="flex items-start">
+              <div className="p-1 bg-blue-100 rounded-full mt-0.5 mr-2">
+                <CheckCircleIcon className="h-4 w-4 text-blue-700" />
+              </div>
+              <p>Trust your instincts - cancel if something feels wrong</p>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-md">
+            <h4 className="font-medium text-yellow-800 mb-1">Verification Status</h4>
+            <p className="text-sm text-yellow-700">
+              Your account is partially verified. Complete ID verification to unlock all features.
+            </p>
+            <button className="mt-2 text-sm bg-yellow-200 text-yellow-800 px-3 py-1 rounded-md hover:bg-yellow-300">
+              Complete Verification
+            </button>
+          </div>
+          
+          <div className="mt-4">
+            <button className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+              Download Safety Guide
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function HelpOthersPage() {
   const [user, setUser] = useState<User>({
     id: Date.now(),
@@ -626,6 +820,9 @@ export default function HelpOthersPage() {
   const [highContrast, setHighContrast] = useState(false)
   const [accessibilityMode, setAccessibilityMode] = useState(false)
   const [showLifeSpokes, setShowLifeSpokes] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sidebarView, setSidebarView] = useState<'safety'>('safety')
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -732,9 +929,17 @@ export default function HelpOthersPage() {
     return 'personal' // Default to personal if no match
   }
 
-  // Apply all filters
+  // Apply all filters and search query
   const filteredPosts = processedPosts.filter(post => {
-    // Base type and category filters
+    // Search query filter
+    if (searchQuery && !post.content.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        !post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) &&
+        !post.user?.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !post.category.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    // Existing filters
     if (filterType && post.type !== filterType) return false
     if (filterCategory && post.category !== filterCategory) return false
     
@@ -806,488 +1011,712 @@ export default function HelpOthersPage() {
               Connect with people who need help or offer your assistance
             </p>
           </div>
-          <div className="flex gap-4">
-            <div className="flex border rounded-lg overflow-hidden">
-              <button 
-                onClick={() => setUserRole('asker')} 
-                className={`px-3 py-1.5 text-sm ${
-                  userRole === 'asker' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-600'
-                }`}
-              >
-                I Need Help
-              </button>
-              <button 
-                onClick={() => setUserRole('helper')} 
-                className={`px-3 py-1.5 text-sm ${
-                  userRole === 'helper' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-600'
-                }`}
-              >
-                I Can Help
-              </button>
-              <button 
-                onClick={() => setUserRole('both')} 
-                className={`px-3 py-1.5 text-sm ${
-                  userRole === 'both' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-600'
-                }`}
-              >
-                Both
-              </button>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-4 flex justify-between items-center">
-          <div className="flex border rounded-lg overflow-hidden">
-            <button 
-              onClick={() => setViewMode('list')} 
-              className={`px-4 py-2 flex items-center ${
-                viewMode === 'list' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-600'
-              }`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-              </svg>
-              List View
-            </button>
-            <button 
-              onClick={() => setViewMode('map')} 
-              className={`px-4 py-2 flex items-center ${
-                viewMode === 'map' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-600'
-              }`}
-            >
-              <MapIcon className="h-5 w-5 mr-1" />
-              Map View
-            </button>
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left sidebar */}
+          <div className="lg:col-span-1">
+            <Sidebar 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              sidebarView={sidebarView}
+              setSidebarView={setSidebarView}
+              user={user}
+              filteredPosts={filteredPosts}
+            />
           </div>
           
-          {userRole === 'both' && (
-            <div className="flex border rounded-lg overflow-hidden">
-              <button 
-                onClick={() => setDashboardView('active')} 
-                className={`px-3 py-1.5 text-sm ${
-                  dashboardView === 'active' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-600'
-                }`}
-              >
-                Active Posts
-              </button>
-              <button 
-                onClick={() => setDashboardView('history')} 
-                className={`px-3 py-1.5 text-sm ${
-                  dashboardView === 'history' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-600'
-                }`}
-              >
-                History
-              </button>
-              <button 
-                onClick={() => setDashboardView('stats')} 
-                className={`px-3 py-1.5 text-sm ${
-                  dashboardView === 'stats' 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-600'
-                }`}
-              >
-                Stats
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-6">
           {/* Main content area */}
-          {viewMode === 'list' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <UserProfile user={user} setUser={setUser} />
-                {userRole !== 'helper' && <PostForm user={user} setUser={setUser} location={location} />}
-                
-                <div className="bg-white p-4 rounded-lg shadow mt-4">
-                  <div className="flex items-center mb-4">
-                    <AdjustmentsHorizontalIcon className="h-6 w-6 mr-2 text-blue-600" />
-                    <h2 className="text-xl font-semibold">Filter Posts</h2>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Post Type</label>
-                      <select
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        aria-label="Filter by post type"
-                      >
-                        <option value="">All Types</option>
-                        <option value="problem">Need Help</option>
-                        <option value="solution">Offer Solution</option>
-                        <option value="goods">Offer Goods</option>
-                        <option value="money">Financial Aid</option>
-                        <option value="time">Volunteer Time</option>
-                        <option value="information">Information</option>
-                        <option value="services">Services</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                      <select
-                        value={filterCategory}
-                        onChange={(e) => setFilterCategory(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        aria-label="Filter by category"
-                      >
-                        <option value="">All Categories</option>
-                        <option value="Health">Health</option>
-                        <option value="Education">Education</option>
-                        <option value="Emergency">Emergency</option>
-                        <option value="Food">Food</option>
-                        <option value="Shelter">Shelter</option>
-                        <option value="Jobs">Jobs</option>
-                        <option value="Legal">Legal</option>
-                        <option value="Misc">Miscellaneous</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Distance</label>
-                      <select
-                        value={filterDistance}
-                        onChange={(e) => setFilterDistance(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        aria-label="Filter by distance"
-                      >
-                        <option value="">All Distances</option>
-                        <option value="1">Within 1 km</option>
-                        <option value="5">Within 5 km</option>
-                        <option value="10">Within 10 km</option>
-                        <option value="50">Within 50 km</option>
-                        <option value="100">Within 100 km</option>
-                      </select>
+          <div className="lg:col-span-3">
+            <div className="mt-4 flex justify-between items-center">
+              <div className="flex border rounded-lg overflow-hidden">
+                <button 
+                  onClick={() => setDashboardView('active')} 
+                  className={`px-3 py-1.5 text-sm ${
+                    dashboardView === 'active' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white text-gray-600'
+                  }`}
+                >
+                  Active Posts
+                </button>
+                <button 
+                  onClick={() => setDashboardView('history')} 
+                  className={`px-3 py-1.5 text-sm ${
+                    dashboardView === 'history' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white text-gray-600'
+                  }`}
+                >
+                  History
+                </button>
+                <button 
+                  onClick={() => setDashboardView('stats')} 
+                  className={`px-3 py-1.5 text-sm ${
+                    dashboardView === 'stats' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-white text-gray-600'
+                  }`}
+                >
+                  Stats
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              {/* Post Creation Section */}
+              <div className="bg-white rounded-lg shadow p-4 mb-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 mr-4">
+                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                      {user.profile.avatar || "🧑"}
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Urgency</label>
-                      <select
-                        value={filterUrgency}
-                        onChange={(e) => setFilterUrgency(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        aria-label="Filter by urgency"
-                      >
-                        <option value="">All Urgency Levels</option>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                      <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        aria-label="Filter by status"
-                      >
-                        <option value="">All Statuses</option>
-                        <option value="open">Open</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Life Spoke</label>
-                      <select
-                        value={filterLifeSpoke}
-                        onChange={(e) => setFilterLifeSpoke(e.target.value as LifeSpoke | "")}
-                        className="w-full p-2 border rounded"
-                        aria-label="Filter by life spoke"
-                      >
-                        <option value="">All Life Spokes</option>
-                        {LIFE_SPOKES.map(spoke => (
-                          <option key={spoke.id} value={spoke.id}>{spoke.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="flex-grow flex items-center border border-gray-300 rounded-lg px-4 py-2 bg-gray-50">
+                    <span className="text-gray-500">Need a help, {user.name.split(' ')[0]}?</span>
+                    <button className="ml-auto bg-blue-600 text-white px-4 py-1 rounded-md">
+                      Ask
+                    </button>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Tag Search</label>
+                </div>
+
+                <div className="flex mt-4 space-x-4">
+                  <button className="flex-1 flex items-center justify-center text-sm text-gray-600 py-1.5 hover:bg-gray-50 rounded-md">
+                    <CameraIcon className="h-5 w-5 mr-2 text-green-500" />
+                    Photo/Video
+                  </button>
+                  <button className="flex-1 flex items-center justify-center text-sm text-gray-600 py-1.5 hover:bg-gray-50 rounded-md">
+                    <EyeSlashIcon className="h-5 w-5 mr-2 text-blue-500" />
+                    Anonymous
+                  </button>
+                  <button className="flex-1 flex items-center justify-center text-sm text-gray-600 py-1.5 hover:bg-gray-50 rounded-md">
+                    <MapPinIcon className="h-5 w-5 mr-2 text-red-500" />
+                    Location
+                  </button>
+                </div>
+              </div>
+
+              {/* Filter Toolbar */}
+              <div className="bg-white rounded-lg shadow p-4 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2 text-gray-500" />
+                    <h3 className="font-medium">Filter Posts</h3>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={resetFilters}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Reset Filters
+                    </button>
+                    <button 
+                      onClick={() => setShowFilters(!showFilters)} 
+                      className="text-sm flex items-center text-gray-600"
+                    >
+                      {showFilters ? (
+                        <>
+                          <ChevronUpIcon className="h-4 w-4 mr-1" />
+                          Hide Filters
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDownIcon className="h-4 w-4 mr-1" />
+                          Show Filters
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {showFilters && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Post Type */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Post Type</label>
+                        <div className="relative">
+                          <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          >
+                            <option value="">All Types</option>
+                            <option value="problem">Need Help</option>
+                            <option value="solution">Offer Solution</option>
+                            <option value="goods">Offer Goods</option>
+                            <option value="money">Financial Aid</option>
+                            <option value="time">Volunteer Time</option>
+                            <option value="information">Information</option>
+                            <option value="services">Services</option>
+                          </select>
+                          <ChevronDownIcon className="h-5 w-5 text-gray-400 absolute right-2 top-2 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Category */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                        <div className="relative">
+                          <select
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          >
+                            <option value="">All Categories</option>
+                            <option value="Health">Health</option>
+                            <option value="Education">Education</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Food">Food</option>
+                            <option value="Shelter">Shelter</option>
+                            <option value="Jobs">Jobs</option>
+                            <option value="Legal">Legal</option>
+                            <option value="Misc">Miscellaneous</option>
+                          </select>
+                          <ChevronDownIcon className="h-5 w-5 text-gray-400 absolute right-2 top-2 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Distance */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Distance</label>
+                        <div className="relative">
+                          <select
+                            value={filterDistance}
+                            onChange={(e) => setFilterDistance(e.target.value)}
+                            className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          >
+                            <option value="">All Distances</option>
+                            <option value="1">Within 1 km</option>
+                            <option value="5">Within 5 km</option>
+                            <option value="10">Within 10 km</option>
+                            <option value="50">Within 50 km</option>
+                            <option value="100">Within 100 km</option>
+                          </select>
+                          <ChevronDownIcon className="h-5 w-5 text-gray-400 absolute right-2 top-2 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                      {/* Urgency */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Urgency</label>
+                        <div className="relative">
+                          <select
+                            value={filterUrgency}
+                            onChange={(e) => setFilterUrgency(e.target.value)}
+                            className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          >
+                            <option value="">All Urgency Levels</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                          </select>
+                          <ChevronDownIcon className="h-5 w-5 text-gray-400 absolute right-2 top-2 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                        <div className="relative">
+                          <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          >
+                            <option value="">All Statuses</option>
+                            <option value="open">Open</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                          </select>
+                          <ChevronDownIcon className="h-5 w-5 text-gray-400 absolute right-2 top-2 pointer-events-none" />
+                        </div>
+                      </div>
+
+                      {/* Life Spoke */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Life Spoke</label>
+                        <div className="relative">
+                          <select
+                            value={filterLifeSpoke}
+                            onChange={(e) => setFilterLifeSpoke(e.target.value as LifeSpoke | "")}
+                            className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          >
+                            <option value="">All Life Spokes</option>
+                            {LIFE_SPOKES.map(spoke => (
+                              <option key={spoke.id} value={spoke.id}>{spoke.name}</option>
+                            ))}
+                          </select>
+                          <ChevronDownIcon className="h-5 w-5 text-gray-400 absolute right-2 top-2 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      {/* Tag Search */}
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Tag Search</label>
                       <input
                         type="text"
                         value={tagSearch}
                         onChange={(e) => setTagSearch(e.target.value)}
                         placeholder="Search by tag"
-                        className="w-full p-2 border rounded"
-                        aria-label="Search by tag"
+                        className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     </div>
-                  </div>
-                  
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setSortMethod('proximity')}
-                        className={`px-3 py-1 text-sm rounded ${
-                          sortMethod === 'proximity' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        Proximity
-                      </button>
-                      <button
-                        onClick={() => setSortMethod('time')}
-                        className={`px-3 py-1 text-sm rounded ${
-                          sortMethod === 'time' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        Most Recent
-                      </button>
-                      <button
-                        onClick={() => setSortMethod('urgency')}
-                        className={`px-3 py-1 text-sm rounded ${
-                          sortMethod === 'urgency' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        Urgency
-                      </button>
-                      <button
-                        onClick={() => setSortMethod('upvotes')}
-                        className={`px-3 py-1 text-sm rounded ${
-                          sortMethod === 'upvotes' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        Most Upvoted
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4">
-                    <button
-                      onClick={resetFilters}
-                      className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
+                  </>
+                )}
+
+                <div className="mt-4 border-t pt-4 flex justify-between items-center">
+                  <label className="block text-xs font-medium text-gray-500">Sort By</label>
+                  <div className="relative w-48">
+                    <select
+                      value={sortMethod}
+                      onChange={(e) => setSortMethod(e.target.value as 'proximity' | 'time' | 'urgency' | 'upvotes')}
+                      className="block w-full rounded-md border-gray-300 pl-3 pr-10 py-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
-                      Reset All Filters
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="mt-6">
-                  <div className="flex items-center mb-4">
-                    <MapIcon className="h-6 w-6 mr-2 text-blue-600" />
-                    <h2 className="text-xl font-semibold">Location View</h2>
-                  </div>
-                  <div className="h-80 rounded-lg overflow-hidden shadow">
-                    <div className="h-full">
-                      {isClient ? (
-                        <Suspense fallback={<div className="bg-gray-200 h-full flex items-center justify-center"><p>Loading map...</p></div>}>
-                          <MapComponent key={mapKey} location={location} posts={sortedPosts} />
-                        </Suspense>
-                      ) : (
-                        <div className="bg-gray-200 h-full flex items-center justify-center">
-                          <p>Map loading...</p>
-                        </div>
-                      )}
-                    </div>
+                      <option value="proximity">Proximity</option>
+                      <option value="time">Most Recent</option>
+                      <option value="urgency">Urgency</option>
+                      <option value="upvotes">Most Upvoted</option>
+                    </select>
+                    <ChevronDownIcon className="h-5 w-5 text-gray-400 absolute right-2 top-2 pointer-events-none" />
                   </div>
                 </div>
               </div>
-              
-              <div className="space-y-6">
-                <Chat user={user} />
-                
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Community Posts</h2>
-                  <div className="space-y-4 max-h-[500px] overflow-y-auto">
+
+              {/* Dashboard Content - Active Posts */}
+              {dashboardView === 'active' && (
+                viewMode === 'list' ? (
+                  <div className="space-y-6">
                     {sortedPosts.length > 0 ? (
-                      sortedPosts.map(post => {
-                        // Get the life spoke data for this post
-                        const spokeData = LIFE_SPOKES.find(s => s.id === post.lifeSpoke) || LIFE_SPOKES[0];
-                        
-                        return (
-                          <div key={post.id} className={`p-4 rounded-lg ${
-                            post.type === 'problem' ? 'bg-red-50 border-l-4 border-red-500' :
-                            post.type === 'solution' ? 'bg-green-50 border-l-4 border-green-500' :
-                            post.type === 'goods' ? 'bg-yellow-50 border-l-4 border-yellow-500' :
-                            post.type === 'money' ? 'bg-blue-50 border-l-4 border-blue-500' :
-                            post.type === 'information' ? 'bg-purple-50 border-l-4 border-purple-500' :
-                            post.type === 'services' ? 'bg-indigo-50 border-l-4 border-indigo-500' :
-                            'bg-gray-50 border-l-4 border-gray-500'
-                          }`}>
-                            <div className="flex justify-between items-start">
-                              <div className="flex items-center">
-                                {!post.anonymous && post.user?.profile.avatar && (
-                                  <span className="mr-2 text-lg">{post.user.profile.avatar}</span>
-                                )}
-                                <div>
-                                  <div className="font-medium">
-                                    {post.anonymous ? 'Anonymous' : post.user?.name}
-                                    {post.user?.profile.verified && (
-                                      <span className="ml-1 text-blue-500" title="Verified User">✓</span>
-                                    )}
-                                  </div>
-                                  {!post.anonymous && post.user?.profile.karma !== undefined && (
-                                    <div className="text-xs text-gray-500">
-                                      Karma: {post.user.profile.karma} • {post.user.role === 'asker' ? 'Needs Help' : 
-                                            post.user.role === 'helper' ? 'Helps Others' : 'Community Member'}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-xs text-gray-500 flex flex-col items-end">
-                                <div>{post.priority}, {post.distance?.toFixed(2)} km</div>
-                                <div className="mt-1">
-                                  {post.urgency === 'high' ? (
-                                    <span className="bg-red-100 px-2 py-0.5 rounded-full text-xs">
-                                      Urgent
-                                    </span>
-                                  ) : post.urgency === 'medium' ? (
-                                    <span className="bg-yellow-100 px-2 py-0.5 rounded-full text-xs">
-                                      Medium
-                                    </span>
-                                  ) : (
-                                    <span className="bg-green-100 px-2 py-0.5 rounded-full text-xs">
-                                      Low
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="mt-2">
-                              <div className="flex flex-wrap gap-2 mb-2">
-                                <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full
-                                  ${post.category === 'Emergency' ? 'bg-red-100 text-red-800' :
-                                  post.category === 'Health' || post.category === 'Medical' ? 'bg-blue-100 text-blue-800' :
-                                  post.category === 'Donation' ? 'bg-green-100 text-green-800' :
-                                  post.category === 'Volunteer' ? 'bg-yellow-100 text-yellow-800' :
-                                  post.category === 'Education' ? 'bg-indigo-100 text-indigo-800' :
-                                  post.category === 'Food' ? 'bg-orange-100 text-orange-800' :
-                                  post.category === 'Shelter' ? 'bg-teal-100 text-teal-800' :
-                                  post.category === 'Jobs' ? 'bg-purple-100 text-purple-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {post.category}
-                                </span>
-                                
-                                {/* Life Spoke Tag */}
-                                <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${spokeData.color}`}>
-                                  <span className="mr-1">{spokeData.icon}</span>
-                                  {spokeData.name}
-                                </span>
-                              </div>
-                              
-                              <p className="text-gray-700">{post.content}</p>
-                              
-                              {post.tags && post.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {post.tags.map((tag, i) => (
-                                    <span key={i} className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
-                                      #{tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className="mt-3 flex items-center justify-between">
-                              <div className="text-xs text-gray-500">
-                                {new Date(post.timestamp).toLocaleString()}
-                              </div>
-                              <div className="flex space-x-2">
-                                <button 
-                                  className="text-gray-500 hover:text-blue-500 text-sm flex items-center"
-                                  aria-label={`Upvote - Current count: ${post.upvotes || 0}`}
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                  </svg>
-                                  {post.upvotes || 0}
-                                </button>
-                                <button 
-                                  className="text-gray-500 hover:text-blue-500 text-sm flex items-center"
-                                  aria-label="Connect with this person"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
-                                  </svg>
-                                  Connect
-                                </button>
-                                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                  post.status === 'open' ? 'bg-green-100' :
-                                  post.status === 'in-progress' ? 'bg-yellow-100' :
-                                  'bg-gray-100'
-                                }`}>
-                                  {post.status === 'open' ? 'Open' : post.status === 'in-progress' ? 'In Progress' : 'Resolved'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
+                      sortedPosts.map(post => (
+                        <PostCard key={post.id} post={post} user={user} />
+                      ))
                     ) : (
-                      <p className="text-gray-500 italic">No posts match your current filters</p>
+                      <div className="bg-white p-8 rounded-lg shadow text-center">
+                        <LifebuoyIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-1">No posts found</h3>
+                        <p className="text-gray-500">Try adjusting your filters or search criteria</p>
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // Map view mode
-            <div className="h-[calc(100vh-200px)] rounded-lg overflow-hidden shadow">
-              <div className="h-full">
-                {isClient ? (
-                  <Suspense fallback={<div className="bg-gray-200 h-full flex items-center justify-center"><p>Loading map...</p></div>}>
-                    <MapComponent key={mapKey} location={location} posts={sortedPosts} fullScreen={true} />
-                  </Suspense>
                 ) : (
-                  <div className="bg-gray-200 h-full flex items-center justify-center">
-                    <p>Map loading...</p>
-                  </div>
-                )}
-              </div>
-              
-              {/* Overlay for the map view showing posts near current view */}
-              <div className="fixed bottom-24 right-4 w-80 max-h-80 overflow-y-auto bg-white rounded-lg shadow-lg p-3">
-                <h3 className="font-medium mb-2">Posts Near You</h3>
-                <div className="space-y-2">
-                  {sortedPosts.slice(0, 5).map(post => (
-                    <div key={post.id} className="p-2 bg-gray-50 rounded text-sm">
-                      <div className="flex justify-between">
-                        <span className="font-medium">{post.user?.name || 'Anonymous'}</span>
-                        <span className="text-xs text-gray-500">{post.distance?.toFixed(1)} km</span>
-                      </div>
-                      <p className="text-gray-700 text-sm line-clamp-2">{post.content}</p>
+                  <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="p-4 bg-blue-50 border-b">
+                      <h3 className="font-medium">Map View</h3>
+                      <p className="text-sm text-gray-500">Showing {sortedPosts.length} help requests nearby</p>
                     </div>
-                  ))}
+                    <div className="h-[600px] bg-gray-100 flex items-center justify-center">
+                      {isClient ? (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <p className="text-gray-500">Interactive map would load here showing all nearby help requests as pins</p>
+                        </div>
+                      ) : (
+                        <p>Loading map...</p>
+                      )}
+                    </div>
+                    <div className="p-3 bg-gray-50 border-t">
+                      <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
+                          <span className="text-xs">Emergency</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 rounded-full bg-yellow-500 mr-1"></div>
+                          <span className="text-xs">Medium Urgency</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
+                          <span className="text-xs">Low Urgency</span>
+                        </div>
+                        <div className="flex items-center ml-auto">
+                          <MapPinIcon className="h-4 w-4 text-blue-500 mr-1" />
+                          <span className="text-xs">Your Location</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              )}
+
+              {/* Dashboard Content - History */}
+              {dashboardView === 'history' && (
+                <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+                  <div className="border-b border-gray-200">
+                    <div className="px-6 py-4">
+                      <h2 className="text-xl font-semibold text-gray-900">Help History</h2>
+                      <p className="mt-1 text-sm text-gray-500">Track your impact and interactions in the community</p>
+                    </div>
+                    <div className="px-6 py-3 bg-gray-50 flex flex-wrap gap-3">
+                      <button className="bg-blue-600 text-white px-3 py-1 text-sm rounded-md">All History</button>
+                      <button className="bg-white text-gray-700 hover:bg-gray-100 px-3 py-1 text-sm rounded-md">Help Provided</button>
+                      <button className="bg-white text-gray-700 hover:bg-gray-100 px-3 py-1 text-sm rounded-md">Help Received</button>
+                      <button className="bg-white text-gray-700 hover:bg-gray-100 px-3 py-1 text-sm rounded-md">Pending</button>
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Help Provided</h3>
+                            <p className="text-sm text-gray-500">People you've helped</p>
+                          </div>
+                          <div className="bg-blue-100 text-blue-800 text-xl font-bold px-3 py-1 rounded-full">
+                            {user.profile.helpProvided}
+                          </div>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full">
+                          <div 
+                            className="h-2 bg-blue-600 rounded-full" 
+                            style={{ width: `${Math.min((user.profile.helpProvided / 20) * 100, 100)}%` }}
+                          ></div>
+                        </div>
+                        <div className="text-xs text-right text-gray-500 mt-1">
+                          {20 - user.profile.helpProvided > 0 ? `${20 - user.profile.helpProvided} more to Gold level` : 'Gold level achieved!'}
+                        </div>
+                      </div>
+
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Help Received</h3>
+                            <p className="text-sm text-gray-500">Times you got help</p>
+                          </div>
+                          <div className="bg-green-100 text-green-800 text-xl font-bold px-3 py-1 rounded-full">
+                            {user.profile.helpReceived}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-sm mt-3">
+                          <span className="text-gray-500">Balance ratio:</span>
+                          <span className="font-medium">
+                            {user.profile.helpProvided > 0 
+                              ? (user.profile.helpProvided / (user.profile.helpReceived || 1)).toFixed(1) 
+                              : 0} : 1
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Badges Earned</h3>
+                            <p className="text-sm text-gray-500">Recognitions of your impact</p>
+                          </div>
+                          <div className="bg-purple-100 text-purple-800 text-xl font-bold px-3 py-1 rounded-full">
+                            2
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <div className="flex-1 flex flex-col items-center p-2 bg-white rounded-md">
+                            <span className="text-xl">🌟</span>
+                            <span className="text-xs text-gray-600 mt-1">First Help</span>
+                          </div>
+                          <div className="flex-1 flex flex-col items-center p-2 bg-white rounded-md">
+                            <span className="text-xl">🙏</span>
+                            <span className="text-xs text-gray-600 mt-1">Gratitude</span>
+                          </div>
+                          <button className="flex-1 flex flex-col items-center p-2 bg-purple-100 rounded-md">
+                            <span className="text-xl">+</span>
+                            <span className="text-xs text-purple-800 mt-1">View All</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+
+                    {/* Timeline of help history */}
+                    <div className="relative border-l-2 border-gray-200 pl-6 space-y-10 py-2">
+                      {/* First help entry */}
+                      <div className="relative">
+                        <div className="absolute -left-9 mt-1.5 h-5 w-5 rounded-full border-4 border-white bg-blue-500"></div>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="text-xs font-medium text-blue-600 bg-blue-100 rounded-full px-2 py-0.5">Helped</span>
+                            <h4 className="text-base font-medium text-gray-900 mt-1">Tutored Ahmed in Math</h4>
+                            <p className="text-sm text-gray-500 mt-1">1 week ago • Education Category</p>
+                            <div className="mt-2 text-sm">
+                              <p className="text-gray-700">Helped Ahmed prepare for his calculus exam. He said it really improved his understanding.</p>
+                            </div>
+                          </div>
+                          <div className="bg-gray-100 p-2 rounded-lg">
+                            <div className="flex items-center">
+                              <UserCircleIcon className="h-5 w-5 text-gray-500 mr-1" />
+                              <span className="text-sm font-medium">Ahmed</span>
+                            </div>
+                            <div className="flex mt-1">
+                              <span className="text-yellow-500">★★★★★</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-3">
+                          <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md flex items-center">
+                            <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                            View Details
+                          </button>
+                          <button className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1 rounded-md">
+                            Message Ahmed
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Second help entry */}
+                      <div className="relative">
+                        <div className="absolute -left-9 mt-1.5 h-5 w-5 rounded-full border-4 border-white bg-green-500"></div>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="text-xs font-medium text-green-600 bg-green-100 rounded-full px-2 py-0.5">Received</span>
+                            <h4 className="text-base font-medium text-gray-900 mt-1">Received help with moving</h4>
+                            <p className="text-sm text-gray-500 mt-1">3 weeks ago • Physical Category</p>
+                            <div className="mt-2 text-sm">
+                              <p className="text-gray-700">Maria helped me move into my new apartment. She was incredibly helpful with the heavy lifting.</p>
+                            </div>
+                          </div>
+                          <div className="bg-gray-100 p-2 rounded-lg">
+                            <div className="flex items-center">
+                              <UserCircleIcon className="h-5 w-5 text-gray-500 mr-1" />
+                              <span className="text-sm font-medium">Maria</span>
+                            </div>
+                            <button className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                              Add Rating
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-3">
+                          <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md flex items-center">
+                            <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                            View Details
+                          </button>
+                          <button className="text-xs bg-green-50 hover:bg-green-100 text-green-700 px-3 py-1 rounded-md">
+                            Say Thanks
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Third help entry */}
+                      <div className="relative">
+                        <div className="absolute -left-9 mt-1.5 h-5 w-5 rounded-full border-4 border-white bg-blue-500"></div>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <span className="text-xs font-medium text-blue-600 bg-blue-100 rounded-full px-2 py-0.5">Helped</span>
+                            <h4 className="text-base font-medium text-gray-900 mt-1">Helped Maria with groceries</h4>
+                            <p className="text-sm text-gray-500 mt-1">2 days ago • Food Category</p>
+                            <div className="mt-2 text-sm">
+                              <p className="text-gray-700">Went shopping for groceries for Maria when she was sick. Delivered them to her doorstep.</p>
+                            </div>
+                          </div>
+                          <div className="bg-gray-100 p-2 rounded-lg">
+                            <div className="flex items-center">
+                              <UserCircleIcon className="h-5 w-5 text-gray-500 mr-1" />
+                              <span className="text-sm font-medium">Maria</span>
+                            </div>
+                            <div className="flex mt-1">
+                              <span className="text-yellow-500">★★★★<span className="text-gray-300">★</span></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-3">
+                          <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-md flex items-center">
+                            <CalendarIcon className="h-3.5 w-3.5 mr-1" />
+                            View Details
+                          </button>
+                          <button className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1 rounded-md">
+                            Message Maria
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 text-center">
+                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        View Full History
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Dashboard Content - Stats */}
+              {dashboardView === 'stats' && (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                  <ChartBarIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">Statistics Coming Soon</h3>
+                  <p className="text-gray-500">We're working on detailed analytics for your help activity</p>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
   )
 } 
+
+// Add this component to render the post cards
+function PostCard({ post, user }: { post: Post, user: User }) {
+  const postDate = new Date(post.timestamp);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - postDate.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffTime / (1000 * 60));
+  
+  let timeAgo = '';
+  if (diffDays > 0) {
+    timeAgo = `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+  } else if (diffHours > 0) {
+    timeAgo = `${diffHours} ${diffHours === 1 ? 'hr' : 'hrs'} ago`;
+  } else {
+    timeAgo = `${diffMinutes} ${diffMinutes === 1 ? 'min' : 'mins'} ago`;
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b">
+        <div className="flex justify-between">
+          <div className="flex items-center">
+            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-3">
+              {post.user?.profile.avatar || "👤"}
+            </div>
+            <div>
+              <div className="font-medium">
+                {post.anonymous ? "Anonymous User" : post.user?.name}
+                {post.user?.profile.verified && (
+                  <span className="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    <CheckCircleIcon className="h-3 w-3 mr-0.5" />
+                    Verified
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center text-xs text-gray-500">
+                <span>{timeAgo}</span>
+                <span className="mx-1">•</span>
+                {post.distance && (
+                  <>
+                    <span>{post.distance.toFixed(1)} km away</span>
+                    <span className="mx-1">•</span>
+                  </>
+                )}
+                <span className={`px-1.5 py-0.5 rounded-sm ${
+                  post.status === 'open' ? 'bg-green-100 text-green-800' :
+                  post.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {post.status === 'open' ? 'Open' : 
+                   post.status === 'in-progress' ? 'In Progress' : 
+                   'Resolved'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div>
+            {post.verification?.status === 'verified' && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                <CheckCircleIcon className="h-3 w-3 mr-0.5" />
+                Verified Need
+              </span>
+            )}
+          </div>
+        </div>
+        <h3 className="text-lg font-medium mt-2">{post.content}</h3>
+      </div>
+
+      {/* Media */}
+      {post.media && post.media.length > 0 && (
+        <div className="bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center h-72">
+          {/* This would be an actual image in a real implementation */}
+          <div className="text-white text-opacity-80">Media content would be displayed here</div>
+        </div>
+      )}
+
+      {/* Tags and Category */}
+      <div className="px-4 py-3 bg-gray-50 flex flex-wrap items-center gap-2">
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          post.category === 'Emergency' ? 'bg-red-100 text-red-800' :
+          post.category === 'Health' ? 'bg-green-100 text-green-800' :
+          post.category === 'Education' ? 'bg-blue-100 text-blue-800' :
+          post.category === 'Food' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-gray-100 text-gray-800'
+        }`}>
+          {post.category}
+        </span>
+
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          post.urgency === 'high' ? 'bg-red-100 text-red-800' :
+          post.urgency === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-green-100 text-green-800'
+        }`}>
+          {post.urgency.charAt(0).toUpperCase() + post.urgency.slice(1)} urgency
+        </span>
+
+        {post.availableTimes && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <ClockIcon className="h-3 w-3 mr-1" />
+            Available: {post.availableTimes[0]}
+          </span>
+        )}
+
+        {post.tags.map((tag, idx) => (
+          <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            #{tag}
+          </span>
+        ))}
+      </div>
+
+      {/* Action Buttons */}
+      <div className="px-4 py-3 border-t flex">
+        <button className="flex-1 flex justify-center items-center text-sm font-medium text-blue-600 hover:text-blue-800 py-1">
+          <HandThumbUpIcon className="h-5 w-5 mr-1.5" />
+          I'll Help
+        </button>
+        <div className="border-l"></div>
+        <button className="flex-1 flex justify-center items-center text-sm font-medium text-gray-600 hover:text-gray-800 py-1">
+          <ChatBubbleLeftIcon className="h-5 w-5 mr-1.5" />
+          Comment
+        </button>
+        <div className="border-l"></div>
+        <button className="flex-1 flex justify-center items-center text-sm font-medium text-gray-600 hover:text-gray-800 py-1">
+          <ShareIcon className="h-5 w-5 mr-1.5" />
+          Share
+        </button>
+      </div>
+
+      {/* Engagement Stats */}
+      <div className="px-4 py-2 border-t bg-gray-50 flex justify-between text-xs text-gray-500">
+        <div className="flex items-center">
+          <span className="inline-flex items-center">
+            <HandThumbUpIcon className="h-3.5 w-3.5 text-blue-500 mr-1" />
+            {post.upvotes} support reactions
+          </span>
+        </div>
+        <div className="flex items-center space-x-3">
+          <span>97 comments</span>
+          <span>24 shares</span>
+        </div>
+      </div>
+
+      {/* Enhanced Features */}
+      <div className="p-3 border-t bg-blue-50 flex justify-between text-xs">
+        <button className="flex items-center text-blue-600 hover:text-blue-800">
+          <CheckCircleIcon className="h-4 w-4 mr-1" />
+          Live Check-In
+        </button>
+        <button className="flex items-center text-blue-600 hover:text-blue-800">
+          <CalendarIcon className="h-4 w-4 mr-1" />
+          Add to Calendar
+        </button>
+        <button className="flex items-center text-blue-600 hover:text-blue-800">
+          <UserGroupIcon className="h-4 w-4 mr-1" />
+          Group Up
+        </button>
+      </div>
+    </div>
+  );
+}

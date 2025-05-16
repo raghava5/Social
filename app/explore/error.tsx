@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 
-export default function HelpOthersError({
+export default function ExploreError({
   error,
   reset,
 }: {
@@ -12,7 +12,7 @@ export default function HelpOthersError({
 }) {
   useEffect(() => {
     // Log the error to console for debugging
-    console.error('Error in Help Others page:', error)
+    console.error('Error in Explore page:', error)
   }, [error])
 
   return (
@@ -21,7 +21,7 @@ export default function HelpOthersError({
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-red-600 mb-2">Something went wrong</h2>
           <p className="text-gray-600 mb-6">
-            We encountered an error loading the Help Others page. Please try again.
+            We encountered an error loading the Explore page. Please try again.
           </p>
           <div className="space-y-3">
             <button

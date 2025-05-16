@@ -15,6 +15,8 @@ import {
   SparklesIcon,
   GlobeAltIcon,
   HandRaisedIcon,
+  UsersIcon,
+  HeartIcon,
 } from '@heroicons/react/24/outline'
 
 const navigation = [
@@ -23,6 +25,7 @@ const navigation = [
   { name: 'Messages', href: '/messages', icon: ChatBubbleLeftIcon },
   { name: 'Activities', href: '/activities', icon: ClipboardDocumentListIcon },
   { name: 'Discover', href: '/discover', icon: GlobeAltIcon },
+  { name: 'Spend time with others', href: '/spend-time-with-others', icon: UsersIcon },
   { name: 'Help Others', href: '/help-others', icon: HandRaisedIcon },
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
 ]
