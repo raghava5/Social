@@ -774,8 +774,228 @@ export default function ChatPage() {
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 flex flex-col">
-              {selectedConversation ? (
+            <div className="flex-1 flex flex-col relative">
+              {isRandomChatSetupOpen ? (
+                <div className="absolute inset-0 flex items-center justify-center z-30 bg-white bg-opacity-95">
+                  <div className="w-full max-w-lg bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col preference-panel modal-container overflow-x-hidden max-h-[90vh] mx-auto my-auto">
+                    <h3 className="text-lg font-medium mb-2 sticky top-0 bg-white z-10">Random Chat Preferences</h3>
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-1 modal-body max-h-[calc(90vh-7rem)]">
+                      {/* Interests selection */}
+                      <div className="mb-3">
+                        <label htmlFor="interestsInput" className="font-medium text-sm text-gray-700">
+                          Select Your Interests
+                        </label>
+                        <input
+                          type="text"
+                          id="interestsInput"
+                          name="interests"
+                          placeholder="Type your interests separated by commas (e.g., mental health, art, science)"
+                          className="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                          value={randomChatPreferences.interestsInput || ""}
+                          onChange={e =>
+                            setRandomChatPreferences(prev => ({
+                              ...prev,
+                              interestsInput: e.target.value,
+                              interests: e.target.value
+                                .split(',')
+                                .map(s => s.trim())
+                                .filter(Boolean)
+                            }))
+                          }
+                        />
+                        <div className="mt-2">
+                          <label className="inline-flex items-center">
+                            <input
+                              type="checkbox"
+                              name="surpriseMe"
+                              className="form-checkbox h-4 w-4 text-blue-600"
+                              checked={randomChatPreferences.showSurpriseMe}
+                              onChange={e =>
+                                setRandomChatPreferences(prev => ({
+                                  ...prev,
+                                  showSurpriseMe: e.target.checked
+                                }))
+                              }
+                            />
+                            <span className="ml-2 text-sm text-gray-700">
+                              Surprise Me (completely random matching)
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                      {/* Anonymity */}
+                      <div className="mb-3">
+                        <h4 className="text-sm font-medium mb-1">Anonymity Level</h4>
+                        <div className="flex flex-col space-y-1">
+                          <label className="flex items-center gap-2 leading-relaxed radio-option">
+                            <input
+                              type="radio"
+                              name="anonymity"
+                              checked={randomChatPreferences.anonymityLevel === 'anonymous'}
+                              onChange={() => 
+                                setRandomChatPreferences(prev => ({
+                                  ...prev,
+                                  anonymityLevel: 'anonymous'
+                                }))
+                              }
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="flex items-center gap-1">
+                              <EyeSlashIcon className="h-4 w-4" />
+                              Completely Anonymous
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2 leading-relaxed radio-option">
+                            <input
+                              type="radio"
+                              name="anonymity"
+                              checked={randomChatPreferences.anonymityLevel === 'pseudonym'}
+                              onChange={() => 
+                                setRandomChatPreferences(prev => ({
+                                  ...prev,
+                                  anonymityLevel: 'pseudonym'
+                                }))
+                              }
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="flex items-center gap-1">
+                              <UserIcon className="h-4 w-4" />
+                              Use a Pseudonym
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2 leading-relaxed radio-option">
+                            <input
+                              type="radio"
+                              name="anonymity"
+                              checked={randomChatPreferences.anonymityLevel === 'real'}
+                              onChange={() => 
+                                setRandomChatPreferences(prev => ({
+                                  ...prev,
+                                  anonymityLevel: 'real'
+                                }))
+                              }
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="flex items-center gap-1">
+                              <EyeIcon className="h-4 w-4" />
+                              Reveal Identity (mutual approval required)
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                      {/* Location radius */}
+                      <div className="mb-3">
+                        <h4 className="text-sm font-medium mb-1">Location Radius</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => 
+                              setRandomChatPreferences(prev => ({
+                                ...prev,
+                                locationRadius: 'nearby'
+                              }))
+                            }
+                            className={`flex items-center justify-center px-2 py-1 text-xs rounded-md w-full ${
+                              randomChatPreferences.locationRadius === 'nearby'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <MapPinIcon className="h-4 w-4 mr-1" />
+                            Nearby
+                          </button>
+                          <button
+                            onClick={() => 
+                              setRandomChatPreferences(prev => ({
+                                ...prev,
+                                locationRadius: 'country'
+                              }))
+                            }
+                            className={`flex items-center justify-center px-2 py-1 text-xs rounded-md w-full ${
+                              randomChatPreferences.locationRadius === 'country'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <BuildingLibraryIcon className="h-4 w-4 mr-1" />
+                            Same Country
+                          </button>
+                          <button
+                            onClick={() => 
+                              setRandomChatPreferences(prev => ({
+                                ...prev,
+                                locationRadius: 'language'
+                              }))
+                            }
+                            className={`flex items-center justify-center px-2 py-1 text-xs rounded-md w-full ${
+                              randomChatPreferences.locationRadius === 'language'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <LanguageIcon className="h-4 w-4 mr-1" />
+                            Same Language
+                          </button>
+                          <button
+                            onClick={() => 
+                              setRandomChatPreferences(prev => ({
+                                ...prev,
+                                locationRadius: 'global'
+                              }))
+                            }
+                            className={`flex items-center justify-center px-2 py-1 text-xs rounded-md w-full ${
+                              randomChatPreferences.locationRadius === 'global'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <GlobeAltIcon className="h-4 w-4 mr-1" />
+                            Global
+                          </button>
+                        </div>
+                      </div>
+                      {/* Icebreaker selection */}
+                      <div className="mb-3">
+                        <div className="flex justify-between">
+                          <h4 className="text-sm font-medium mb-1">Select an Icebreaker (optional)</h4>
+                          <button 
+                            onClick={generateRandomIcebreaker}
+                            className="text-xs text-blue-600 flex items-center"
+                          >
+                            <ArrowPathIcon className="h-3 w-3 mr-1" /> 
+                            Randomize
+                          </button>
+                        </div>
+                        <select
+                          value={selectedIcebreaker}
+                          onChange={(e) => setSelectedIcebreaker(e.target.value)}
+                          className="block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="">Select an icebreaker...</option>
+                          {icebreakers.map((icebreaker, index) => (
+                            <option key={index} value={icebreaker}>
+                              {icebreaker}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="pt-2 bg-white sticky bottom-0 z-20 flex justify-between gap-2 border-t mt-2 button-container">
+                      <button
+                        onClick={() => setIsRandomChatSetupOpen(false)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 btn btn-outline"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleStartRandomChat}
+                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 btn btn-primary"
+                      >
+                        Find Random Chat
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : selectedConversation ? (
                 <>
                   {/* Chat Header */}
                   <div className="p-4 border-b border-gray-200">
@@ -1083,7 +1303,7 @@ export default function ChatPage() {
                   </div>
                 </>
               ) : (
-                <div className="flex-1 flex items-center justify-center text-gray-500">
+                <div className="flex-1 flex items-center justify-center text-gray-500 mt-16">
                   Select a conversation to start chatting
                 </div>
               )}
@@ -1091,9 +1311,9 @@ export default function ChatPage() {
               {activeTab === 'messages' && messageCategory === 'random' && !selectedConversation && (
                 <div className="flex-1 flex flex-col items-center justify-center p-8">
                   {isRandomChatSetupOpen ? (
-                    <div className="w-full max-w-lg bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col preference-panel">
+                    <div className="w-full max-w-lg bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col preference-panel modal-container overflow-x-hidden max-h-[90vh]">
                       <h3 className="text-lg font-medium mb-2 sticky top-0 bg-white z-10">Random Chat Preferences</h3>
-                      <div className="flex-1 min-h-0 max-h-[80vh] overflow-y-auto space-y-4 pr-1 modal-body">
+                      <div className="flex-1 overflow-y-auto space-y-4 pr-1 modal-body max-h-[calc(90vh-7rem)]">
                         {/* Interests selection */}
                         <div className="mb-3">
                           <label htmlFor="interestsInput" className="font-medium text-sm text-gray-700">
@@ -1293,16 +1513,16 @@ export default function ChatPage() {
                           </select>
                         </div>
                       </div>
-                      <div className="pt-2 bg-white sticky bottom-0 z-20 flex justify-between gap-2 border-t mt-2">
+                      <div className="pt-2 bg-white sticky bottom-0 z-20 flex justify-between gap-2 border-t mt-2 button-container">
                         <button
                           onClick={() => setIsRandomChatSetupOpen(false)}
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 btn btn-outline"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleStartRandomChat}
-                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 btn btn-primary"
                         >
                           Find Random Chat
                         </button>
@@ -1374,6 +1594,18 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+      <style jsx global>{`
+        @media (max-width: 640px) {
+          .modal-container {
+            width: 100% !important;
+            padding: 1rem !important;
+          }
+          .button-container {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+        }
+      `}</style>
     </div>
   )
 } 
