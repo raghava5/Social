@@ -1,7 +1,17 @@
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
-const { initSocketServer } = require('./app/api/socket');
+const fs = require('fs');
+const path = require('path');
+
+// Check if the socket module exists before requiring it
+let socketModule;
+try {
+  // Try to dynamically import the module - this will be handled by Next.js
+  socketModule = require('./app/api/socket');
+} catch (error) {
+  console.warn('Socket module not found, chat functionality will be disabled:', error.message);
+}
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -27,8 +37,10 @@ app.prepare().then(() => {
     }
   });
 
-  // Initialize Socket.IO server
-  initSocketServer(server);
+  // Initialize Socket.IO server if available
+  if (socketModule && typeof socketModule.initSocketServer === 'function') {
+    socketModule.initSocketServer(server);
+  }
 
   // Start the server
   server.listen(port, (err) => {

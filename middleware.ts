@@ -7,7 +7,14 @@ const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-pass
 
 // Determine if we're in development
 const isDevelopment = process.env.NODE_ENV === 'development'
-const useMockAuth = isDevelopment && (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project-url'))
+
+// Only use mock auth if explicitly in development and no valid credentials
+const hasSuabaseCredentials = 
+  process.env.NEXT_PUBLIC_SUPABASE_URL && 
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+  process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://your-project-url.supabase.co'
+
+const useMockAuth = isDevelopment && !hasSuabaseCredentials
 
 export async function middleware(request: NextRequest) {
   // Initialize response
@@ -18,6 +25,7 @@ export async function middleware(request: NextRequest) {
   
   // Skip auth check completely in development with mock auth
   if (useMockAuth) {
+    console.log('Using mock auth middleware')
     // Only redirect logged-in users from login/signup in mock mode
     // This requires checking cookies to see if we have a mock session
     const hasMockSession = request.cookies.get('mock_auth_session')?.value === 'true'
@@ -29,9 +37,9 @@ export async function middleware(request: NextRequest) {
     return res
   }
   
-  // Skip auth check in development mode unless configured
-  if (isDevelopment && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) {
-    console.warn('Supabase credentials not found. Authentication checks are disabled in development mode.')
+  // Check if we have Supabase credentials
+  if (!hasSuabaseCredentials) {
+    console.warn('Supabase credentials not found. Authentication checks are disabled.')
     return res
   }
   

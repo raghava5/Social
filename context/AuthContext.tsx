@@ -156,6 +156,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (isMockAuthEnabled) {
       Cookies.remove('mock_auth_session', { path: '/' })
     }
+    
+    // Always reset the user and session state
+    setUser(null)
+    setSession(null)
+    
+    // Redirect is also handled by the auth state change listener
+    // but we include it here for extra reliability
+    router.push('/')
   }
 
   const value = {
