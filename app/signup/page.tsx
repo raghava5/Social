@@ -2,31 +2,42 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-export default function Login() {
+export default function Signup() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { signIn } = useAuth()
-  const router = useRouter()
+  const [isSuccess, setIsSuccess] = useState(false)
+  const { signUp } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
+    setIsSuccess(false)
 
     try {
-      const { success, error } = await signIn(email, password)
-
-      if (!success) {
-        setError(error || 'Failed to sign in')
+      // Basic validation
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters')
+        setIsLoading(false)
         return
       }
 
-      // Redirect is handled by the auth context
+      const { success, error } = await signUp(email, password, {
+        name,
+        avatar_url: null
+      })
+
+      if (!success) {
+        setError(error || 'Failed to create account')
+        return
+      }
+
+      setIsSuccess(true)
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred')
     } finally {
@@ -38,12 +49,12 @@ export default function Login() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
+          Create a new account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-            create a new account
+          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+            sign in to your existing account
           </Link>
         </p>
       </div>
@@ -55,7 +66,32 @@ export default function Login() {
               {error}
             </div>
           )}
+          
+          {isSuccess && (
+            <div className="bg-green-50 text-green-800 p-3 mb-4 rounded text-sm">
+              Registration successful! Please check your email to confirm your account.
+            </div>
+          )}
+          
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -83,21 +119,16 @@ export default function Login() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <Link href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
-                </Link>
-              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Password must be at least 8 characters
+              </p>
             </div>
 
             <div>
@@ -108,7 +139,7 @@ export default function Login() {
                   isLoading ? 'opacity-75 cursor-not-allowed' : ''
                 }`}
               >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {isLoading ? 'Creating account...' : 'Create account'}
               </button>
             </div>
           </form>

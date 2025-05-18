@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import TopNav from '../components/TopNav'
+import AIRecommendations from '../components/AIRecommendations'
+import ContentSummarizer from '../components/ContentSummarizer'
 import {
   ClipboardDocumentListIcon,
   UserGroupIcon,
@@ -305,7 +307,7 @@ const spokes: Spoke[] = [
 ];
 
 export default function DiscoverPage() {
-  const [activeTab, setActiveTab] = useState('activities')
+  const [activeTab, setActiveTab] = useState('explore')
   const [selectedSpoke, setSelectedSpoke] = useState<Spoke | null>(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState<Subcategory | null>(null)
 
@@ -378,6 +380,11 @@ export default function DiscoverPage() {
         {activeTab === 'activities' ? (
           <div>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Interactive Learning</h2>
+            
+            {/* AI Recommendations */}
+            <div className="mb-8">
+              <AIRecommendations userId="user123" />
+            </div>
             
             {/* Learning Modules */}
             <div className="mb-10">
@@ -491,7 +498,10 @@ export default function DiscoverPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <p className="text-sm text-gray-600">Listen to career expert Mark Johnson discuss aligning your career with your values and mental wellbeing.</p>
+                    <ContentSummarizer 
+                      content="Listen to career expert Mark Johnson discuss aligning your career with your values and mental wellbeing. This insightful podcast explores how mindful career choices lead to greater satisfaction and fulfillment. Mark shares practical strategies for identifying work that energizes rather than depletes you, setting healthy boundaries, and cultivating presence in your professional life."
+                      maxLength={100}
+                    />
                     <button className="mt-3 text-blue-600 text-sm hover:underline">Listen Now</button>
                   </div>
                 </div>
@@ -509,7 +519,10 @@ export default function DiscoverPage() {
                   </div>
                   <div className="p-4">
                     <h3 className="font-medium mb-2">5 Investment Strategies for Beginners</h3>
-                    <p className="text-sm text-gray-600 line-clamp-3">Learn the fundamental approaches to investing that can set you up for long-term financial success, even with minimal starting capital.</p>
+                    <ContentSummarizer 
+                      content="Learn the fundamental approaches to investing that can set you up for long-term financial success, even with minimal starting capital. This comprehensive guide covers index fund investing, dollar-cost averaging, tax-advantaged accounts, emergency fund prioritization, and how to research companies before investing in individual stocks. Sarah explains each strategy with practical examples and action steps for beginners."
+                      maxLength={120}
+                    />
                     <button className="mt-3 text-blue-600 text-sm hover:underline">Read Article</button>
                   </div>
                 </div>
@@ -517,116 +530,66 @@ export default function DiscoverPage() {
             </div>
           </div>
         ) : activeTab === 'explore' ? (
-          <div>
-            {/* Three-column layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Spokes Column */}
-              <div className="bg-white rounded-lg shadow p-5">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Life Spokes</h3>
+          <div className="space-y-8">
+            <AIRecommendations userId="user123" />
+            
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Interactive Learning Modules</h2>
+                <p className="text-gray-600 mb-4">Personalized content based on your interests and progress</p>
                 
-                <div className="space-y-3">
-                  {spokes.map((spoke) => {
-                    const Icon = spoke.icon
-                    return (
-                      <button
-                        key={spoke.id}
-                        onClick={() => setSelectedSpoke(spoke)}
-                        className={`w-full flex items-center p-3 rounded-lg transition-colors ${
-                          selectedSpoke?.id === spoke.id
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <Icon className={`h-5 w-5 mr-3 ${selectedSpoke?.id === spoke.id ? 'text-blue-600' : 'text-gray-500'}`} />
-                        <span className="font-medium">{spoke.name}</span>
-                        <span className="ml-auto text-xs font-semibold">
-                          {spoke.progress}%
-                        </span>
-                      </button>
-                    )
-                  })}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                    <h3 className="font-medium text-blue-800">Expert Insights</h3>
+                    <ContentSummarizer 
+                      content="Our experts have analyzed patterns across thousands of successful spiritual journeys and found that consistent small practices yield better results than irregular intense sessions. Research indicates that 5-10 minutes daily meditation creates more lasting neural pathways than 60-minute sessions once weekly. Additionally, those who journal their experiences show 34% higher retention of insights and 27% more application to daily situations. We recommend establishing a 'minimum viable practice' of just 2 minutes daily rather than setting ambitious goals that may be difficult to maintain."
+                      maxLength={150}
+                    />
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg hover:bg-blue-50 transition-colors">
+                    <h3 className="font-medium text-blue-800">Community Wisdom</h3>
+                    <ContentSummarizer 
+                      content="Community members who focus on 'relationships' as their primary spoke have reported significant improvements in their 'mental' and 'emotional' spokes as well. Analysis of user progress shows a 42% correlation between relationship growth and emotional wellbeing. Users who actively participate in group activities show 3.5x more progress across all spokes compared to solo practitioners. The most successful members set clear boundaries for technology use during family time, with 87% reporting this simple practice as 'highly impactful' to relationship quality."
+                      maxLength={150}
+                    />
+                  </div>
                 </div>
               </div>
-              
-              {/* Subcategories Column */}
-              <div className="bg-white rounded-lg shadow p-5">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  {selectedSpoke ? `${selectedSpoke.name} Categories` : 'Select a Spoke'}
-                </h3>
+            </div>
+            
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Progress Tracking</h2>
+                <p className="text-gray-600">Your personalized journey across the seven spokes</p>
                 
-                {selectedSpoke ? (
-                  <div className="space-y-3">
-                    {selectedSpoke.subcategories.map((subcategory) => (
-                      <button
-                        key={subcategory.id}
-                        onClick={() => setSelectedSubcategory(subcategory)}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${
-                          selectedSubcategory?.id === subcategory.id
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="font-medium">{subcategory.name}</span>
-                        <span className="text-xs text-gray-500 block mt-1">
-                          {subcategory.activities.length} activities
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-48 text-center p-4">
-                    <UserGroupIcon className="h-10 w-10 text-gray-300 mb-2" />
-                    <p className="text-gray-500">Select a spoke to view its categories</p>
-                  </div>
-                )}
-              </div>
-              
-              {/* Activities Column */}
-              <div className="bg-white rounded-lg shadow p-5">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  {selectedSubcategory
-                    ? `${selectedSubcategory.name} Activities`
-                    : 'Select a Category'}
-                </h3>
-                
-                {selectedSubcategory ? (
-                  <div className="space-y-3">
-                    {selectedSubcategory.activities.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className="p-3 rounded-lg border border-gray-100 hover:border-gray-200"
-                      >
-                        <div className="flex items-center mb-1">
-                          <span className="text-sm font-medium">{activity.name}</span>
-                          <span
-                            className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
-                              activity.level === 'Beginner'
-                                ? 'bg-green-100 text-green-700'
-                                : activity.level === 'Intermediate'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-purple-100 text-purple-700'
-                            }`}
-                          >
-                            {activity.level}
-                          </span>
+                <div className="mt-6 space-y-4">
+                  {spokes.map((spoke) => (
+                    <div key={spoke.id} className="flex items-center">
+                      <spoke.icon className="h-6 w-6 text-blue-500 mr-3" />
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium text-gray-900">{spoke.name}</span>
+                          <span className="text-sm font-medium text-gray-900">{spoke.progress}%</span>
                         </div>
-                        <div className="flex items-center mt-2">
-                          <span className="text-xs text-gray-500">
-                            {activity.completed ? 'Completed' : 'Not started'}
-                          </span>
-                          <button className="ml-auto text-xs text-blue-600 hover:underline">
-                            {activity.completed ? 'View' : 'Start'}
-                          </button>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-blue-600 h-2.5 rounded-full" 
+                            style={{ width: `${spoke.progress}%` }}
+                          ></div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-48 text-center p-4">
-                    <ClipboardDocumentListIcon className="h-10 w-10 text-gray-300 mb-2" />
-                    <p className="text-gray-500">Select a category to view its activities</p>
-                  </div>
-                )}
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-6 bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-blue-800 mb-2">AI-Suggested Focus Area</h3>
+                  <p className="text-sm text-gray-700">Based on your current progress, we recommend focusing on the <strong>Emotional</strong> spoke. This will help create more balance across your seven spokes.</p>
+                  <button className="mt-3 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                    View Recommended Activities
+                  </button>
+                </div>
               </div>
             </div>
           </div>

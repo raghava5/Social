@@ -1270,77 +1270,77 @@ export default function ChatPage() {
                     />
                   ) : (
                     <>
-                      {/* Messages */}
-                      <div className="flex-1 p-4 overflow-y-auto">
-                        {messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={`flex ${
-                              message.isMe ? 'justify-end' : 'justify-start'
-                            } mb-4`}
-                          >
-                            <div
-                              className={`max-w-[70%] rounded-lg p-3 ${
-                                message.isMe
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              <p>{message.content}</p>
-                              {message.attachments && (
-                                <div className="mt-2">
-                                  {message.attachments.map((attachment, index) => (
-                                    <div key={index} className="mt-2">
-                                      {attachment.type === 'image' && (
-                                        <img
-                                          src={attachment.url}
-                                          alt="Attachment"
-                                          className="max-w-full rounded-lg"
-                                        />
-                                      )}
-                                      {attachment.type === 'file' && (
-                                        <div className="flex items-center p-2 bg-gray-200 rounded">
-                                          <DocumentTextIcon className="h-5 w-5 mr-2" />
-                                          <span>{attachment.name}</span>
-                                        </div>
-                                      )}
+                  {/* Messages */}
+                  <div className="flex-1 p-4 overflow-y-auto">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${
+                          message.isMe ? 'justify-end' : 'justify-start'
+                        } mb-4`}
+                      >
+                        <div
+                          className={`max-w-[70%] rounded-lg p-3 ${
+                            message.isMe
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          <p>{message.content}</p>
+                          {message.attachments && (
+                            <div className="mt-2">
+                              {message.attachments.map((attachment, index) => (
+                                <div key={index} className="mt-2">
+                                  {attachment.type === 'image' && (
+                                    <img
+                                      src={attachment.url}
+                                      alt="Attachment"
+                                      className="max-w-full rounded-lg"
+                                    />
+                                  )}
+                                  {attachment.type === 'file' && (
+                                    <div className="flex items-center p-2 bg-gray-200 rounded">
+                                      <DocumentTextIcon className="h-5 w-5 mr-2" />
+                                      <span>{attachment.name}</span>
                                     </div>
-                                  ))}
+                                  )}
                                 </div>
-                              )}
-                              <div className="flex items-center justify-end mt-1 space-x-2">
-                                <span className="text-xs opacity-70">
-                                  {message.timestamp}
-                                </span>
-                                {message.isMe && (
-                                  <span className="text-xs opacity-70">
-                                    {message.status === 'read' ? '✓✓' : '✓'}
-                                  </span>
-                                )}
-                              </div>
-                              {message.reactions && message.reactions.length > 0 && (
-                                <div className="flex space-x-1 mt-1">
-                                  {message.reactions.map((reaction, index) => (
-                                    <span
-                                      key={index}
-                                      className="text-xs bg-gray-200 px-2 py-1 rounded-full"
-                                    >
-                                      {reaction.emoji} {reaction.count}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
+                              ))}
                             </div>
+                          )}
+                          <div className="flex items-center justify-end mt-1 space-x-2">
+                            <span className="text-xs opacity-70">
+                              {message.timestamp}
+                            </span>
+                            {message.isMe && (
+                              <span className="text-xs opacity-70">
+                                {message.status === 'read' ? '✓✓' : '✓'}
+                              </span>
+                            )}
                           </div>
-                        ))}
-                        <div ref={messagesEndRef} />
+                          {message.reactions && message.reactions.length > 0 && (
+                            <div className="flex space-x-1 mt-1">
+                              {message.reactions.map((reaction, index) => (
+                                <span
+                                  key={index}
+                                  className="text-xs bg-gray-200 px-2 py-1 rounded-full"
+                                >
+                                  {reaction.emoji} {reaction.count}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
                     </>
                   )}
 
                   {/* Message Input - Only show for non-direct messages */}
                   {!(messageCategory === 'direct' && selectedConversation) && (
-                    <div className="p-4 border-t border-gray-200">
+                  <div className="p-4 border-t border-gray-200">
                       {/* Show expired chat UI if the time is up */}
                       {(timeExpired || remainingTime <= 0) && selectedConversation?.type === 'random' ? (
                         <div className="p-6 text-center">
@@ -1389,67 +1389,67 @@ export default function ChatPage() {
                               </button>
                             </div>
                           )}
-                          <form onSubmit={handleSendMessage} className="flex space-x-4">
-                            <div className="flex-1 flex items-center space-x-2">
-                              <input
-                                type="file"
-                                id="file-upload"
-                                className="hidden"
-                                onChange={handleFileSelect}
-                              />
-                              <label
-                                htmlFor="file-upload"
-                                className="text-gray-500 hover:text-gray-700 cursor-pointer"
-                              >
-                                <PaperClipIcon className="h-5 w-5" />
-                              </label>
-                              <input
-                                type="text"
-                                value={messageInput}
-                                onChange={(e) => {
-                                  setMessageInput(e.target.value)
-                                  setIsTyping(true)
-                                  // Reset typing indicator after 3 seconds
-                                  setTimeout(() => setIsTyping(false), 3000)
-                                }}
-                                placeholder="Type a message..."
-                                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                              <button
-                                type="button"
-                                className="text-gray-500 hover:text-gray-700"
-                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                              >
-                                <FaceSmileIcon className="h-5 w-5" />
-                              </button>
-                            </div>
-                            <button
-                              type="submit"
-                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                              <PaperAirplaneIcon className="h-5 w-5" />
-                            </button>
-                          </form>
-                          {selectedFile && (
-                            <div className="mt-2 flex items-center space-x-2">
-                              <span className="text-sm text-gray-500">
-                                {selectedFile.name}
-                              </span>
-                              <button
-                                type="button"
-                                className="text-red-500 hover:text-red-700"
-                                onClick={() => setSelectedFile(null)}
-                              >
-                                ×
-                              </button>
-                            </div>
-                          )}
+                    <form onSubmit={handleSendMessage} className="flex space-x-4">
+                      <div className="flex-1 flex items-center space-x-2">
+                        <input
+                          type="file"
+                          id="file-upload"
+                          className="hidden"
+                          onChange={handleFileSelect}
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                        >
+                          <PaperClipIcon className="h-5 w-5" />
+                        </label>
+                        <input
+                          type="text"
+                          value={messageInput}
+                          onChange={(e) => {
+                            setMessageInput(e.target.value)
+                            setIsTyping(true)
+                            // Reset typing indicator after 3 seconds
+                            setTimeout(() => setIsTyping(false), 3000)
+                          }}
+                          placeholder="Type a message..."
+                          className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                          type="button"
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        >
+                          <FaceSmileIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        <PaperAirplaneIcon className="h-5 w-5" />
+                      </button>
+                    </form>
+                    {selectedFile && (
+                      <div className="mt-2 flex items-center space-x-2">
+                        <span className="text-sm text-gray-500">
+                          {selectedFile.name}
+                        </span>
+                        <button
+                          type="button"
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => setSelectedFile(null)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
                           
                           {selectedConversation?.type === 'random' && (
                             <div className="mt-2 text-xs text-gray-500 flex items-center">
                               <ShieldCheckIcon className="h-3 w-3 mr-1 text-green-600" /> 
                               <span>PII is automatically blocked in anonymous mode</span>
-                            </div>
+                  </div>
                           )}
                         </>
                       )}
@@ -1509,8 +1509,8 @@ export default function ChatPage() {
                                 Surprise Me (completely random matching)
                               </span>
                             </label>
-                          </div>
-                        </div>
+            </div>
+          </div>
                         {/* Anonymity */}
                         <div className="mb-3">
                           <h4 className="text-sm font-medium mb-1">Anonymity Level</h4>
@@ -1569,8 +1569,8 @@ export default function ChatPage() {
                                 Reveal Identity (mutual approval required)
                               </span>
                             </label>
-                          </div>
-                        </div>
+        </div>
+      </div>
                         {/* Location radius */}
                         <div className="mb-3">
                           <h4 className="text-sm font-medium mb-1">Location Radius</h4>
