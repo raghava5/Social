@@ -54,6 +54,7 @@ import {
   FireIcon,
   ShieldExclamationIcon,
 } from '@heroicons/react/24/outline'
+import DirectMessaging from '../components/messaging/ui/DirectMessaging'
 
 // Message types
 type Message = {
@@ -349,6 +350,70 @@ const messages: Message[] = [
   },
 ]
 
+// 1. Add mock expert data and daily limit state
+const mockExperts = [
+  {
+    id: 'exp1',
+    name: 'Dr. Emily Chen',
+    avatar: '',
+    verified: true,
+    credentials: ['PhD Clinical Psychology', 'Certified Mindfulness Coach'],
+    specialties: ['Mindfulness', 'Anxiety', 'Wellness'],
+    languages: ['English', 'Mandarin'],
+    badge: 'Verified Expert',
+    rating: 4.9,
+    reviews: 128,
+    availability: 'available',
+    nextAvailable: 'Today, 3:00 PM',
+    portfolio: 'https://emilychen.com',
+    byAppointment: false,
+    groupSessions: true,
+    spoke: 'Mental Health',
+    summary: '10+ years experience in mindfulness and anxiety coaching.',
+    featured: true,
+  },
+  {
+    id: 'exp2',
+    name: 'Alex Rivera',
+    avatar: '',
+    verified: true,
+    credentials: ['MBA, CFA', 'Finance Mentor'],
+    specialties: ['Finance Mentor', 'Budgeting', 'Investing'],
+    languages: ['English', 'Spanish'],
+    badge: 'Verified Expert',
+    rating: 4.7,
+    reviews: 89,
+    availability: 'by_appointment',
+    nextAvailable: 'Tomorrow, 10:00 AM',
+    portfolio: 'https://alexriverafinance.com',
+    byAppointment: true,
+    groupSessions: true,
+    spoke: 'Finance',
+    summary: 'Helping young professionals master their money.',
+    featured: false,
+  },
+  {
+    id: 'exp3',
+    name: 'Coach Priya Sharma',
+    avatar: '',
+    verified: true,
+    credentials: ['Relationship Coach', 'ICF Certified'],
+    specialties: ['Relationship Coach', 'Communication', 'Couples Therapy'],
+    languages: ['English', 'Hindi'],
+    badge: 'Verified Expert',
+    rating: 4.8,
+    reviews: 102,
+    availability: 'offline',
+    nextAvailable: 'Friday, 2:00 PM',
+    portfolio: 'https://priyasharma.com',
+    byAppointment: true,
+    groupSessions: false,
+    spoke: 'Relationships',
+    summary: 'ICF-certified coach for couples and individuals.',
+    featured: false,
+  },
+];
+
 export default function ChatPage() {
   const [activeTab, setActiveTab] = useState('messages')
   const [messageCategory, setMessageCategory] = useState('direct')
@@ -400,6 +465,13 @@ export default function ChatPage() {
   const [randomChatTimer, setRandomChatTimer] = useState<NodeJS.Timeout | null>(null)
   const [remainingTime, setRemainingTime] = useState(0)
   const [timeExpired, setTimeExpired] = useState(false)
+
+  // 2. Render expert directory in left panel when Expert tab is active
+  const [showExpertProfile, setShowExpertProfile] = useState<string | null>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedExpert, setSelectedExpert] = useState<any>(null);
+  const [dailyExpertChatCount, setDailyExpertChatCount] = useState(2); // mock: 2 chats used today
+  const dailyLimit = 3;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -693,6 +765,47 @@ export default function ChatPage() {
                 </div>
               )}
 
+              {activeTab === 'messages' && messageCategory === 'expert' && (
+                <div className="p-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <StarIcon className="h-5 w-5 text-yellow-500" />
+                    Expert Directory
+                  </h2>
+                  <div className="space-y-4">
+                    {mockExperts.map(expert => (
+                      <div key={expert.id} className="bg-white rounded-lg shadow p-4 flex items-center gap-4 cursor-pointer hover:bg-blue-50 border border-gray-100" onClick={() => { setShowExpertProfile(expert.id); setSelectedExpert(expert); }}>
+                        <div className="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-bold text-blue-600">
+                          {expert.avatar ? <img src={expert.avatar} alt={expert.name} className="h-14 w-14 rounded-full object-cover" /> : expert.name[0]}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-gray-900">{expert.name}</span>
+                            {expert.verified && <ShieldCheckIcon className="h-4 w-4 text-blue-500" title="Verified" />}
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{expert.badge}</span>
+                          </div>
+                          <div className="text-xs text-gray-500 mb-1">{expert.credentials.join(', ')}</div>
+                          <div className="flex flex-wrap gap-1 mb-1">
+                            {expert.specialties.map((tag: string) => (
+                              <span key={tag} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">{tag}</span>
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className={expert.availability === 'available' ? 'text-green-600' : expert.availability === 'offline' ? 'text-gray-400' : 'text-amber-500'}>
+                              {expert.availability === 'available' ? 'Online' : expert.availability === 'offline' ? 'Offline' : 'By Appointment'}
+                            </span>
+                            <span>•</span>
+                            <span>{expert.languages.join(', ')}</span>
+                            <span>•</span>
+                            <span>{expert.rating}★ ({expert.reviews} reviews)</span>
+                          </div>
+                        </div>
+                        <button className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs" onClick={e => { e.stopPropagation(); setShowBookingModal(true); setSelectedExpert(expert); }}>Book</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {conversations
                 .filter((conv) => {
                   if (activeTab === 'groups') return conv.type === 'group';
@@ -751,7 +864,7 @@ export default function ChatPage() {
                               <span className="text-xs text-amber-500 font-medium">
                                 {conversation.discussionInfo.expiresAt}
                               </span>
-                            </div>
+                      </div>
                             <div className="flex flex-wrap mt-1">
                               {conversation.discussionInfo.tags.map((tag, index) => (
                                 <span key={index} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded mr-1 mb-1">
@@ -1121,186 +1234,227 @@ export default function ChatPage() {
                   </div>
 
                   {/* Messages */}
-                  <div className="flex-1 p-4 overflow-y-auto">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${
-                          message.isMe ? 'justify-end' : 'justify-start'
-                        } mb-4`}
-                      >
-                        <div
-                          className={`max-w-[70%] rounded-lg p-3 ${
-                            message.isMe
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          <p>{message.content}</p>
-                          {message.attachments && (
-                            <div className="mt-2">
-                              {message.attachments.map((attachment, index) => (
-                                <div key={index} className="mt-2">
-                                  {attachment.type === 'image' && (
-                                    <img
-                                      src={attachment.url}
-                                      alt="Attachment"
-                                      className="max-w-full rounded-lg"
-                                    />
-                                  )}
-                                  {attachment.type === 'file' && (
-                                    <div className="flex items-center p-2 bg-gray-200 rounded">
-                                      <DocumentTextIcon className="h-5 w-5 mr-2" />
-                                      <span>{attachment.name}</span>
+                  {messageCategory === 'direct' && selectedConversation ? (
+                    <DirectMessaging 
+                      conversation={{
+                        id: selectedConversation.id,
+                        type: 'direct',
+                        participants: [
+                          {
+                            id: 'current-user', // This should ideally come from authentication
+                            name: 'You',
+                            isOnline: true,
+                          },
+                          {
+                            id: selectedConversation.id,
+                            name: selectedConversation.name,
+                            avatar: selectedConversation.avatar,
+                            isOnline: selectedConversation.isOnline,
+                            isTyping: selectedConversation.isTyping,
+                          }
+                        ],
+                        lastMessage: {
+                          content: selectedConversation.lastMessage,
+                          sender: selectedConversation.id,
+                          timestamp: selectedConversation.timestamp,
+                          status: 'delivered'
+                        },
+                        unreadCount: selectedConversation.unreadCount || 0,
+                        isPinned: selectedConversation.isPinned || false,
+                        isMuted: selectedConversation.isMuted || false,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      }}
+                      userId="current-user"
+                      userName="You"
+                    />
+                  ) : (
+                    <>
+                      {/* Messages */}
+                      <div className="flex-1 p-4 overflow-y-auto">
+                        {messages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${
+                              message.isMe ? 'justify-end' : 'justify-start'
+                            } mb-4`}
+                          >
+                            <div
+                              className={`max-w-[70%] rounded-lg p-3 ${
+                                message.isMe
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              <p>{message.content}</p>
+                              {message.attachments && (
+                                <div className="mt-2">
+                                  {message.attachments.map((attachment, index) => (
+                                    <div key={index} className="mt-2">
+                                      {attachment.type === 'image' && (
+                                        <img
+                                          src={attachment.url}
+                                          alt="Attachment"
+                                          className="max-w-full rounded-lg"
+                                        />
+                                      )}
+                                      {attachment.type === 'file' && (
+                                        <div className="flex items-center p-2 bg-gray-200 rounded">
+                                          <DocumentTextIcon className="h-5 w-5 mr-2" />
+                                          <span>{attachment.name}</span>
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
-                          )}
-                          <div className="flex items-center justify-end mt-1 space-x-2">
-                            <span className="text-xs opacity-70">
-                              {message.timestamp}
-                            </span>
-                            {message.isMe && (
-                              <span className="text-xs opacity-70">
-                                {message.status === 'read' ? '✓✓' : '✓'}
-                              </span>
-                            )}
-                          </div>
-                          {message.reactions && message.reactions.length > 0 && (
-                            <div className="flex space-x-1 mt-1">
-                              {message.reactions.map((reaction, index) => (
-                                <span
-                                  key={index}
-                                  className="text-xs bg-gray-200 px-2 py-1 rounded-full"
-                                >
-                                  {reaction.emoji} {reaction.count}
+                              )}
+                              <div className="flex items-center justify-end mt-1 space-x-2">
+                                <span className="text-xs opacity-70">
+                                  {message.timestamp}
                                 </span>
-                              ))}
+                                {message.isMe && (
+                                  <span className="text-xs opacity-70">
+                                    {message.status === 'read' ? '✓✓' : '✓'}
+                                  </span>
+                                )}
+                              </div>
+                              {message.reactions && message.reactions.length > 0 && (
+                                <div className="flex space-x-1 mt-1">
+                                  {message.reactions.map((reaction, index) => (
+                                    <span
+                                      key={index}
+                                      className="text-xs bg-gray-200 px-2 py-1 rounded-full"
+                                    >
+                                      {reaction.emoji} {reaction.count}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Message Input - Only show for non-direct messages */}
+                  {!(messageCategory === 'direct' && selectedConversation) && (
+                    <div className="p-4 border-t border-gray-200">
+                      {/* Show expired chat UI if the time is up */}
+                      {(timeExpired || remainingTime <= 0) && selectedConversation?.type === 'random' ? (
+                        <div className="p-6 text-center">
+                          <div className="mb-3">
+                            <ClockIcon className="h-6 w-6 mx-auto text-gray-400 mb-2" />
+                            <h3 className="text-lg font-medium mb-1">Chat Time Expired</h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                              Would you like to continue this conversation?
+                            </p>
+                          </div>
+                          <div className="flex justify-center space-x-4">
+                            <button 
+                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                              onClick={() => setTimeExpired(false)} // In real app, this would send a connection request
+                            >
+                              Send Connection Request
+                            </button>
+                            <button 
+                              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                              onClick={() => {
+                                setSelectedConversation(null);
+                                setTimeExpired(false);
+                              }}
+                            >
+                              End Chat
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {selectedConversation?.type === 'random' && (
+                            <div className="flex justify-between items-center mb-3">
+                              <div className="flex space-x-2">
+                                <button className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 flex items-center">
+                                  <FlagIcon className="h-3 w-3 mr-1" />
+                                  Report
+                                </button>
+                                <button className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 flex items-center">
+                                  <XCircleIcon className="h-3 w-3 mr-1" />
+                                  Block
+                                </button>
+                              </div>
+                              <button className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 flex items-center font-medium">
+                                <ShieldExclamationIcon className="h-3 w-3 mr-1" />
+                                Panic Exit
+                              </button>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  {/* Message Input */}
-                  <div className="p-4 border-t border-gray-200">
-                    {/* Show expired chat UI if the time is up */}
-                    {(timeExpired || remainingTime <= 0) && selectedConversation?.type === 'random' ? (
-                      <div className="p-6 text-center">
-                        <div className="mb-3">
-                          <ClockIcon className="h-6 w-6 mx-auto text-gray-400 mb-2" />
-                          <h3 className="text-lg font-medium mb-1">Chat Time Expired</h3>
-                          <p className="text-sm text-gray-600 mb-4">
-                            Would you like to continue this conversation?
-                          </p>
-                        </div>
-                        <div className="flex justify-center space-x-4">
-                          <button 
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            onClick={() => setTimeExpired(false)} // In real app, this would send a connection request
-                          >
-                            Send Connection Request
-                          </button>
-                          <button 
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                            onClick={() => {
-                              setSelectedConversation(null);
-                              setTimeExpired(false);
-                            }}
-                          >
-                            End Chat
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        {selectedConversation?.type === 'random' && (
-                          <div className="flex justify-between items-center mb-3">
-                            <div className="flex space-x-2">
-                              <button className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 flex items-center">
-                                <FlagIcon className="h-3 w-3 mr-1" />
-                                Report
-                              </button>
-                              <button className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 flex items-center">
-                                <XCircleIcon className="h-3 w-3 mr-1" />
-                                Block
+                          <form onSubmit={handleSendMessage} className="flex space-x-4">
+                            <div className="flex-1 flex items-center space-x-2">
+                              <input
+                                type="file"
+                                id="file-upload"
+                                className="hidden"
+                                onChange={handleFileSelect}
+                              />
+                              <label
+                                htmlFor="file-upload"
+                                className="text-gray-500 hover:text-gray-700 cursor-pointer"
+                              >
+                                <PaperClipIcon className="h-5 w-5" />
+                              </label>
+                              <input
+                                type="text"
+                                value={messageInput}
+                                onChange={(e) => {
+                                  setMessageInput(e.target.value)
+                                  setIsTyping(true)
+                                  // Reset typing indicator after 3 seconds
+                                  setTimeout(() => setIsTyping(false), 3000)
+                                }}
+                                placeholder="Type a message..."
+                                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                              <button
+                                type="button"
+                                className="text-gray-500 hover:text-gray-700"
+                                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                              >
+                                <FaceSmileIcon className="h-5 w-5" />
                               </button>
                             </div>
-                            <button className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 flex items-center font-medium">
-                              <ShieldExclamationIcon className="h-3 w-3 mr-1" />
-                              Panic Exit
-                            </button>
-                          </div>
-                        )}
-                        <form onSubmit={handleSendMessage} className="flex space-x-4">
-                          <div className="flex-1 flex items-center space-x-2">
-                            <input
-                              type="file"
-                              id="file-upload"
-                              className="hidden"
-                              onChange={handleFileSelect}
-                            />
-                            <label
-                              htmlFor="file-upload"
-                              className="text-gray-500 hover:text-gray-700 cursor-pointer"
-                            >
-                              <PaperClipIcon className="h-5 w-5" />
-                            </label>
-                            <input
-                              type="text"
-                              value={messageInput}
-                              onChange={(e) => {
-                                setMessageInput(e.target.value)
-                                setIsTyping(true)
-                                // Reset typing indicator after 3 seconds
-                                setTimeout(() => setIsTyping(false), 3000)
-                              }}
-                              placeholder="Type a message..."
-                              className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
                             <button
-                              type="button"
-                              className="text-gray-500 hover:text-gray-700"
-                              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                              type="submit"
+                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                             >
-                              <FaceSmileIcon className="h-5 w-5" />
+                              <PaperAirplaneIcon className="h-5 w-5" />
                             </button>
-                          </div>
-                          <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                          >
-                            <PaperAirplaneIcon className="h-5 w-5" />
-                          </button>
-                        </form>
-                        {selectedFile && (
-                          <div className="mt-2 flex items-center space-x-2">
-                            <span className="text-sm text-gray-500">
-                              {selectedFile.name}
-                            </span>
-                            <button
-                              type="button"
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() => setSelectedFile(null)}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        )}
-                        
-                        {selectedConversation?.type === 'random' && (
-                          <div className="mt-2 text-xs text-gray-500 flex items-center">
-                            <ShieldCheckIcon className="h-3 w-3 mr-1 text-green-600" /> 
-                            <span>PII is automatically blocked in anonymous mode</span>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
+                          </form>
+                          {selectedFile && (
+                            <div className="mt-2 flex items-center space-x-2">
+                              <span className="text-sm text-gray-500">
+                                {selectedFile.name}
+                              </span>
+                              <button
+                                type="button"
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => setSelectedFile(null)}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
+                          
+                          {selectedConversation?.type === 'random' && (
+                            <div className="mt-2 text-xs text-gray-500 flex items-center">
+                              <ShieldCheckIcon className="h-3 w-3 mr-1 text-green-600" /> 
+                              <span>PII is automatically blocked in anonymous mode</span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center text-gray-500 mt-16">
@@ -1594,6 +1748,76 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+      {/* 3. Show expert profile modal and booking modal */}
+      {showExpertProfile && selectedExpert && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowExpertProfile(null)}><XCircleIcon className="h-6 w-6" /></button>
+            <div className="flex gap-6">
+              <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-blue-600">
+                {selectedExpert.avatar ? <img src={selectedExpert.avatar} alt={selectedExpert.name} className="h-24 w-24 rounded-full object-cover" /> : selectedExpert.name[0]}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl font-semibold text-gray-900">{selectedExpert.name}</span>
+                  {selectedExpert.verified && <ShieldCheckIcon className="h-5 w-5 text-blue-500" title="Verified" />}
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{selectedExpert.badge}</span>
+                </div>
+                <div className="text-xs text-gray-500 mb-1">{selectedExpert.credentials.join(', ')}</div>
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {selectedExpert.specialties.map((tag: string) => (
+                    <span key={tag} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">{tag}</span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-xs mb-1">
+                  <span className={selectedExpert.availability === 'available' ? 'text-green-600' : selectedExpert.availability === 'offline' ? 'text-gray-400' : 'text-amber-500'}>
+                    {selectedExpert.availability === 'available' ? 'Online' : selectedExpert.availability === 'offline' ? 'Offline' : 'By Appointment'}
+                  </span>
+                  <span>•</span>
+                  <span>{selectedExpert.languages.join(', ')}</span>
+                  <span>•</span>
+                  <span>{selectedExpert.rating}★ ({selectedExpert.reviews} reviews)</span>
+                </div>
+                <div className="text-xs text-gray-500 mb-2">{selectedExpert.summary}</div>
+                <a href={selectedExpert.portfolio} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">Portfolio</a>
+              </div>
+            </div>
+            <div className="mt-6 flex gap-4">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={() => { setShowBookingModal(true); setShowExpertProfile(null); }}>Book Session</button>
+              <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" onClick={() => setShowExpertProfile(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 4. Show booking modal */}
+      {showBookingModal && selectedExpert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowBookingModal(false)}><XCircleIcon className="h-6 w-6" /></button>
+            <h2 className="text-xl font-semibold mb-2">Book a Session with {selectedExpert.name}</h2>
+            <div className="mb-4 text-sm text-gray-600">Choose session type and time:</div>
+            <div className="space-y-2 mb-4">
+              <button className="w-full px-4 py-2 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100">1:1 Session (15 min)</button>
+              <button className="w-full px-4 py-2 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100">1:1 Session (30 min)</button>
+              <button className="w-full px-4 py-2 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100">1:1 Session (60 min)</button>
+              {selectedExpert.groupSessions && <button className="w-full px-4 py-2 rounded bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">Group Q&A Slot</button>}
+            </div>
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Pick a time slot:</label>
+              <select className="w-full border rounded p-2">
+                <option>{selectedExpert.nextAvailable}</option>
+                <option>Tomorrow, 5:00 PM</option>
+                <option>Friday, 11:00 AM</option>
+              </select>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Confirm Booking</button>
+              <button className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" onClick={() => setShowBookingModal(false)}>Cancel</button>
+            </div>
+            <div className="text-xs text-gray-500">You can set reminders and sync with Google Calendar after booking.</div>
+          </div>
+        </div>
+      )}
       <style jsx global>{`
         @media (max-width: 640px) {
           .modal-container {
