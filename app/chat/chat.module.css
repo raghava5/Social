@@ -1,0 +1,10 @@
+@media (max-width: 640px) {
+  .modalContainer {
+    width: 100% !important;
+    padding: 1rem !important;
+  }
+  .buttonContainer {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+} 

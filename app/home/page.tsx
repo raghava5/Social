@@ -2,33 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import {
-  HomeIcon,
-  UserGroupIcon,
-  ChatBubbleLeftIcon,
-  BellIcon,
-  UserIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
   HeartIcon,
   ChatBubbleOvalLeftIcon,
   ShareIcon,
-  BookmarkIcon,
-  EllipsisHorizontalIcon,
-  VideoCameraIcon,
-  PhotoIcon,
-  FaceSmileIcon,
-  ClockIcon,
-  AcademicCapIcon,
-  LightBulbIcon,
-  SparklesIcon,
-  FireIcon,
-  StarIcon,
-  HandRaisedIcon,
-  GlobeAltIcon,
-  MapPinIcon,
-  MegaphoneIcon,
-  WrenchIcon,
-  PuzzlePieceIcon,
 } from '@heroicons/react/24/outline'
 import CreatePost from '../components/CreatePost'
 import EmptyFeed from '../components/EmptyFeed'
@@ -73,17 +49,12 @@ const recommendations: Recommendation[] = [
   { id: 3, title: 'Mindful Living Workshop', type: 'course', duration: '2 hours' },
 ]
 
-interface CreatePostFormData extends FormData {
-  get(key: string): string | null;
-}
-
 export default function Home() {
   const { posts: allPosts, loading, error, createPost } = usePosts()
   const { user } = useAuth()
   const [priorityFeed, setPriorityFeed] = useState<Post[]>([])
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [activeSpoke, setActiveSpoke] = useState<string | null>(null)
-  const [hideDummyContent, setHideDummyContent] = useState(false)
 
   const handleCompleteOnboarding = () => {
     setShowOnboarding(false)

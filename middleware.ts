@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 // List of public routes that don't require authentication
 const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
@@ -14,82 +13,49 @@ const publicApiRoutes = [
 ]
 
 export async function middleware(request: NextRequest) {
-  // Get the pathname from the request
-  const { pathname } = request.nextUrl
-  console.log('Middleware processing path:', pathname)
-  
-  // Allow public API routes and socket.io without authentication
-  if (publicApiRoutes.some(route => pathname.startsWith(route))) {
-    console.log('Public API route accessed:', pathname)
-    return NextResponse.next()
-  }
-
-  // Create response to handle cookies
-  const response = NextResponse.next({
+  let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
-  
-  try {
-    // Create Supabase client for middleware
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set({
-                name,
-                value,
-                ...options,
-              })
-            })
-          }
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
         },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+            response = NextResponse.next({
+              request: {
+                headers: request.headers,
+              },
+            })
+            response.cookies.set(name, value, options)
+          })
+        }
       }
-    )
-    
-    // Get session - this is the only check we need
-    const { data: { session } } = await supabase.auth.getSession()
-    console.log('Session status:', !!session)
-    
-    // If the route is public, allow access
-    if (publicRoutes.some(route => pathname.startsWith(route))) {
-      console.log('Public route accessed:', pathname)
-      // If user is logged in and trying to access login/signup pages, redirect to home
-      if (session && (pathname === '/login' || pathname === '/signup')) {
-        console.log('Authenticated user accessing login/signup, redirecting to home')
-        return NextResponse.redirect(new URL('/home', request.url))
-      }
-      return response
     }
-    
-    // If user is not authenticated and trying to access a protected route, redirect to login
-    if (!session) {
-      console.log('Unauthenticated user accessing protected route:', pathname)
-      // Store original URL to redirect after login
-      const redirectUrl = new URL('/login', request.url)
-      redirectUrl.searchParams.set('redirectTo', pathname)
-      
-      return NextResponse.redirect(redirectUrl)
-    }
-  } catch (error) {
-    console.error('Error in auth middleware:', error)
-    
-    // In production, redirect to login for protected routes
-    if (!publicRoutes.some(route => pathname.startsWith(route)) && 
-        !publicApiRoutes.some(route => pathname.startsWith(route))) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+  )
+
+  const { data: { session } } = await supabase.auth.getSession()
+
+  // If there's no session and the user is trying to access a protected route
+  if (!session && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/signup')) {
+    const redirectUrl = new URL('/login', request.url)
+    redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
   }
-  
-  // User is authenticated and accessing a protected route, allow access
-  console.log('Access granted to protected route:', pathname)
+
+  // If there's a session and the user is trying to access auth pages
+  if (session && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup'))) {
+    return NextResponse.redirect(new URL('/home', request.url))
+  }
+
   return response
 }
 

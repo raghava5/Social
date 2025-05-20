@@ -1129,4 +1129,4 @@ export default function SpendTimeWithOthersPage() {
       </div>
     </div>
   )
-} } 
+} 

@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const error = requestUrl.searchParams.get('error')
@@ -23,52 +24,27 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    // Create response to handle cookies
-    const response = NextResponse.redirect(
-      new URL('/auth/success', request.url)
-    )
-    
-    // Create Supabase server client
+    const cookieStore = cookies()
+    const response = NextResponse.redirect(new URL('/login', requestUrl.origin))
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           getAll() {
-            return request.cookies.getAll()
+            return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set({
-                name,
-                value,
-                ...options
-              })
+              response.cookies.set(name, value, options)
             })
           }
-        },
+        }
       }
     )
-    
-    // Exchange the code for a session
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (exchangeError) {
-      console.error('Error exchanging code for session:', exchangeError)
-      
-      // Handle expired verification link
-      if (exchangeError.message.includes('expired')) {
-        return NextResponse.redirect(
-          new URL('/login?error=Verification link has expired. Please request a new one.', request.url)
-        )
-      }
-      
-      return NextResponse.redirect(
-        new URL(`/login?error=${encodeURIComponent(exchangeError.message)}`, request.url)
-      )
-    }
-    
-    // Successfully verified, redirect to success page
+
+    await supabase.auth.exchangeCodeForSession(code)
     return response
   } catch (error: any) {
     console.error('Error in auth callback:', error)
