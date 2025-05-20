@@ -56,7 +56,7 @@ export async function recommendActivities(
     const similarActivities = await findSimilarItems(profileEmbedding, 'activity', limit * 2);
     
     // Filter out excluded IDs and apply category filters
-    let recommendations = similarActivities
+    let recommendations: RecommendationItem[] = similarActivities
       .filter(item => !excludeIds.includes(item.metadata.id))
       .filter(item => !categories || categories.includes(item.metadata.category))
       .map(item => ({
@@ -220,18 +220,15 @@ async function fetchActivitiesByIds(activityIds: string[]): Promise<Recommendati
   // Simulate database delay
   await new Promise(resolve => setTimeout(resolve, 50));
   
-  // Mock data - in production this would come from your database
+  // Mock activity data
   return activityIds.map(id => ({
     id,
     type: 'activity' as const,
     title: `Activity ${id}`,
-    description: 'Sample activity description',
-    category: ['spiritual', 'mental', 'emotional', 'physical', 'financial', 'professional', 'relational'][
-      Math.floor(Math.random() * 7)
-    ],
-    level: ['Beginner', 'Intermediate', 'Professional'][
-      Math.floor(Math.random() * 3)
-    ] as 'Beginner' | 'Intermediate' | 'Professional'
+    description: `Description for activity ${id}`,
+    similarity: 1,
+    category: 'general',
+    level: 'Beginner' as const
   }));
 }
 

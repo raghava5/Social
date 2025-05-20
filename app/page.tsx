@@ -7,24 +7,27 @@ export default function LandingPage() {
       <header className="absolute inset-x-0 top-0 z-50">
         <nav className="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
           <div className="flex lg:flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
-              <h1 className="text-xl font-bold text-indigo-600">Seven Spokes</h1>
-            </a>
+            <Link href="/" className="text-xl font-bold text-indigo-600 hover:text-indigo-500">
+              Seven Spokes
+            </Link>
           </div>
           <div className="hidden lg:flex lg:gap-x-12">
-            <a href="#features" className="text-sm font-semibold leading-6 text-gray-900">
+            <a href="#features" className="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600">
               Features
             </a>
-            <a href="#about" className="text-sm font-semibold leading-6 text-gray-900">
+            <a href="#about" className="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600">
               About
             </a>
-            <a href="#spokes" className="text-sm font-semibold leading-6 text-gray-900">
+            <a href="#spokes" className="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600">
               Seven Spokes
             </a>
           </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900">
-              Log in <span aria-hidden="true">&rarr;</span>
+          <div className="lg:flex lg:flex-1 lg:justify-end">
+            <Link 
+              href="/login" 
+              className="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600"
+            >
+              Sign in <span aria-hidden="true">&rarr;</span>
             </Link>
           </div>
         </nav>
@@ -53,8 +56,11 @@ export default function LandingPage() {
               >
                 Get started
               </Link>
-              <Link href="/login" className="text-sm font-semibold leading-6 text-gray-900">
-                Sign in <ArrowRightIcon className="inline h-4 w-4" />
+              <Link 
+                href="/login" 
+                className="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600"
+              >
+                Sign in <ArrowRightIcon className="inline h-4 w-4 ml-1" />
               </Link>
             </div>
           </div>

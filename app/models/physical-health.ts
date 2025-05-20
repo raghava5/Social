@@ -91,10 +91,12 @@ export interface MealLog {
 export interface NutritionGoal {
   id: string
   userId: string
-  type: 'Calories' | 'Protein' | 'Carbs' | 'Fat' | 'Custom'
+  type: 'calories' | 'protein' | 'carbs' | 'fat' | 'water'
   target: number
   unit: string
-  frequency: 'Daily' | 'Weekly'
+  startDate: Date
+  endDate?: Date
+  progress: number
   createdAt: Date
   updatedAt: Date
 }
@@ -102,14 +104,18 @@ export interface NutritionGoal {
 export interface GroceryList {
   id: string
   userId: string
+  items: GroceryItem[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface GroceryItem {
+  id: string
   name: string
-  items: {
-    name: string
-    amount: number
-    unit: string
-    category: string
-    checked: boolean
-  }[]
+  quantity: number
+  unit: string
+  category: string
+  isChecked: boolean
   createdAt: Date
   updatedAt: Date
 }

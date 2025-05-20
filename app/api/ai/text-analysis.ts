@@ -13,9 +13,9 @@ const NEGATIVE_WORDS = new Set([
 ]);
 
 // Simple intent categories
-type IntentType = 'question' | 'help_request' | 'greeting' | 'gratitude' | 'information' | 'unknown';
+export type IntentType = 'question' | 'help_request' | 'greeting' | 'gratitude' | 'information' | 'unknown';
 
-interface TextAnalysisResult {
+export interface TextAnalysisResult {
   sentiment: {
     score: number;  // -1 to 1 range
     label: 'positive' | 'negative' | 'neutral';
@@ -211,6 +211,7 @@ export async function summarizeText(text: string, maxLength: number = 100): Prom
   }
   
   return summary;
+} 
 }
 
 // Export all functions

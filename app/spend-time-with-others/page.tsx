@@ -18,7 +18,8 @@ import {
   ArrowPathIcon,
   PhotoIcon,
   ClockIcon,
-  BoltIcon
+  BoltIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 
 // Types
@@ -1128,4 +1129,4 @@ export default function SpendTimeWithOthersPage() {
       </div>
     </div>
   )
-} 
+} } 

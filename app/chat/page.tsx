@@ -55,6 +55,7 @@ import {
   ShieldExclamationIcon,
 } from '@heroicons/react/24/outline'
 import DirectMessaging from '../components/messaging/ui/DirectMessaging'
+import { useSocket } from '../hooks/useSocket';
 
 // Message types
 type Message = {
@@ -415,6 +416,26 @@ const mockExperts = [
 ];
 
 export default function ChatPage() {
+  const {
+    socket,
+    joinRoom,
+    leaveRoom,
+    sendMessage,
+    onReceiveMessage,
+    emitTyping,
+    onUserTyping,
+    updateStatus,
+    onStatusChange,
+  } = useSocket();
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   const [activeTab, setActiveTab] = useState('messages')
   const [messageCategory, setMessageCategory] = useState('direct')
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
@@ -601,14 +622,19 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (messageInput.trim() || selectedFile) {
-      // TODO: Implement message sending with file upload
-      console.log('Sending message:', { text: messageInput, file: selectedFile })
-      setMessageInput('')
-      setSelectedFile(null)
-    }
-  }
+    e.preventDefault();
+    if (!messageInput.trim() || !selectedConversation) return;
+
+    const messageData = {
+      roomId: selectedConversation.id,
+      message: messageInput,
+      userId: 'current-user',
+      userName: 'You'
+    };
+
+    sendMessage(messageData);
+    setMessageInput('');
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -667,6 +693,65 @@ export default function ChatPage() {
   useEffect(() => {
     setTimeExpired(false);
   }, [selectedConversation]);
+
+  useEffect(() => {
+    // Set up message listener
+    onReceiveMessage((data) => {
+      setMessages((prev) => [...prev, {
+        id: data.id || Math.random().toString(),
+        content: data.message,
+        sender: data.userName,
+        timestamp: data.timestamp,
+        isMe: data.userId === currentUser?.id,
+        status: 'sent'
+      }]);
+      scrollToBottom();
+    });
+
+    // Set up typing listener
+    onUserTyping((data) => {
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.id === activeConversation?.id
+            ? { ...conv, isTyping: data.isTyping }
+            : conv
+        )
+      );
+    });
+
+    // Set up status change listener
+    onStatusChange((data) => {
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.type === 'direct' && conv.id === data.userId
+            ? { ...conv, isOnline: data.status === 'online' }
+            : conv
+        )
+      );
+    });
+
+    // Join room if there's an active conversation
+    if (activeConversation) {
+      joinRoom(activeConversation.id);
+    }
+
+    // Cleanup
+    return () => {
+      if (activeConversation) {
+        leaveRoom(activeConversation.id);
+      }
+    };
+  }, [activeConversation]);
+
+  const handleTyping = (isTyping: boolean) => {
+    if (!selectedConversation || !currentUser) return;
+
+    emitTyping({
+      roomId: selectedConversation.id,
+      userId: currentUser.id,
+      isTyping
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1749,6 +1834,90 @@ export default function ChatPage() {
         </div>
       </div>
       {/* 3. Show expert profile modal and booking modal */}
+      {showExpertProfile && selectedExpert && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowExpertProfile(null)}><XCircleIcon className="h-6 w-6" /></button>
+            <div className="flex gap-6">
+              <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-blue-600">
+                {selectedExpert.avatar ? <img src={selectedExpert.avatar} alt={selectedExpert.name} className="h-24 w-24 rounded-full object-cover" /> : selectedExpert.name[0]}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl font-semibold text-gray-900">{selectedExpert.name}</span>
+                  {selectedExpert.verified && <ShieldCheckIcon className="h-5 w-5 text-blue-500" title="Verified" />}
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{selectedExpert.badge}</span>
+                </div>
+                <div className="text-xs text-gray-500 mb-1">{selectedExpert.credentials.join(', ')}</div>
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {selectedExpert.specialties.map((tag: string) => (
+                    <span key={tag} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">{tag}</span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-xs mb-1">
+                  <span className={selectedExpert.availability === 'available' ? 'text-green-600' : selectedExpert.availability === 'offline' ? 'text-gray-400' : 'text-amber-500'}>
+                    {selectedExpert.availability === 'available' ? 'Online' : selectedExpert.availability === 'offline' ? 'Offline' : 'By Appointment'}
+                  </span>
+                  <span>•</span>
+                  <span>{selectedExpert.languages.join(', ')}</span>
+                  <span>•</span>
+                  <span>{selectedExpert.rating}★ ({selectedExpert.reviews} reviews)</span>
+                </div>
+                <div className="text-xs text-gray-500 mb-2">{selectedExpert.summary}</div>
+                <a href={selectedExpert.portfolio} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">Portfolio</a>
+              </div>
+            </div>
+            <div className="mt-6 flex gap-4">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={() => { setShowBookingModal(true); setShowExpertProfile(null); }}>Book Session</button>
+              <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" onClick={() => setShowExpertProfile(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 4. Show booking modal */}
+      {showBookingModal && selectedExpert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowBookingModal(false)}><XCircleIcon className="h-6 w-6" /></button>
+            <h2 className="text-xl font-semibold mb-2">Book a Session with {selectedExpert.name}</h2>
+            <div className="mb-4 text-sm text-gray-600">Choose session type and time:</div>
+            <div className="space-y-2 mb-4">
+              <button className="w-full px-4 py-2 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100">1:1 Session (15 min)</button>
+              <button className="w-full px-4 py-2 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100">1:1 Session (30 min)</button>
+              <button className="w-full px-4 py-2 rounded bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100">1:1 Session (60 min)</button>
+              {selectedExpert.groupSessions && <button className="w-full px-4 py-2 rounded bg-green-50 text-green-700 border border-green-200 hover:bg-green-100">Group Q&A Slot</button>}
+            </div>
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Pick a time slot:</label>
+              <select className="w-full border rounded p-2">
+                <option>{selectedExpert.nextAvailable}</option>
+                <option>Tomorrow, 5:00 PM</option>
+                <option>Friday, 11:00 AM</option>
+              </select>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Confirm Booking</button>
+              <button className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" onClick={() => setShowBookingModal(false)}>Cancel</button>
+            </div>
+            <div className="text-xs text-gray-500">You can set reminders and sync with Google Calendar after booking.</div>
+          </div>
+        </div>
+      )}
+      <style jsx global>{`
+        @media (max-width: 640px) {
+          .modal-container {
+            width: 100% !important;
+            padding: 1rem !important;
+          }
+          .button-container {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+        }
+      `}</style>
+    </div>
+  )
+}       {/* 3. Show expert profile modal and booking modal */}
       {showExpertProfile && selectedExpert && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">

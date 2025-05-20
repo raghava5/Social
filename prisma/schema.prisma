@@ -3,11 +3,12 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model User {
@@ -29,10 +30,13 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   lastLogin       DateTime?
+  name            String?
+  avatar          String?
 
   // Relations
   profile         Profile?
-  posts           Post[]
+  posts           Post[]    @relation("UserPosts")
+  authoredPosts   Post[]    @relation("AuthoredPosts")
   comments        Comment[]
   likes           Like[]
   sentFriendships Friendship[] @relation("SentFriendships")
@@ -41,16 +45,18 @@ model User {
   conversations   ConversationParticipant[]
   createdGroups   Group[] @relation("CreatedGroups")
   groupMemberships GroupMember[]
-  notifications   Notification[]
+  notifications   Notification[] @relation("UserNotifications")
+  actorNotifications Notification[] @relation("ActorNotifications")
+  bookmarks       Bookmark[]
 }
 
 model Profile {
-  id                String   @id @default(uuid())
+  id                String   @id @default(cuid())
   userId            String   @unique
-  work              Json?
-  education         Json?
+  work              String?
+  education         String?
   relationshipStatus String?
-  interests         Json?
+  interests         String?
   about             String?
   updatedAt         DateTime @updatedAt
 
@@ -58,72 +64,83 @@ model Profile {
 }
 
 model Post {
-  id            String   @id @default(uuid())
+  id            String    @id @default(cuid())
   userId        String
   content       String
-  mediaUrls     Json?
-  privacyLevel  String   @default("public")
-  location      String?
+  images        String?
+  videos        String?
   feeling       String?
-  isEdited      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  location      String?
+  isEdited      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  authorId      String
+  shares        Int       @default(0)
+  spoke         String?
+  type          String    @default("user-post")
+  tags          String?
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User      @relation("UserPosts", fields: [userId], references: [id], onDelete: Cascade)
   comments      Comment[]
   likes         Like[]
+  bookmarks     Bookmark[]
+  author        User      @relation("AuthoredPosts", fields: [authorId], references: [id])
 }
 
 model Comment {
-  id              String   @id @default(uuid())
+  id              String    @id @default(cuid())
   postId          String
   userId          String
   parentCommentId String?
   content         String
   mediaUrl        String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  post            Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentComment   Comment? @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id])
   replies         Comment[] @relation("CommentReplies")
   likes           Like[]
 }
 
 model Like {
-  id            String   @id @default(uuid())
+  id            String    @id @default(cuid())
   userId        String
-  likeableType  String
-  likeableId    String
-  reactionType  String   @default("like")
-  createdAt     DateTime @default(now())
+  postId        String?
+  commentId     String?
+  reactionType  String    @default("like")
+  createdAt     DateTime  @default(now())
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post          Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment       Comment?  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId, commentId])
 }
 
 model Friendship {
-  id        String   @id @default(uuid())
+  id        String    @id @default(cuid())
   userId    String
   friendId  String
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    String    @default("pending")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  user      User     @relation("SentFriendships", fields: [userId], references: [id], onDelete: Cascade)
-  friend    User     @relation("ReceivedFriendships", fields: [friendId], references: [id], onDelete: Cascade)
+  user      User      @relation("SentFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend    User      @relation("ReceivedFriendships", fields: [friendId], references: [id], onDelete: Cascade)
 
   @@unique([userId, friendId])
 }
 
 model Message {
-  id              String   @id @default(uuid())
+  id              String    @id @default(cuid())
   conversationId  String
   senderId        String
   content         String
-  mediaUrls       Json?
-  isRead          Boolean  @default(false)
-  createdAt       DateTime @default(now())
+  mediaUrls       String?
+  isRead          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
   readAt          DateTime?
 
   conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -131,23 +148,23 @@ model Message {
 }
 
 model Conversation {
-  id        String   @id @default(uuid())
-  name      String?
-  isGroup   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid())
+  name        String?
+  isGroup     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  messages  Message[]
+  messages    Message[]
   participants ConversationParticipant[]
 }
 
 model ConversationParticipant {
-  id              String   @id @default(uuid())
+  id              String    @id @default(cuid())
   conversationId  String
   userId          String
-  joinedAt        DateTime @default(now())
+  joinedAt        DateTime  @default(now())
   leftAt          DateTime?
-  isAdmin         Boolean  @default(false)
+  isAdmin         Boolean   @default(false)
 
   conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -156,44 +173,56 @@ model ConversationParticipant {
 }
 
 model Group {
-  id            String   @id @default(uuid())
+  id            String    @id @default(cuid())
   name          String
   description   String?
   coverImageUrl String?
-  privacyLevel  String   @default("public")
+  privacyLevel  String    @default("public")
   creatorId     String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  creator       User     @relation("CreatedGroups", fields: [creatorId], references: [id], onDelete: Cascade)
+  creator       User      @relation("CreatedGroups", fields: [creatorId], references: [id], onDelete: Cascade)
   members       GroupMember[]
 }
 
 model GroupMember {
-  id        String   @id @default(uuid())
+  id        String    @id @default(cuid())
   groupId   String
   userId    String
-  role      String   @default("member")
-  joinedAt  DateTime @default(now())
+  role      String    @default("member")
+  joinedAt  DateTime  @default(now())
 
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
 }
 
 model Notification {
-  id          String   @id @default(uuid())
+  id          String    @id @default(cuid())
   userId      String
   type        String
   entityType  String
   entityId    String
   actorId     String
-  isRead      Boolean  @default(false)
-  data        Json?
-  createdAt   DateTime @default(now())
+  isRead      Boolean   @default(false)
+  data        String?
+  createdAt   DateTime  @default(now())
   readAt      DateTime?
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  actor       User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  user        User      @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor       User      @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id        String    @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime  @default(now())
+
+  post      Post      @relation(fields: [postId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
 } 

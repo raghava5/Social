@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-gray-100;
+    @apply bg-gray-50;
   }
 }
 
@@ -14,7 +14,7 @@
   }
 
   .input-field {
-    @apply w-full px-4 py-2 bg-gray-100 border-none rounded-lg focus:ring-0 focus:bg-white;
+    @apply w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
   }
 
   .btn-primary {
@@ -22,7 +22,7 @@
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:ring-0;
+    @apply px-4 py-2 bg-white border border-gray-200 text-gray-800 rounded-lg hover:bg-gray-50 focus:ring-0;
   }
 
   .nav-link {
@@ -30,7 +30,7 @@
   }
 
   .nav-link.active {
-    @apply bg-gray-100;
+    @apply bg-blue-50 text-blue-600;
   }
 
   .post-card {
@@ -38,7 +38,7 @@
   }
 
   .comment-box {
-    @apply flex items-center space-x-2 p-2 bg-gray-100 rounded-full;
+    @apply flex items-center space-x-2 p-2 bg-white border border-gray-200 rounded-full;
   }
 
   .story-card {

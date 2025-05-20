@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { 
-  Meal,
-  MealLog,
-  NutritionGoal,
-  GroceryList
-} from '@/app/models/physical-health'
+import * as nutritionService from './service'
 
 // GET /api/physical-health/nutrition/meals
 export async function GET(request: NextRequest) {
@@ -13,33 +8,57 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
     const dietary = searchParams.get('dietary')
+    const path = searchParams.get('path')
 
-    // TODO: Implement database query with filters
-    const meals: Meal[] = []
-
-    return NextResponse.json({ meals })
+    switch (path) {
+      case 'meals':
+        const meals = await nutritionService.getMeals(type || undefined, dietary || undefined)
+        return NextResponse.json({ meals })
+      case 'goals':
+        const goals = await nutritionService.getGoals()
+        return NextResponse.json({ goals })
+      case 'grocery-list':
+        const list = await nutritionService.getGroceryList()
+        return NextResponse.json({ list })
+      default:
+        return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
   } catch (error) {
-    console.error('Error fetching meals:', error)
+    console.error('Error in GET request:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch meals' },
+      { error: 'Failed to process request' },
       { status: 500 }
     )
   }
 }
 
-// POST /api/physical-health/nutrition/meals
+// POST /api/physical-health/nutrition
 export async function POST(request: NextRequest) {
   try {
-    const meal = await request.json()
+    const { searchParams } = new URL(request.url)
+    const path = searchParams.get('path')
+    const data = await request.json()
 
-    // TODO: Validate meal data
-    // TODO: Save to database
-
-    return NextResponse.json({ meal }, { status: 201 })
+    switch (path) {
+      case 'meals':
+        const meal = await nutritionService.createMeal(data)
+        return NextResponse.json({ meal }, { status: 201 })
+      case 'logs':
+        const log = await nutritionService.logMeal(data)
+        return NextResponse.json({ log }, { status: 201 })
+      case 'goals':
+        const goal = await nutritionService.createGoal(data)
+        return NextResponse.json({ goal }, { status: 201 })
+      case 'grocery-list':
+        const success = await nutritionService.updateGroceryList(data)
+        return NextResponse.json({ success })
+      default:
+        return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
   } catch (error) {
-    console.error('Error creating meal:', error)
+    console.error('Error in POST request:', error)
     return NextResponse.json(
-      { error: 'Failed to create meal' },
+      { error: 'Failed to process request' },
       { status: 500 }
     )
   }
@@ -52,11 +71,8 @@ export async function PUT(
 ) {
   try {
     const updates = await request.json()
-
-    // TODO: Validate updates
-    // TODO: Update in database
-
-    return NextResponse.json({ success: true })
+    const success = await nutritionService.updateMeal(params.id, updates)
+    return NextResponse.json({ success })
   } catch (error) {
     console.error('Error updating meal:', error)
     return NextResponse.json(
@@ -72,32 +88,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // TODO: Delete from database
-
-    return NextResponse.json({ success: true })
+    const success = await nutritionService.deleteMeal(params.id)
+    return NextResponse.json({ success })
   } catch (error) {
     console.error('Error deleting meal:', error)
     return NextResponse.json(
       { error: 'Failed to delete meal' },
-      { status: 500 }
-    )
-  }
-}
-
-// POST /api/physical-health/nutrition/logs
-export async function logMeal(request: NextRequest) {
-  try {
-    const log = await request.json()
-
-    // TODO: Validate log data
-    // TODO: Save to database
-    // TODO: Update nutrition goals progress
-
-    return NextResponse.json({ log }, { status: 201 })
-  } catch (error) {
-    console.error('Error logging meal:', error)
-    return NextResponse.json(
-      { error: 'Failed to log meal' },
       { status: 500 }
     )
   }

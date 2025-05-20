@@ -3,45 +3,33 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // List of public routes that don't require authentication
-const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password']
+const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
 
-// Determine if we're in development
-const isDevelopment = process.env.NODE_ENV === 'development'
-
-// Only use mock auth if explicitly in development and no valid credentials
-const hasSuabaseCredentials = 
-  process.env.NEXT_PUBLIC_SUPABASE_URL && 
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-  process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://your-project-url.supabase.co'
-
-const useMockAuth = isDevelopment && !hasSuabaseCredentials
+// List of public API routes that don't require authentication
+const publicApiRoutes = [
+  '/api/auth/user',
+  '/api/auth/validate-credentials',
+  '/api/auth/resend-verification',
+  '/socket.io' // Add socket.io to public API routes
+]
 
 export async function middleware(request: NextRequest) {
-  // Initialize response
-  const res = NextResponse.next()
-  
   // Get the pathname from the request
   const { pathname } = request.nextUrl
+  console.log('Middleware processing path:', pathname)
   
-  // Skip auth check completely in development with mock auth
-  if (useMockAuth) {
-    console.log('Using mock auth middleware')
-    // Only redirect logged-in users from login/signup in mock mode
-    // This requires checking cookies to see if we have a mock session
-    const hasMockSession = request.cookies.get('mock_auth_session')?.value === 'true'
-    
-    if (hasMockSession && (pathname === '/login' || pathname === '/signup')) {
-      return NextResponse.redirect(new URL('/home', request.url))
-    }
-    
-    return res
+  // Allow public API routes and socket.io without authentication
+  if (publicApiRoutes.some(route => pathname.startsWith(route))) {
+    console.log('Public API route accessed:', pathname)
+    return NextResponse.next()
   }
-  
-  // Check if we have Supabase credentials
-  if (!hasSuabaseCredentials) {
-    console.warn('Supabase credentials not found. Authentication checks are disabled.')
-    return res
-  }
+
+  // Create response to handle cookies
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
   
   try {
     // Create Supabase client for middleware
@@ -50,40 +38,40 @@ export async function middleware(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get: (name) => request.cookies.get(name)?.value,
-          set: (name, value, options) => {
-            res.cookies.set({
-              name,
-              value,
-              ...options,
-            })
+          getAll() {
+            return request.cookies.getAll()
           },
-          remove: (name, options) => {
-            res.cookies.delete({
-              name,
-              ...options,
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set({
+                name,
+                value,
+                ...options,
+              })
             })
-          },
+          }
         },
       }
     )
     
-    // Check if user is authenticated
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    // Get session - this is the only check we need
+    const { data: { session } } = await supabase.auth.getSession()
+    console.log('Session status:', !!session)
     
     // If the route is public, allow access
-    if (publicRoutes.includes(pathname)) {
+    if (publicRoutes.some(route => pathname.startsWith(route))) {
+      console.log('Public route accessed:', pathname)
       // If user is logged in and trying to access login/signup pages, redirect to home
       if (session && (pathname === '/login' || pathname === '/signup')) {
+        console.log('Authenticated user accessing login/signup, redirecting to home')
         return NextResponse.redirect(new URL('/home', request.url))
       }
-      return res
+      return response
     }
     
     // If user is not authenticated and trying to access a protected route, redirect to login
     if (!session) {
+      console.log('Unauthenticated user accessing protected route:', pathname)
       // Store original URL to redirect after login
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirectTo', pathname)
@@ -93,22 +81,18 @@ export async function middleware(request: NextRequest) {
   } catch (error) {
     console.error('Error in auth middleware:', error)
     
-    // In development, allow access even if auth fails
-    if (isDevelopment) {
-      return res
-    }
-    
     // In production, redirect to login for protected routes
-    if (!publicRoutes.includes(pathname)) {
+    if (!publicRoutes.some(route => pathname.startsWith(route)) && 
+        !publicApiRoutes.some(route => pathname.startsWith(route))) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
   
   // User is authenticated and accessing a protected route, allow access
-  return res
+  console.log('Access granted to protected route:', pathname)
+  return response
 }
 
-// Configure which routes use this middleware
 export const config = {
   matcher: [
     /*
@@ -116,9 +100,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public (public files)
-     * - api routes that are publicly accessible
+     * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|public|api/public).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 } 

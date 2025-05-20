@@ -13,7 +13,8 @@ import {
   ArrowSmallLeftIcon,
   DocumentDuplicateIcon,
   EyeIcon,
-  EyeSlashIcon
+  EyeSlashIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
@@ -794,4 +795,4 @@ const DirectMessaging: React.FC<DirectMessagingProps> = ({
   );
 };
 
-export default DirectMessaging;
+export default DirectMessaging;export default DirectMessaging;

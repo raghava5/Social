@@ -21,22 +21,18 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value
+          getAll() {
+            return request.cookies.getAll()
           },
-          set(name: string, value: string, options: any) {
-            response.cookies.set({
-              name, 
-              value,
-              ...options
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set({
+                name,
+                value,
+                ...options
+              })
             })
-          },
-          remove(name: string, options: any) {
-            response.cookies.delete({
-              name,
-              ...options
-            })
-          },
+          }
         },
       }
     )
@@ -52,9 +48,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     
-    return NextResponse.json({
-      message: 'Verification email sent successfully!'
-    })
+    return response
   } catch (error) {
     console.error('Error in verification API:', error)
     return NextResponse.json(

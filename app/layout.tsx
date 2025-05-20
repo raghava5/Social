@@ -6,12 +6,13 @@ import '@fontsource/inter/500.css'
 import '@fontsource/inter/600.css'
 import '@fontsource/inter/700.css'
 import { AuthProvider } from '@/context/AuthContext'
+import ClientMainLayout from './components/ClientMainLayout'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SevenSpokes - Social Network',
-  description: 'A social network focused on the seven spokes of life: Spiritual, Mental, Physical, Personal, Professional, Financial, and Social.',
+  title: 'Social Network',
+  description: 'Connect and share with friends',
 }
 
 export default function RootLayout({
@@ -23,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
-          {children}
+          <ClientMainLayout>{children}</ClientMainLayout>
         </AuthProvider>
       </body>
     </html>
