@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // List of public routes that don't require authentication
-const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
+const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
 
 // List of public API routes that don't require authentication
 const publicApiRoutes = [
@@ -44,15 +44,19 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  // If there's no session and the user is trying to access a protected route
-  if (!session && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/signup')) {
+  // Check if the request is for a public route
+  const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))
+
+  // If there's no session and trying to access a protected route
+  if (!session && !isPublicRoute) {
+    // Store the original URL to redirect back after login
     const redirectUrl = new URL('/login', request.url)
-    redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname)
+    redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // If there's a session and the user is trying to access auth pages
-  if (session && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup'))) {
+  // If there's a session and trying to access auth pages
+  if (session && isPublicRoute) {
     return NextResponse.redirect(new URL('/home', request.url))
   }
 

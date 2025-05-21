@@ -29,29 +29,57 @@ export function usePosts() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [socket, setSocket] = useState<any>(null)
 
   useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
+    let mounted = true
+
+    // Initialize socket connection
+    const initializeSocket = () => {
+      try {
+        const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
+          reconnectionAttempts: 3,
+          timeout: 10000,
+        })
+
+        socketInstance.on('connect_error', (err) => {
+          console.warn('Socket connection error:', err)
+        })
+
+        if (mounted) {
+          setSocket(socketInstance)
+        }
+
+        return socketInstance
+      } catch (error) {
+        console.warn('Failed to initialize socket:', error)
+        return null
+      }
+    }
 
     // Load initial posts
     fetchPosts()
 
-    // Listen for new posts
-    socket.on('new-post', handleNewPost)
-
-    // Listen for post updates
-    socket.on('post-updated', handlePostUpdate)
-    socket.on('post-deleted', handlePostDelete)
-    socket.on('post-liked', handlePostLike)
-    socket.on('new-comment', handleNewComment)
+    // Initialize socket and set up listeners
+    const socketInstance = initializeSocket()
+    if (socketInstance) {
+      socketInstance.on('new-post', handleNewPost)
+      socketInstance.on('post-updated', handlePostUpdate)
+      socketInstance.on('post-deleted', handlePostDelete)
+      socketInstance.on('post-liked', handlePostLike)
+      socketInstance.on('new-comment', handleNewComment)
+    }
 
     return () => {
-      socket.off('new-post', handleNewPost)
-      socket.off('post-updated', handlePostUpdate)
-      socket.off('post-deleted', handlePostDelete)
-      socket.off('post-liked', handlePostLike)
-      socket.off('new-comment', handleNewComment)
-      socket.disconnect()
+      mounted = false
+      if (socketInstance) {
+        socketInstance.off('new-post', handleNewPost)
+        socketInstance.off('post-updated', handlePostUpdate)
+        socketInstance.off('post-deleted', handlePostDelete)
+        socketInstance.off('post-liked', handlePostLike)
+        socketInstance.off('new-comment', handleNewComment)
+        socketInstance.disconnect()
+      }
     }
   }, [])
 
@@ -155,13 +183,22 @@ export function usePosts() {
 
   const createPost = async (formData: FormData) => {
     try {
+      // Check if user is authenticated by making a lightweight auth check
+      const authCheck = await fetch('/api/auth/check')
+      if (!authCheck.ok) {
+        throw new Error('Please sign in to create a post')
+      }
+
       const response = await fetch('/api/posts', {
         method: 'POST',
         body: formData,
+        // Include credentials to ensure cookies are sent
+        credentials: 'include',
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create post')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create post')
       }
 
       const newPost = await response.json()
@@ -170,19 +207,22 @@ export function usePosts() {
       const formattedPost = formatPost(newPost)
       setPosts(prevPosts => [formattedPost, ...prevPosts])
       
-      // If WebSocket fails, at least we updated the local state
-      try {
-        // Attempt WebSocket emit, but don't fail if it's not available
-        if ((global as any).io) {
-          (global as any).io.emit('new-post', newPost)
+      // Clear any previous errors
+      setError(null)
+      
+      // If WebSocket is available, emit the new post
+      if (socket) {
+        try {
+          socket.emit('new-post', newPost)
+        } catch (wsError) {
+          console.warn('WebSocket emit failed:', wsError)
         }
-      } catch (wsError) {
-        console.warn('WebSocket emit failed:', wsError)
       }
       
       return true
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to create post')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create post'
+      setError(errorMessage)
       console.error('Error creating post:', error)
       return false
     }

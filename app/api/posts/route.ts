@@ -1,13 +1,38 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { uploadToS3 } from '@/lib/s3'
 
 export async function POST(req: Request) {
   try {
     console.log('Creating new post...')
-    const session = await getServerSession(authOptions)
+    
+    // Create Supabase server client
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {
+              // Handle cookie setting error
+            }
+          },
+        },
+      }
+    )
+
+    // Get session
+    const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) {
       console.log('Unauthorized: No session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,43 +40,71 @@ export async function POST(req: Request) {
 
     const formData = await req.formData()
     const content = formData.get('content') as string
-    const feeling = formData.get('feeling') as string
-    const location = formData.get('location') as string
-    const spoke = formData.get('spoke') as string
+    const feeling = formData.get('feeling') as string || null
+    const location = formData.get('location') as string || null
+    const spoke = formData.get('spoke') as string || null
     const type = formData.get('type') as string || 'user-post'
     const tags = formData.getAll('tags') as string[]
     const files = formData.getAll('files') as File[]
 
     console.log('Post data:', { content, feeling, location, spoke, type, tags })
 
+    if (!content) {
+      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    }
+
     // Upload media files
     const imageUrls: string[] = []
     const videoUrls: string[] = []
 
-    for (const file of files) {
-      const url = await uploadToS3(file)
-      if (file.type.startsWith('image/')) {
-        imageUrls.push(url)
-      } else if (file.type.startsWith('video/')) {
-        videoUrls.push(url)
+    try {
+      for (const file of files) {
+        const url = await uploadToS3(file)
+        if (file.type.startsWith('image/')) {
+          imageUrls.push(url)
+        } else if (file.type.startsWith('video/')) {
+          videoUrls.push(url)
+        }
       }
+    } catch (uploadError) {
+      console.error('Error uploading files:', uploadError)
+      return NextResponse.json({ error: 'Failed to upload media files' }, { status: 500 })
     }
 
     console.log('Media URLs:', { imageUrls, videoUrls })
+
+    // Get or create user in database
+    let user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    })
+
+    if (!user) {
+      // Create user if they don't exist
+      user = await prisma.user.create({
+        data: {
+          id: session.user.id,
+          email: session.user.email!,
+          username: session.user.email!.split('@')[0],
+          firstName: session.user.user_metadata?.firstName || 'Anonymous',
+          lastName: session.user.user_metadata?.lastName || 'User',
+          passwordHash: '', // Not used with Supabase auth
+        },
+      })
+    }
 
     // Create post in database
     const post = await prisma.post.create({
       data: {
         content,
-        feeling,
-        location,
-        spoke,
+        feeling: feeling || undefined,
+        location: location || undefined,
+        spoke: spoke || undefined,
         type,
-        tags,
-        images: imageUrls,
-        videos: videoUrls,
-        userId: session.user.id,
-        authorId: session.user.id,
+        tags: tags.length > 0 ? tags.join(',') : undefined,
+        images: imageUrls.length > 0 ? imageUrls.join(',') : undefined,
+        videos: videoUrls.length > 0 ? videoUrls.join(',') : undefined,
+        userId: user.id,
+        authorId: user.id,
       },
       include: {
         author: true,
@@ -74,7 +127,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Error creating post:', error)
     return NextResponse.json(
-      { error: 'Failed to create post' },
+      { error: error instanceof Error ? error.message : 'Failed to create post' },
       { status: 500 }
     )
   }

@@ -13,19 +13,19 @@ const suggestedConnections = [
   {
     name: 'Sarah Johnson',
     role: 'Mindfulness Coach',
-    avatar: '/avatars/sarah.jpg',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah',
     mutualConnections: 12,
   },
   {
     name: 'David Chen',
     role: 'Life Coach',
-    avatar: '/avatars/david.jpg',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=david',
     mutualConnections: 8,
   },
   {
     name: 'Emma Wilson',
     role: 'Wellness Expert',
-    avatar: '/avatars/emma.jpg',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=emma',
     mutualConnections: 15,
   },
 ]
@@ -70,7 +70,7 @@ export default function RightSidebar() {
                         className="h-10 w-10 rounded-full"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = 'https://via.placeholder.com/40';
+                          target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(person.name)}`;
                         }}
                       />
                     </div>
