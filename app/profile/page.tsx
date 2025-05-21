@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
 import TopNav from '../components/TopNav'
 import {
   UserIcon,
@@ -57,8 +58,14 @@ const moodHistory = [
 ]
 
 export default function Profile() {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [activeSection, setActiveSection] = useState('overview')
+
+  // Get user's name from metadata or email
+  const firstName = user?.user_metadata?.firstName || user?.email?.split('@')[0] || 'John'
+  const lastName = user?.user_metadata?.lastName || 'Doe'
+  const email = user?.email || 'john.doe@example.com'
 
   const navigationItems = [
     { id: 'dashboard', name: 'Dashboard', icon: ChartBarIcon },
@@ -91,6 +98,14 @@ export default function Profile() {
             <h3 className="text-lg font-semibold">Profile Overview</h3>
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium">Name</h4>
+                  <p className="text-gray-600">{firstName} {lastName}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Email</h4>
+                  <p className="text-gray-600">{email}</p>
+                </div>
                 <div>
                   <h4 className="font-medium">Spiritual</h4>
                   <p className="text-gray-600">Daily meditation practitioner, Buddhist</p>
@@ -129,15 +144,27 @@ export default function Profile() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  <input 
+                    type="text" 
+                    defaultValue={`${firstName} ${lastName}`}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Username</label>
-                  <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  <input 
+                    type="text" 
+                    defaultValue={firstName.toLowerCase()}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                  <input type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+                  <input 
+                    type="email" 
+                    defaultValue={email}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Phone Number</label>
@@ -211,138 +238,12 @@ export default function Profile() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Participation in Spiritual Communities</label>
-                <div className="space-x-4">
-                  <label className="inline-flex items-center">
-                    <input type="radio" name="spiritual-participation" value="yes" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
-                    <span className="ml-2">Yes</span>
-                  </label>
-                  <label className="inline-flex items-center">
-                    <input type="radio" name="spiritual-participation" value="no" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
-                    <span className="ml-2">No</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Spiritual Practices</label>
-                <div className="space-y-2">
-                  {['Meditation', 'Prayer', 'Yoga', 'Chanting', 'Reading Scriptures', 'Other'].map((practice) => (
-                    <div key={practice} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={practice.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{practice}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Duration of Daily Spiritual Practice</label>
-                <div className="space-y-2">
-                  {[
-                    'Less than 15 minutes',
-                    '15–30 minutes',
-                    '30–60 minutes',
-                    'More than 1 hour'
-                  ].map((duration) => (
-                    <div key={duration} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="spiritual-duration"
-                        value={duration.toLowerCase().replace(/\s+/g, '-')}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{duration}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-gray-700">Spiritual Goals</label>
                 <textarea
                   rows={3}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="Enter your spiritual goals..."
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Belief in a Higher Power</label>
-                <div className="space-y-2">
-                  {[
-                    'Strongly Agree',
-                    'Agree',
-                    'Neutral',
-                    'Disagree',
-                    'Strongly Disagree'
-                  ].map((option) => (
-                    <div key={option} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="spiritual-belief"
-                        value={option.toLowerCase().replace(/\s+/g, '-')}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{option}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Experience of Inner Peace</label>
-                <div className="space-y-2">
-                  {['Always', 'Often', 'Sometimes', 'Rarely', 'Never'].map((option) => (
-                    <div key={option} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="inner-peace"
-                        value={option.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{option}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Engagement in Religious/Spiritual Events</label>
-                <div className="space-y-2">
-                  {['Frequently', 'Occasionally', 'Rarely', 'Never'].map((option) => (
-                    <div key={option} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="spiritual-events"
-                        value={option.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{option}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Open to Exploring Other Spiritual Beliefs</label>
-                <div className="space-x-4">
-                  {['Yes', 'No', 'Maybe'].map((option) => (
-                    <label key={option} className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        name="spiritual-openness"
-                        value={option.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <span className="ml-2">{option}</span>
-                    </label>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
@@ -557,230 +458,6 @@ export default function Profile() {
                   ))}
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Favorite Music Genres</label>
-                <div className="space-y-2">
-                  {['Pop', 'Rock', 'Jazz', 'Classical', 'Hip-Hop', 'Country', 'Electronic', 'Folk', 'Other'].map((genre) => (
-                    <div key={genre} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={genre.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{genre}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Favorite Movie Genres</label>
-                <div className="space-y-2">
-                  {['Action', 'Comedy', 'Drama', 'Horror', 'Romance', 'Sci-Fi', 'Documentary', 'Animation', 'Other'].map((genre) => (
-                    <div key={genre} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={genre.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{genre}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Sports Participation</label>
-                <div className="space-y-2">
-                  {['Football', 'Basketball', 'Tennis', 'Swimming', 'Running', 'Cycling', 'Yoga', 'Gymnastics', 'None'].map((sport) => (
-                    <div key={sport} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={sport.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{sport}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Preferred Reading Genres</label>
-                <div className="space-y-2">
-                  {['Fiction', 'Non-Fiction', 'Mystery', 'Science Fiction', 'Biography', 'Self-Help', 'History', 'Fantasy', 'Other'].map((genre) => (
-                    <div key={genre} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={genre.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{genre}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Artistic Interests</label>
-                <div className="space-y-2">
-                  {['Drawing', 'Painting', 'Sculpting', 'Digital Art', 'Photography', 'Music', 'Dance', 'Theater', 'Other'].map((art) => (
-                    <div key={art} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={art.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{art}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Culinary Preferences</label>
-                <div className="space-y-2">
-                  {['Baking', 'Grilling', 'Vegetarian Cooking', 'International Cuisine', 'Desserts', 'Healthy Eating', 'Other'].map((cuisine) => (
-                    <div key={cuisine} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={cuisine.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{cuisine}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Travel Preferences</label>
-                <div className="space-y-2">
-                  {['Adventure Travel', 'Cultural Exploration', 'Beach Vacations', 'Mountain Trekking', 'Urban Exploration', 'Cruise Travel', 'Other'].map((travel) => (
-                    <div key={travel} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={travel.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{travel}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Language Proficiency</label>
-                <div className="space-y-2">
-                  {['English', 'Spanish', 'French', 'Mandarin', 'Hindi', 'Arabic', 'German', 'Japanese', 'Other'].map((language) => (
-                    <div key={language} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={language.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{language}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Technology Interests</label>
-                <div className="space-y-2">
-                  {['Gadgets', 'Programming', 'Gaming', 'Artificial Intelligence', 'Virtual Reality', 'Robotics', 'Other'].map((tech) => (
-                    <div key={tech} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={tech.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{tech}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Environmental Interests</label>
-                <div className="space-y-2">
-                  {['Recycling', 'Sustainable Living', 'Wildlife Conservation', 'Renewable Energy', 'Gardening', 'Other'].map((env) => (
-                    <div key={env} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={env.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{env}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Community Involvement</label>
-                <div className="space-y-2">
-                  {['Volunteering', 'Local Events', 'Fundraising', 'Community Clean-up', 'Mentoring', 'Other'].map((community) => (
-                    <div key={community} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={community.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{community}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Gaming Preferences</label>
-                <div className="space-y-2">
-                  {['Console Gaming', 'PC Gaming', 'Mobile Gaming', 'Board Games', 'Role-Playing Games', 'Other'].map((gaming) => (
-                    <div key={gaming} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={gaming.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{gaming}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Fitness Activities</label>
-                <div className="space-y-2">
-                  {['Gym Workouts', 'Yoga', 'Pilates', 'Running', 'Cycling', 'Swimming', 'Hiking', 'Other'].map((fitness) => (
-                    <div key={fitness} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={fitness.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{fitness}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Pet Preferences</label>
-                <div className="space-y-2">
-                  {['Dogs', 'Cats', 'Birds', 'Fish', 'Reptiles', 'Small Mammals', 'None'].map((pet) => (
-                    <div key={pet} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        value={pet.toLowerCase()}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700">{pet}</label>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )
@@ -792,27 +469,42 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-100">
       <TopNav />
-      {/* Profile Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center space-x-6">
-            <div className="w-32 h-32 rounded-full bg-gray-300"></div>
-            <div>
-              <h1 className="text-3xl font-bold">John Doe</h1>
-              <p className="text-gray-600">Member since January 2024</p>
-              <div className="flex items-center space-x-4 mt-4">
-                <div className="flex items-center space-x-2">
-                  <HeartIcon className="h-5 w-5 text-red-500" />
-                  <span>1,234 Karma Points</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <StarIcon className="h-5 w-5 text-yellow-500" />
-                  <span>12 Achievements</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Profile Header */}
+        <div className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex items-center space-x-6">
+              <div className="w-32 h-32 rounded-full bg-gray-300">
+                {user?.user_metadata?.avatar_url && (
+                  <img
+                    src={user.user_metadata.avatar_url}
+                    alt={`${firstName} ${lastName}`}
+                    className="w-32 h-32 rounded-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://via.placeholder.com/128?text=U';
+                    }}
+                  />
+                )}
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">{firstName} {lastName}</h1>
+                <p className="text-gray-600">Member since January 2024</p>
+                <div className="flex items-center space-x-4 mt-4">
+                  <div className="flex items-center space-x-2">
+                    <HeartIcon className="h-5 w-5 text-red-500" />
+                    <span>1,234 Karma Points</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <StarIcon className="h-5 w-5 text-yellow-500" />
+                    <span>12 Achievements</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         {/* Navigation Menu */}
         <div className="border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-4">
@@ -1019,35 +711,45 @@ export default function Profile() {
         {activeTab === 'timeline' && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Timeline</h2>
-            {/* Timeline content */}
+            <div className="space-y-6">
+              <p className="text-gray-600">Your activity timeline will appear here.</p>
+            </div>
           </div>
         )}
 
         {activeTab === 'friends' && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Friends</h2>
-            {/* Friends content */}
+            <div className="space-y-6">
+              <p className="text-gray-600">Your friends list will appear here.</p>
+            </div>
           </div>
         )}
 
         {activeTab === 'photos' && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Photos</h2>
-            {/* Photos content */}
+            <div className="space-y-6">
+              <p className="text-gray-600">Your photos will appear here.</p>
+            </div>
           </div>
         )}
 
         {activeTab === 'videos' && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Videos</h2>
-            {/* Videos content */}
+            <div className="space-y-6">
+              <p className="text-gray-600">Your videos will appear here.</p>
+            </div>
           </div>
         )}
 
         {activeTab === 'more' && (
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">More</h2>
-            {/* More content */}
+            <div className="space-y-6">
+              <p className="text-gray-600">Additional options will appear here.</p>
+            </div>
           </div>
         )}
       </div>
