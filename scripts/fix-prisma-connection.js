@@ -16,36 +16,32 @@ if (!fs.existsSync(envPath)) {
 // Read current .env content
 const envContent = fs.readFileSync(envPath, 'utf8');
 
-// Extract connection info
-const projectRef = 'ivjtrpazmmppjcqdzibm';
-const password = '9mEHjDPtMkUYKOz7';
-
-// Create the properly formatted connections per Supabase docs
-const poolerUrl = `postgres://postgres.${projectRef}:${password}@aws-0-us-east-2.pooler.supabase.com:5432/postgres`;
-
-// Define the new environment content with ONLY the pooler URL for both DATABASE_URL and url
-const newEnvContent = `# Database Connection
-DATABASE_URL="${poolerUrl}"
+// Create example environment variables
+const exampleEnvContent = `# Database Connection
+DATABASE_URL="postgresql://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]"
 
 # Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL="https://ivjtrpazmmppjcqdzibm.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2anRycGF6bW1wcGpjcWR6aWJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NDg5NDMsImV4cCI6MjA2MzMyNDk0M30.E3ta1b2uIKGLjUlbi91252wgEzyVi_0De3LHLmhKjF4"
-SUPABASE_SERVICE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2anRycGF6bW1wcGpjcWR6aWJtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Nzc0ODk0MywiZXhwIjoyMDYzMzI0OTQzfQ.5trSf35FR2Ze-kf69zEaQdHnBALasymKQ7Q9koGYe5E"
+NEXT_PUBLIC_SUPABASE_URL="https://[YOUR_PROJECT_ID].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="[YOUR_ANON_KEY]"
+SUPABASE_SERVICE_KEY="[YOUR_SERVICE_KEY]"
 
-# Other variables preserved from original .env
-` + envContent.replace(/DATABASE_URL=.*(\r?\n|$)/g, '')
-  .replace(/DIRECT_URL=.*(\r?\n|$)/g, '')
-  .replace(/NEXT_PUBLIC_SUPABASE_URL=.*(\r?\n|$)/g, '')
-  .replace(/NEXT_PUBLIC_SUPABASE_ANON_KEY=.*(\r?\n|$)/g, '')
-  .replace(/SUPABASE_SERVICE_KEY=.*(\r?\n|$)/g, '');
+# Other environment variables from original .env
+`;
+
+// Create a .env.example file with no credentials
+fs.writeFileSync(path.join(__dirname, '../.env.example'), exampleEnvContent);
+console.log('✅ Created .env.example file with placeholders');
 
 // Backup the original file
 fs.writeFileSync(`${envPath}.backup-final`, envContent);
 console.log('✅ Original .env file backed up to .env.backup-final');
 
-// Write the new .env file
-fs.writeFileSync(envPath, newEnvContent);
-console.log('✅ .env file updated with correct configuration');
+// Print instructions
+console.log('\n⚠️ SECURITY NOTICE:');
+console.log('1. Your credentials were previously exposed in code');
+console.log('2. Please rotate ALL Supabase credentials immediately');
+console.log('3. Update your .env file manually with new credentials');
+console.log('4. Add .env and .env.* to your .gitignore file');
 
 // Update schema.prisma to use only DATABASE_URL
 const prismaSchemaPath = path.join(__dirname, '../prisma/schema.prisma');
@@ -59,16 +55,8 @@ prismaSchema = prismaSchema.replace(/\/\/.*directUrl.*\n/g, '');
 fs.writeFileSync(prismaSchemaPath, prismaSchema);
 console.log('✅ prisma/schema.prisma updated to use only DATABASE_URL');
 
-// Regenerate Prisma client
-try {
-  console.log('Generating Prisma client...');
-  execSync('npx prisma generate', { stdio: 'inherit' });
-  console.log('✅ Prisma client generated successfully');
-} catch (error) {
-  console.error('❌ Error generating Prisma client:', error);
-}
-
 console.log('\n🔍 Next steps:');
-console.log('1. Restart your Next.js development server');
-console.log('2. Clear your browser cache');
-console.log('3. Test your application by making a post') 
+console.log('1. Rotate ALL your Supabase credentials immediately');
+console.log('2. Update your .env file with new credentials');
+console.log('3. Run: npx prisma generate');
+console.log('4. Restart your Next.js development server'); 

@@ -6,10 +6,12 @@ import { uploadToS3 } from '@/lib/s3'
 
 export async function POST(req: Request) {
   try {
-    console.log('Creating new post...')
+    console.log('Prisma connecting to:', process.env.DATABASE_URL?.split('@')[1] || 'Unknown')
+    console.log('Postgres connecting to:', process.env.POSTGRES_URL?.split('@')[1] || 'Unknown')
+    console.log('Testing Postgres connection...')
     
     // Create Supabase server client
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -142,6 +144,32 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
 
+    // Get current user session for like status
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {
+              // Handle cookie setting error
+            }
+          },
+        },
+      }
+    )
+
+    const { data: { session } } = await supabase.auth.getSession()
+    const currentUserId = session?.user?.id
+
     const where = {
       ...(spoke ? { spoke } : {}),
       ...(type ? { type } : {}),
@@ -152,7 +180,21 @@ export async function GET(req: Request) {
       include: {
         author: true,
         likes: true,
-        comments: true,
+        comments: {
+          include: {
+            user: true,
+            likes: true,
+            replies: {
+              include: {
+                user: true,
+                likes: true,
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -161,10 +203,16 @@ export async function GET(req: Request) {
       take: limit,
     })
 
+    // Add user-specific like status to each post
+    const postsWithLikeStatus = posts.map(post => ({
+      ...post,
+      isLikedByCurrentUser: currentUserId ? post.likes.some(like => like.userId === currentUserId) : false,
+    }))
+
     const total = await prisma.post.count({ where })
 
     return NextResponse.json({
-      posts,
+      posts: postsWithLikeStatus,
       total,
       hasMore: skip + posts.length < total,
     })

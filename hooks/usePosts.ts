@@ -9,20 +9,36 @@ interface Author {
   avatar?: string
 }
 
+interface Comment {
+  id: string
+  content: string
+  createdAt: string
+  user: {
+    id: string
+    firstName: string
+    lastName: string
+    profileImageUrl?: string
+    avatar?: string
+  }
+}
+
 interface Post {
   id: string
   type: PostType
   author: Author
   content: string
-  image?: string
+  images?: string
+  videos?: string
   likes: number
   comments: number
+  commentsList: Comment[]
   shares: number
   timestamp: string
   spoke?: string
   location?: string
   feeling?: string
   tags?: string[]
+  isLikedByCurrentUser?: boolean
 }
 
 export function usePosts() {
@@ -151,19 +167,22 @@ export function usePosts() {
     type: post.type || 'user-post',
     author: {
       id: post.authorId,
-      name: post.author.name,
-      avatar: post.author.image || '/avatars/default.jpg',
+      name: post.author ? `${post.author.firstName} ${post.author.lastName}` : 'Anonymous User',
+      avatar: post.author?.profileImageUrl || post.author?.avatar || '/images/avatars/default.svg',
     },
     content: post.content,
-    image: post.images?.[0],
+    images: post.images,
+    videos: post.videos,
     likes: post.likes?.length || 0,
     comments: post.comments?.length || 0,
+    commentsList: post.comments || [],
     shares: post.shares || 0,
-    timestamp: formatTimestamp(post.createdAt || new Date()),
+    timestamp: post.createdAt || new Date(),
     spoke: post.spoke,
     location: post.location,
     feeling: post.feeling,
-    tags: post.tags || [],
+    tags: post.tags ? post.tags.split(',') : [],
+    isLikedByCurrentUser: post.isLikedByCurrentUser || false,
   })
 
   const formatTimestamp = (timestamp: string | Date) => {

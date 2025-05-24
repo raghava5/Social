@@ -4,12 +4,9 @@ import { Pool } from 'pg';
 export async function GET() {
   console.log('Testing direct PostgreSQL connection...');
   
+  // Use environment variables instead of hardcoded credentials
   const pool = new Pool({
-    user: 'postgres',
-    password: '9mEHjDPtMkUYKOz7',
-    host: 'db.ivjtrpazmmppjcqdzibm.supabase.co',
-    port: 5432,
-    database: 'postgres',
+    connectionString: process.env.DATABASE_URL,
     ssl: {
       rejectUnauthorized: false
     }

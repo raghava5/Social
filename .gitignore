@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Credentials and sensitive files
+*.pem
+*.key
+*.cert
+*.crt
+test-connection.sh
+scripts/fix-*.js
+app/api/*-test/

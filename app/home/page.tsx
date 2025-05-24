@@ -1,15 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  HeartIcon,
-  ChatBubbleOvalLeftIcon,
-  ShareIcon,
-} from '@heroicons/react/24/outline'
 import CreatePost from '../components/CreatePost'
 import EmptyFeed from '../components/EmptyFeed'
 import { usePosts } from '@/hooks/usePosts'
+import { usePostInteractions } from '@/hooks/usePostInteractions'
 import TopNav from '../components/TopNav'
+import PostCard from '../components/PostCard'
 import { useAuth } from '@/context/AuthContext'
 import { Post, PostType, Spoke, Prompt, LiveEvent, TrendingItem, Recommendation } from '@/types/post'
 
@@ -50,7 +47,7 @@ const recommendations: Recommendation[] = [
 ]
 
 export default function Home() {
-  const { posts: allPosts, loading, error, createPost } = usePosts()
+  const { posts: allPosts, loading, error, createPost, refreshPosts } = usePosts()
   const { user } = useAuth()
   const [priorityFeed, setPriorityFeed] = useState<Post[]>([])
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -116,87 +113,55 @@ export default function Home() {
     setPriorityFeed([...feed, ...remainingPosts])
   }
 
-  const renderPostCard = (post: Post) => {
-    const getPostStyling = () => {
-      const baseStyle = 'rounded-lg bg-white p-4 shadow-sm border border-gray-200'
-      const urgencyStyles = {
-        high: 'border-red-500',
-        medium: 'border-yellow-500',
-        low: 'border-blue-500'
-      }
-      return `${baseStyle} ${post.urgency ? urgencyStyles[post.urgency] : ''}`
+  const { likePost, commentOnPost, sharePost } = usePostInteractions()
+
+  // Simplified like handler 
+  const handleLike = async (postId: string) => {
+    try {
+      const response = await likePost(postId)
+      console.log('Like response:', response)
+      return response
+    } catch (error) {
+      console.error('Error liking post:', error)
+      throw error
     }
+  }
 
-    const PostTypeBadge = () => (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-        {post.type}
-      </span>
-    )
+  // Simplified comment handler
+  const handleComment = async (postId: string, content: string) => {
+    try {
+      const response = await commentOnPost(postId, content)
+      console.log('Comment response:', response)
+      return response
+    } catch (error) {
+      console.error('Error commenting on post:', error)
+      throw error
+    }
+  }
 
-    const SpokeBadge = () => (
-      post.spoke && (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 ml-2">
-          {post.spoke}
-        </span>
-      )
-    )
-
-    const LocationBadge = () => (
-      post.location && (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 ml-2">
-          {post.location}
-        </span>
-      )
-    )
-
+  const renderPostCard = (post: Post) => {
     return (
-      <div key={post.id} className={getPostStyling()}>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center">
-            <img
-              src={post.author.avatar || '/images/avatars/default.png'}
-              alt={post.author.name}
-              className="h-10 w-10 rounded-full"
-            />
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-900">{post.author.name}</p>
-              <p className="text-xs text-gray-500">{post.timestamp}</p>
-            </div>
-          </div>
-          <div className="flex space-x-2">
-            <PostTypeBadge />
-            <SpokeBadge />
-            <LocationBadge />
-          </div>
-        </div>
-
-        <p className="mt-4 text-sm text-gray-600">{post.content}</p>
-
-        {post.image && (
-          <img
-            src={post.image}
-            alt="Post content"
-            className="mt-4 rounded-lg w-full object-cover"
-          />
-        )}
-
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex space-x-4">
-            <button className="flex items-center text-gray-500 hover:text-blue-600">
-              <HeartIcon className="h-5 w-5 mr-1" />
-              <span>{post.likes}</span>
-            </button>
-            <button className="flex items-center text-gray-500 hover:text-blue-600">
-              <ChatBubbleOvalLeftIcon className="h-5 w-5 mr-1" />
-              <span>{post.comments}</span>
-            </button>
-            <button className="flex items-center text-gray-500 hover:text-blue-600">
-              <ShareIcon className="h-5 w-5 mr-1" />
-              <span>{post.shares}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <PostCard 
+        key={post.id}
+        id={post.id}
+        author={post.author}
+        content={post.content}
+        images={post.images}
+        videos={post.videos}
+        likes={[]}
+        comments={post.commentsList}
+        shares={post.shares || 0}
+        createdAt={post.timestamp || new Date()}
+        spoke={post.spoke}
+        location={post.location}
+        feeling={post.feeling}
+        type={post.type}
+        isLikedByCurrentUser={post.isLikedByCurrentUser}
+        onLike={handleLike}
+        onComment={handleComment}
+        onShare={sharePost}
+        currentUserId={user?.id}
+      />
     )
   }
 
@@ -211,15 +176,8 @@ export default function Home() {
         throw new Error('Post content is required')
       }
 
-      // Create a new FormData object with the required fields
-      const postData = new FormData()
-      postData.append('content', content)
-      postData.append('type', 'user-post')
-      postData.append('authorId', user.id)
-      postData.append('authorName', user.user_metadata.name || 'Anonymous')
-      postData.append('authorAvatar', user.user_metadata.avatar_url || '')
-
-      await createPost(postData)
+      // Pass the entire formData which includes files, feeling, location, etc.
+      await createPost(formData)
     } catch (error: any) {
       console.error('Error creating post:', error)
       throw error

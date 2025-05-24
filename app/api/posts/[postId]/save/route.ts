@@ -11,15 +11,14 @@ export async function POST(
       return NextResponse.json({ error: 'Post ID is required' }, { status: 400 })
     }
 
-    // Get user ID from request body (simplified approach)
     const body = await req.json().catch(() => ({}))
     const userId = body.userId || 'temp-user-id'
 
-    console.log(`Like request: postId=${postId}, userId=${userId}`)
+    console.log(`Save post request: postId=${postId}, userId=${userId}`)
 
-    // Use transaction to prevent race conditions
+    // Use transaction for consistency
     const result = await prisma.$transaction(async (tx) => {
-      // Ensure user exists in database
+      // Ensure user exists
       let user = await tx.user.findUnique({
         where: { id: userId }
       })
@@ -37,7 +36,7 @@ export async function POST(
         })
       }
 
-      // Get post to verify it exists
+      // Check if post exists
       const post = await tx.post.findUnique({
         where: { id: postId }
       })
@@ -46,57 +45,53 @@ export async function POST(
         throw new Error('Post not found')
       }
 
-      // Check if user already liked the post
-      const existingLike = await tx.like.findFirst({
+      // Check if already saved
+      const existingSave = await tx.bookmark.findFirst({
         where: {
           postId,
-          userId: userId
+          userId
         }
       })
 
-      let liked = false
+      let saved = false
 
-      if (existingLike) {
-        // Unlike: Remove the like
-        await tx.like.delete({
-          where: { id: existingLike.id }
+      if (existingSave) {
+        // Unsave: Remove from saved posts
+        await tx.bookmark.delete({
+          where: { id: existingSave.id }
         })
-        liked = false
+        saved = false
       } else {
-        // Like: Create new like
-        await tx.like.create({
+        // Save: Add to saved posts
+        await tx.bookmark.create({
           data: {
             postId,
-            userId: userId,
-            reactionType: 'like'
+            userId
           }
         })
-        liked = true
+        saved = true
       }
 
-      // Get fresh like count after the operation
-      const updatedPost = await tx.post.findUnique({
-        where: { id: postId },
-        include: { likes: true }
-      })
-
-      return {
-        liked,
-        likeCount: updatedPost?.likes.length || 0,
-        postId
-      }
+      return { saved, postId }
     })
 
-    console.log(`Like processed: liked=${result.liked}, count=${result.likeCount}`)
+    console.log(`Post save toggled: saved=${result.saved}`)
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       ...result
     })
   } catch (error) {
-    console.error('Error processing like:', error)
+    console.error('Error saving post:', error)
+    
+    if (error instanceof Error) {
+      if (error.message.includes('Post not found')) {
+        return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+      }
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to process like' },
+      { error: 'Failed to save post' },
       { status: 500 }
     )
   }

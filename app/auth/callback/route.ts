@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   }
   
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const response = NextResponse.redirect(new URL('/login', requestUrl.origin))
 
     const supabase = createServerClient(

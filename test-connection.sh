@@ -1,3 +1,3 @@
-export DATABASE_URL=# postgres://postgres.ivjtrpazmmppjcqdzibm:9mEHjDPtMkUYKOz7@aws-0-us-east-2.pooler.supabase.com:5432/postgres
-#"postgresql://postgres.ivjtrpazmmppjcqdzibm:9mEHjDPtMkUYKOz7@aws-0-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1&pool_timeout=0"
-postgresql://postgres.ivjtrpazmmppjcqdzibm:9mEHjDPtMkUYKOz7@aws-0-us-east-2.pooler.supabase.com:6543/postgres?sslmode=require&pool_mode=transaction
+export DATABASE_URL="postgresql://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE]?sslmode=require&pool_mode=transaction"
+# Replace the placeholders with your actual credentials but NEVER commit this file with real credentials
+# Instead, use environment variables and .gitignore this file

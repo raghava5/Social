@@ -4,8 +4,15 @@ import { Pool } from 'pg';
 export async function GET() {
   console.log('Testing PostgreSQL connection...');
   
-  // Force using the pooled connection
-  const connectionString = "postgresql://postgres.ivjtrpazmmppjcqdzibm:9mEHjDPtMkUYKOz7@aws-0-us-east-2.pooler.supabase.com:6543/postgres?pgbouncer=true";
+  // Use environment variables instead of hardcoded credentials
+  const connectionString = process.env.DATABASE_URL;
+  
+  if (!connectionString) {
+    return NextResponse.json({
+      success: false,
+      error: 'DATABASE_URL environment variable is not set',
+    }, { status: 500 });
+  }
   
   const pool = new Pool({
     connectionString,
@@ -25,7 +32,8 @@ export async function GET() {
       message: 'PostgreSQL connection successful',
       timestamp: result.rows[0].now,
       connectionInfo: {
-        host: connectionString.split('@')[1]?.split('/')[0] || 'not-set'
+        // Hide actual connection details for security
+        connected: true
       }
     });
   } catch (error: any) {
@@ -36,7 +44,7 @@ export async function GET() {
       error: error.message,
       code: error.code,
       connectionInfo: {
-        host: connectionString.split('@')[1]?.split('/')[0] || 'not-set'
+        connected: false
       }
     }, { 
       status: 500 

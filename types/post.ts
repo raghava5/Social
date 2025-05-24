@@ -6,14 +6,29 @@ export interface Author {
   avatar?: string;
 }
 
+export interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    profileImageUrl?: string;
+    avatar?: string;
+  };
+}
+
 export interface Post {
   id: string;
   type: PostType;
   author: Author;
   content: string;
-  image?: string;
+  images?: string;
+  videos?: string;
   likes: number;
   comments: number;
+  commentsList: Comment[];
   shares: number;
   timestamp: string;
   spoke?: string;
@@ -23,6 +38,7 @@ export interface Post {
   category?: string;
   tags?: string[];
   feeling?: string;
+  isLikedByCurrentUser?: boolean;
 }
 
 export interface Spoke {
