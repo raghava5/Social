@@ -31,6 +31,8 @@ export interface Post {
   commentsList: Comment[];
   shares: number;
   timestamp: string;
+  updatedAt?: string;
+  isEdited?: boolean;
   spoke?: string;
   location?: string;
   distance?: string;

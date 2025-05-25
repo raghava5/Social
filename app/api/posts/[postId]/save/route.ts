@@ -95,4 +95,54 @@ export async function POST(
       { status: 500 }
     )
   }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { postId: string } }
+) {
+  try {
+    const { postId } = params
+    if (!postId) {
+      return NextResponse.json({ error: 'Post ID is required' }, { status: 400 })
+    }
+
+    const body = await req.json().catch(() => ({}))
+    const userId = body.userId
+
+    if (!userId) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+    }
+
+    console.log(`Unsave post request: postId=${postId}, userId=${userId}`)
+
+    // Find and delete the bookmark
+    const bookmark = await prisma.bookmark.findFirst({
+      where: {
+        postId,
+        userId
+      }
+    })
+
+    if (!bookmark) {
+      return NextResponse.json({ error: 'Post not saved' }, { status: 404 })
+    }
+
+    await prisma.bookmark.delete({
+      where: { id: bookmark.id }
+    })
+
+    console.log(`Post unsaved successfully: ${postId}`)
+
+    return NextResponse.json({
+      success: true,
+      message: 'Post unsaved successfully'
+    })
+  } catch (error) {
+    console.error('Error unsaving post:', error)
+    return NextResponse.json(
+      { error: 'Failed to unsave post' },
+      { status: 500 }
+    )
+  }
 } 

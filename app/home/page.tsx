@@ -9,6 +9,8 @@ import TopNav from '../components/TopNav'
 import PostCard from '../components/PostCard'
 import { useAuth } from '@/context/AuthContext'
 import { Post, PostType, Spoke, Prompt, LiveEvent, TrendingItem, Recommendation } from '@/types/post'
+import Link from 'next/link'
+import { BookmarkIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 // Configuration
 const spokes: Spoke[] = [
@@ -50,11 +52,27 @@ export default function Home() {
   const { posts: allPosts, loading, error, createPost, refreshPosts } = usePosts()
   const { user } = useAuth()
   const [priorityFeed, setPriorityFeed] = useState<Post[]>([])
+  const [displayedPosts, setDisplayedPosts] = useState<Post[]>([])
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [activeSpoke, setActiveSpoke] = useState<string | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+
+  const POSTS_PER_BATCH = 3 // Load 3 posts at a time
 
   const handleCompleteOnboarding = () => {
     setShowOnboarding(false)
+  }
+
+  // Filter posts by spoke
+  const handleSpokeFilter = (spokeName: string) => {
+    if (activeSpoke === spokeName) {
+      setActiveSpoke(null) // Clear filter
+    } else {
+      setActiveSpoke(spokeName) // Apply filter
+    }
+    setDisplayedPosts([]) // Reset displayed posts
+    setHasMore(true) // Reset pagination
   }
 
   useEffect(() => {
@@ -62,10 +80,61 @@ export default function Home() {
       buildPriorityFeed(allPosts)
     } else {
       setPriorityFeed([])
+      setDisplayedPosts([])
     }
-  }, [allPosts])
+  }, [allPosts, activeSpoke])
+
+  // Progressive loading effect
+  useEffect(() => {
+    if (priorityFeed.length > 0 && displayedPosts.length === 0) {
+      // Load first batch immediately
+      loadNextBatch()
+    }
+  }, [priorityFeed])
+
+  const loadNextBatch = () => {
+    if (loadingMore || !hasMore) return
+
+    setLoadingMore(true)
+    
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+      const currentLength = displayedPosts.length
+      const nextBatch = priorityFeed.slice(currentLength, currentLength + POSTS_PER_BATCH)
+      
+      if (nextBatch.length > 0) {
+        setDisplayedPosts(prev => [...prev, ...nextBatch])
+      }
+      
+      if (currentLength + nextBatch.length >= priorityFeed.length) {
+        setHasMore(false)
+      }
+      
+      setLoadingMore(false)
+    }, 300) // 300ms delay for smooth loading
+  }
+
+  // Infinite scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop
+        >= document.documentElement.offsetHeight - 1000 // Load when 1000px from bottom
+      ) {
+        loadNextBatch()
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [displayedPosts, loadingMore, hasMore])
 
   const buildPriorityFeed = (posts: Post[]) => {
+    // Filter by active spoke if one is selected
+    let filteredPosts = activeSpoke 
+      ? posts.filter(post => post.spoke === activeSpoke)
+      : posts
+
     // Get or initialize spoke rotation
     const storedRotation = localStorage.getItem('spokeRotation')
     let spokeRotation = storedRotation ? JSON.parse(storedRotation) : spokes.map(spoke => spoke.name)
@@ -88,7 +157,7 @@ export default function Home() {
     
     // Build feed based on priority and spoke rotation
     const feed = postTypeOrder.reduce<Post[]>((acc, postType) => {
-      const postsOfType = posts.filter(post => post.type === postType)
+      const postsOfType = filteredPosts.filter(post => post.type === postType)
       if (postsOfType.length === 0) return acc
       
       // Try to find a post from the current spoke rotation
@@ -108,7 +177,7 @@ export default function Home() {
     
     // Add remaining posts that weren't included
     const usedPostIds = new Set(feed.map(post => post.id))
-    const remainingPosts = posts.filter(post => !usedPostIds.has(post.id))
+    const remainingPosts = filteredPosts.filter(post => !usedPostIds.has(post.id))
     
     setPriorityFeed([...feed, ...remainingPosts])
   }
@@ -139,6 +208,123 @@ export default function Home() {
     }
   }
 
+  // Edit post handler
+  const handleEditPost = async (postId: string, updatedPost: any) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/edit`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...updatedPost,
+          userId: user?.id
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to edit post')
+      }
+
+      const data = await response.json()
+      
+      // Update local state immediately for better UX
+      const updatedPostData: Post = {
+        id: data.post.id,
+        type: 'user-post' as PostType,
+        author: {
+          id: data.post.author.id,
+          name: data.post.author.name,
+          avatar: data.post.author.profileImageUrl || '/images/avatars/default.svg'
+        },
+        content: data.post.content,
+        images: data.post.images,
+        videos: data.post.videos,
+        likes: data.post.likeCount || 0,
+        comments: data.post.commentCount || 0,
+        commentsList: data.post.comments || [],
+        shares: 0,
+        timestamp: data.post.createdAt,
+        updatedAt: data.post.updatedAt,
+        isEdited: data.post.isEdited,
+        spoke: data.post.spoke,
+        location: data.post.location,
+        feeling: data.post.feeling,
+        tags: data.post.tags || [],
+        isLikedByCurrentUser: data.post.likes?.some((like: any) => like.userId === user?.id) || false
+      }
+
+      // Update both displayed posts and priority feed
+      setDisplayedPosts(prev => 
+        prev.map(post => post.id === postId ? updatedPostData : post)
+      )
+      setPriorityFeed(prev => 
+        prev.map(post => post.id === postId ? updatedPostData : post)
+      )
+      
+      return data
+    } catch (error) {
+      console.error('Error editing post:', error)
+      throw error
+    }
+  }
+
+  // Delete post handler
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete post')
+      }
+
+      // Remove post from local state immediately for better UX
+      setDisplayedPosts(prev => prev.filter(post => post.id !== postId))
+      setPriorityFeed(prev => prev.filter(post => post.id !== postId))
+      
+      // Do not refresh posts from server - just keep local state
+      
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      throw error
+    }
+  }
+
+  // Save post handler
+  const handleSavePost = async (postId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${postId}/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to save post')
+      }
+
+      const data = await response.json()
+      console.log('Save response:', data)
+      
+      return data
+    } catch (error) {
+      console.error('Error saving post:', error)
+      throw error
+    }
+  }
+
   const renderPostCard = (post: Post) => {
     return (
       <PostCard 
@@ -152,6 +338,8 @@ export default function Home() {
         comments={post.commentsList}
         shares={post.shares || 0}
         createdAt={post.timestamp || new Date()}
+        updatedAt={post.updatedAt}
+        isEdited={post.isEdited || false}
         spoke={post.spoke}
         location={post.location}
         feeling={post.feeling}
@@ -160,6 +348,9 @@ export default function Home() {
         onLike={handleLike}
         onComment={handleComment}
         onShare={sharePost}
+        onEdit={handleEditPost}
+        onDelete={handleDeletePost}
+        onSave={handleSavePost}
         currentUserId={user?.id}
       />
     )
@@ -176,8 +367,51 @@ export default function Home() {
         throw new Error('Post content is required')
       }
 
-      // Pass the entire formData which includes files, feeling, location, etc.
-      await createPost(formData)
+      // Create optimistic post for instant feedback
+      const tempId = `temp-${Date.now()}`
+      const optimisticPost: Post = {
+        id: tempId,
+        type: 'user-post',
+        author: {
+          id: user.id,
+          name: `${user.user_metadata?.firstName || 'User'} ${user.user_metadata?.lastName || ''}`.trim() || user.email?.split('@')[0] || 'User',
+          avatar: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || '/images/avatars/default.svg'
+        },
+        content: content,
+        images: '',
+        videos: '',
+        likes: 0,
+        comments: 0,
+        commentsList: [],
+        shares: 0,
+        timestamp: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isEdited: false,
+        spoke: formData.get('spoke')?.toString() || undefined,
+        location: formData.get('location')?.toString() || undefined,
+        feeling: formData.get('feeling')?.toString() || undefined,
+        tags: [],
+        isLikedByCurrentUser: false
+      }
+
+      // Add optimistic post immediately
+      setDisplayedPosts(prev => [optimisticPost, ...prev])
+      setPriorityFeed(prev => [optimisticPost, ...prev])
+
+      try {
+        // Create actual post
+        await createPost(formData)
+        
+        // Remove the optimistic post since createPost will add the real one
+        setDisplayedPosts(prev => prev.filter(post => post.id !== tempId))
+        setPriorityFeed(prev => prev.filter(post => post.id !== tempId))
+        
+      } catch (error) {
+        // Remove optimistic post on error
+        setDisplayedPosts(prev => prev.filter(post => post.id !== tempId))
+        setPriorityFeed(prev => prev.filter(post => post.id !== tempId))
+        throw error
+      }
     } catch (error: any) {
       console.error('Error creating post:', error)
       throw error
@@ -208,17 +442,127 @@ export default function Home() {
           </button>
         </div>
       ) : (
-        <main className="container mx-auto px-4 py-8">
-          <CreatePost onSubmit={handlePostSubmit} />
-          
-          {priorityFeed.length === 0 ? (
-            <EmptyFeed />
-          ) : (
-            <div className="space-y-6 mt-6">
-              {priorityFeed.map(renderPostCard)}
+        <div className="flex">
+          {/* Left Sidebar */}
+          <div className="hidden lg:block w-64 fixed left-0 top-16 h-full bg-white border-r border-gray-200 p-4">
+            <div className="space-y-4">
+              {/* Seven Spokes Section - Now on Top */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-900">Nine Spokes</h3>
+                  {/* Clear Filter Button - Now next to header */}
+                  {activeSpoke && (
+                    <button
+                      onClick={() => handleSpokeFilter('')}
+                      className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Clear Filter
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {spokes.map((spoke) => (
+                    <div 
+                      key={spoke.id} 
+                      className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
+                        activeSpoke === spoke.name 
+                          ? 'bg-blue-100 border border-blue-300' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => handleSpokeFilter(spoke.name)}
+                    >
+                      <span className={`text-sm ${
+                        activeSpoke === spoke.name ? 'text-blue-800 font-medium' : 'text-gray-600'
+                      }`}>
+                        {spoke.name}
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-12 bg-gray-200 rounded-full h-1.5">
+                          <div 
+                            className={`h-1.5 rounded-full ${spoke.color}`}
+                            style={{ width: `${spoke.progress}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs text-gray-500">{spoke.progress}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Access Section - Now at Bottom */}
+              <div className="border-t border-gray-200 pt-4">
+                <h4 className="font-medium text-gray-900 mb-3">Quick Access</h4>
+                <div className="space-y-2">
+                  <Link
+                    href="/saved-posts"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <BookmarkIcon className="w-5 h-5 text-blue-600" />
+                    <span className="text-gray-700">Saved Posts</span>
+                  </Link>
+                  
+                  <Link
+                    href="/deleted-posts"
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <TrashIcon className="w-5 h-5 text-red-600" />
+                    <span className="text-gray-700">Deleted Posts</span>
+                  </Link>
+                </div>
+              </div>
             </div>
-          )}
-        </main>
+          </div>
+
+          {/* Main Content */}
+          <main className="flex-1 lg:ml-64 container mx-auto px-4 py-8">
+            <CreatePost onSubmit={handlePostSubmit} />
+            
+            {/* Filter Indicator */}
+            {activeSpoke && (
+              <div className="mt-6 mb-4 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-800 font-medium">Filtering by:</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    🎯 {activeSpoke}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleSpokeFilter('')}
+                  className="text-blue-600 hover:text-blue-800 text-sm underline"
+                >
+                  Clear Filter
+                </button>
+              </div>
+            )}
+            
+            {displayedPosts.length === 0 ? (
+              <EmptyFeed />
+            ) : (
+              <div className="space-y-6 mt-6">
+                {displayedPosts.map(renderPostCard)}
+                
+                {/* Loading indicator */}
+                {loadingMore && (
+                  <div className="flex justify-center py-8">
+                    <div className="flex items-center space-x-2 text-gray-600">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span>Loading more posts...</span>
+                    </div>
+                  </div>
+                )}
+                
+                {/* End of posts indicator */}
+                {!hasMore && displayedPosts.length > 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>You've reached the end! 🎉</p>
+                    <p className="text-sm mt-1">Check back later for more posts</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+        </div>
       )}
     </div>
   )

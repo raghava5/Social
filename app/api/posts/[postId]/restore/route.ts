@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
-export async function DELETE(
+export async function PATCH(
   req: Request,
   { params }: { params: { postId: string } }
 ) {
@@ -14,7 +14,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Post ID and user ID are required' }, { status: 400 })
     }
 
-    console.log(`Delete post request: postId=${postId}, userId=${userId}`)
+    console.log(`Restore post request: postId=${postId}, userId=${userId}`)
 
     // Verify the post exists and belongs to the user
     const post = await prisma.post.findUnique({
@@ -30,26 +30,30 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    // Soft delete: mark as deleted instead of removing from database
-    const deletedPost = await prisma.post.update({
+    if (!post.isDeleted) {
+      return NextResponse.json({ error: 'Post is not deleted' }, { status: 400 })
+    }
+
+    // Restore the post
+    const restoredPost = await prisma.post.update({
       where: { id: postId },
       data: {
-        isDeleted: true,
-        deletedAt: new Date(),
+        isDeleted: false,
+        deletedAt: null,
         updatedAt: new Date()
       }
     })
 
-    console.log(`Post soft-deleted successfully: ${postId}`)
+    console.log(`Post restored successfully: ${postId}`)
 
     return NextResponse.json({
       success: true,
-      message: 'Post deleted successfully'
+      message: 'Post restored successfully'
     })
   } catch (error) {
-    console.error('Error deleting post:', error)
+    console.error('Error restoring post:', error)
     return NextResponse.json(
-      { error: 'Failed to delete post' },
+      { error: 'Failed to restore post' },
       { status: 500 }
     )
   }

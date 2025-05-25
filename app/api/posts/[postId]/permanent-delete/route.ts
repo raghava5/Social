@@ -14,7 +14,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Post ID and user ID are required' }, { status: 400 })
     }
 
-    console.log(`Delete post request: postId=${postId}, userId=${userId}`)
+    console.log(`Permanent delete post request: postId=${postId}, userId=${userId}`)
 
     // Verify the post exists and belongs to the user
     const post = await prisma.post.findUnique({
@@ -30,26 +30,38 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    // Soft delete: mark as deleted instead of removing from database
-    const deletedPost = await prisma.post.update({
-      where: { id: postId },
-      data: {
-        isDeleted: true,
-        deletedAt: new Date(),
-        updatedAt: new Date()
-      }
+    if (!post.isDeleted) {
+      return NextResponse.json({ error: 'Post is not deleted' }, { status: 400 })
+    }
+
+    // Delete all related data first (comments, likes, bookmarks)
+    await prisma.comment.deleteMany({
+      where: { postId }
     })
 
-    console.log(`Post soft-deleted successfully: ${postId}`)
+    await prisma.like.deleteMany({
+      where: { postId }
+    })
+
+    await prisma.bookmark.deleteMany({
+      where: { postId }
+    })
+
+    // Permanently delete the post
+    await prisma.post.delete({
+      where: { id: postId }
+    })
+
+    console.log(`Post permanently deleted: ${postId}`)
 
     return NextResponse.json({
       success: true,
-      message: 'Post deleted successfully'
+      message: 'Post permanently deleted'
     })
   } catch (error) {
-    console.error('Error deleting post:', error)
+    console.error('Error permanently deleting post:', error)
     return NextResponse.json(
-      { error: 'Failed to delete post' },
+      { error: 'Failed to permanently delete post' },
       { status: 500 }
     )
   }

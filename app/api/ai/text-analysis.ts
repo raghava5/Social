@@ -1,23 +1,27 @@
-// Text analysis utilities for sentiment, intent and topic detection
-
-// Basic dictionary-based sentiment analysis
-// This is a simple implementation that can be replaced with a more sophisticated model
-const POSITIVE_WORDS = new Set([
-  'happy', 'joy', 'excited', 'amazing', 'great', 'awesome', 'excellent', 'good', 'love', 'like',
-  'wonderful', 'fantastic', 'positive', 'beautiful', 'perfect', 'glad', 'delighted', 'grateful'
-]);
-
-const NEGATIVE_WORDS = new Set([
-  'sad', 'angry', 'upset', 'terrible', 'horrible', 'bad', 'awful', 'disappointed', 'hate', 'dislike',
-  'unfortunate', 'poor', 'negative', 'ugly', 'worst', 'sorry', 'regret', 'miserable', 'depressed'
-]);
+// Text analysis utilities for sentiment, intent, topic detection and spoke tagging
 
 // Simple intent categories
 export type IntentType = 'question' | 'help_request' | 'greeting' | 'gratitude' | 'information' | 'unknown';
 
+// Nine Spokes System
+export type SpokeType = 'Spiritual' | 'Mental' | 'Physical' | 'Personal' | 'Professional' | 'Financial' | 'Social' | 'Mindfulness' | 'Leadership';
+
+// Spoke keyword mapping
+const SPOKE_KEYWORDS: Record<SpokeType, string[]> = {
+  'Spiritual': ['god', 'prayer', 'faith', 'soul', 'spirit', 'divine', 'blessed', 'gratitude', 'meditation', 'worship', 'church', 'temple', 'scripture', 'purpose', 'meaning', 'peace'],
+  'Mental': ['anxiety', 'depression', 'stress', 'therapy', 'counseling', 'psychology', 'mental health', 'mind', 'thoughts', 'emotions', 'feelings', 'overwhelmed', 'panic', 'worry', 'calm'],
+  'Physical': ['exercise', 'workout', 'fitness', 'gym', 'running', 'training', 'health', 'nutrition', 'diet', 'weight', 'muscle', 'cardio', 'strength', 'energy', 'stamina', 'athletic'],
+  'Personal': ['growth', 'development', 'self-improvement', 'goals', 'habits', 'discipline', 'motivation', 'confidence', 'self-esteem', 'identity', 'values', 'personality', 'character'],
+  'Professional': ['work', 'career', 'job', 'business', 'office', 'colleagues', 'boss', 'promotion', 'salary', 'skills', 'productivity', 'deadlines', 'meeting', 'project', 'client'],
+  'Financial': ['money', 'budget', 'savings', 'investment', 'income', 'expenses', 'debt', 'loan', 'bank', 'financial', 'wealth', 'economy', 'stocks', 'retirement'],
+  'Social': ['friends', 'family', 'relationship', 'dating', 'marriage', 'social', 'community', 'people', 'connection', 'love', 'friendship', 'partner', 'gathering', 'party'],
+  'Mindfulness': ['mindfulness', 'meditation', 'awareness', 'present', 'moment', 'breathe', 'breathing', 'zen', 'peaceful', 'calm', 'centered', 'grounded', 'observe', 'attention'],
+  'Leadership': ['leadership', 'leader', 'team', 'management', 'decision', 'responsibility', 'authority', 'influence', 'inspire', 'motivate', 'guide', 'mentor', 'vision', 'strategy']
+};
+
 export interface TextAnalysisResult {
   sentiment: {
-    score: number;  // -1 to 1 range
+    score: number;
     label: 'positive' | 'negative' | 'neutral';
   };
   intent: {
@@ -27,87 +31,113 @@ export interface TextAnalysisResult {
   topics: string[];
   toxicity: {
     isToxic: boolean;
-    score: number; // 0 to 1 range
+    score: number;
+  };
+  spokeTag: {
+    spoke: SpokeType;
+    confidence: number;
+    reasoning: string;
   };
 }
 
-// Basic text analysis function
-export async function analyzeText(text: string): Promise<TextAnalysisResult> {
-  // Normalize text
+// Spoke detection function
+export function detectSpoke(text: string): { spoke: SpokeType; confidence: number; reasoning: string } {
   const normalizedText = text.toLowerCase();
-  const words = normalizedText.split(/\s+/);
+  const spokeScores: Record<SpokeType, { score: number; matches: string[] }> = {
+    'Spiritual': { score: 0, matches: [] },
+    'Mental': { score: 0, matches: [] },
+    'Physical': { score: 0, matches: [] },
+    'Personal': { score: 0, matches: [] },
+    'Professional': { score: 0, matches: [] },
+    'Financial': { score: 0, matches: [] },
+    'Social': { score: 0, matches: [] },
+    'Mindfulness': { score: 0, matches: [] },
+    'Leadership': { score: 0, matches: [] }
+  };
+
+  // Score each spoke based on keyword matches
+  Object.entries(SPOKE_KEYWORDS).forEach(([spoke, keywords]) => {
+    const spokeKey = spoke as SpokeType;
+    keywords.forEach(keyword => {
+      if (normalizedText.includes(keyword)) {
+        spokeScores[spokeKey].score += 1;
+        spokeScores[spokeKey].matches.push(keyword);
+      }
+    });
+  });
+
+  // Find the spoke with the highest score
+  const sortedSpokes = Object.entries(spokeScores)
+    .sort(([, a], [, b]) => b.score - a.score)
+    .filter(([, data]) => data.score > 0);
+
+  if (sortedSpokes.length === 0) {
+    return {
+      spoke: 'Personal',
+      confidence: 0.3,
+      reasoning: 'No specific keywords found, defaulting to Personal development'
+    };
+  }
+
+  const [topSpoke, topData] = sortedSpokes[0];
+  const confidence = Math.min(topData.score / 5, 1);
+  const reasoning = `Matched keywords: ${topData.matches.slice(0, 3).join(', ')}`;
+
+  return {
+    spoke: topSpoke as SpokeType,
+    confidence,
+    reasoning
+  };
+}
+
+// Basic text analysis function with spoke detection
+export async function analyzeText(text: string): Promise<TextAnalysisResult> {
+  const normalizedText = text.toLowerCase();
   
-  // Sentiment analysis
-  let positiveCount = 0;
-  let negativeCount = 0;
+  // Basic sentiment (simplified)
+  const positiveWords = ['happy', 'great', 'amazing', 'good', 'love', 'excellent'];
+  const negativeWords = ['sad', 'bad', 'terrible', 'awful', 'hate', 'horrible'];
   
-  words.forEach(word => {
-    if (POSITIVE_WORDS.has(word)) positiveCount++;
-    if (NEGATIVE_WORDS.has(word)) negativeCount++;
+  let sentiment = 0;
+  positiveWords.forEach(word => {
+    if (normalizedText.includes(word)) sentiment += 1;
+  });
+  negativeWords.forEach(word => {
+    if (normalizedText.includes(word)) sentiment -= 1;
   });
   
-  const totalSentimentWords = positiveCount + negativeCount;
-  let sentimentScore = 0;
-  if (totalSentimentWords > 0) {
-    sentimentScore = (positiveCount - negativeCount) / totalSentimentWords;
-  }
-  
+  const sentimentScore = Math.max(-1, Math.min(1, sentiment / 3));
   let sentimentLabel: 'positive' | 'negative' | 'neutral' = 'neutral';
   if (sentimentScore > 0.2) sentimentLabel = 'positive';
   if (sentimentScore < -0.2) sentimentLabel = 'negative';
   
   // Basic intent detection
-  let intentType: IntentType = 'unknown';
-  let intentConfidence = 0.5;
+  let intentType: IntentType = 'information';
+  let intentConfidence = 0.6;
   
-  if (normalizedText.includes('?') || normalizedText.match(/^(what|how|why|when|who|where|is|are|can|could|would|will)/)) {
+  if (normalizedText.includes('?')) {
     intentType = 'question';
     intentConfidence = 0.8;
-  } else if (normalizedText.match(/^(hi|hello|hey|greetings)/)) {
+  } else if (normalizedText.match(/^(hi|hello|hey)/)) {
     intentType = 'greeting';
     intentConfidence = 0.9;
-  } else if (normalizedText.match(/(help|assist|support|guidance|advice)/)) {
+  } else if (normalizedText.includes('help')) {
     intentType = 'help_request';
     intentConfidence = 0.7;
-  } else if (normalizedText.match(/(thanks|thank you|grateful|appreciate)/)) {
+  } else if (normalizedText.includes('thank')) {
     intentType = 'gratitude';
-    intentConfidence = 0.9;
-  } else if (words.length > 5) {
-    intentType = 'information';
-    intentConfidence = 0.6;
+    intentConfidence = 0.8;
   }
   
-  // Simplified topic detection (in production, this would use a proper topic model)
+  // Basic topics
   const topics: string[] = [];
-  const topicKeywords: Record<string, string[]> = {
-    'health': ['health', 'exercise', 'fitness', 'diet', 'wellness', 'workout'],
-    'finance': ['money', 'finance', 'budget', 'invest', 'financial', 'savings'],
-    'relationships': ['friend', 'family', 'partner', 'relationship', 'social', 'connect'],
-    'mental': ['stress', 'anxiety', 'mental', 'meditation', 'mindfulness', 'calm'],
-    'spiritual': ['spirit', 'soul', 'faith', 'belief', 'meditation', 'purpose'],
-    'professional': ['work', 'job', 'career', 'professional', 'business', 'skill'],
-    'emotional': ['emotion', 'feel', 'feeling', 'happy', 'sad', 'angry']
-  };
+  if (normalizedText.includes('work') || normalizedText.includes('job')) topics.push('professional');
+  if (normalizedText.includes('friend') || normalizedText.includes('family')) topics.push('social');
+  if (normalizedText.includes('money') || normalizedText.includes('budget')) topics.push('financial');
   
-  Object.entries(topicKeywords).forEach(([topic, keywords]) => {
-    if (keywords.some(keyword => normalizedText.includes(keyword))) {
-      topics.push(topic);
-    }
-  });
-  
-  // Basic toxicity detection (simplified)
-  const TOXIC_WORDS = new Set([
-    'hate', 'stupid', 'idiot', 'dumb', 'jerk', 'loser', 'worthless',
-    'kill', 'die', 'attack', 'violent', 'assault'
-  ]);
-  
-  let toxicCount = 0;
-  words.forEach(word => {
-    if (TOXIC_WORDS.has(word)) toxicCount++;
-  });
-  
-  const toxicityScore = Math.min(toxicCount / words.length * 5, 1);
-  
+  // Detect spoke
+  const spokeTag = detectSpoke(text);
+
   return {
     sentiment: {
       score: sentimentScore,
@@ -119,103 +149,9 @@ export async function analyzeText(text: string): Promise<TextAnalysisResult> {
     },
     topics,
     toxicity: {
-      isToxic: toxicityScore > 0.3,
-      score: toxicityScore
-    }
+      isToxic: false,
+      score: 0
+    },
+    spokeTag
   };
-}
-
-// Message analysis for conversation context
-export async function analyzeConversation(messages: string[]): Promise<{
-  overallSentiment: number;
-  topTopics: string[];
-  isToxic: boolean;
-  suggestedResponses?: string[];
-}> {
-  const analysisResults = await Promise.all(messages.map(msg => analyzeText(msg)));
-  
-  // Calculate overall sentiment
-  const overallSentiment = analysisResults.reduce((sum, result) => sum + result.sentiment.score, 0) / analysisResults.length;
-  
-  // Find top topics
-  const topicCounts: Record<string, number> = {};
-  analysisResults.forEach(result => {
-    result.topics.forEach(topic => {
-      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
-    });
-  });
-  
-  const topTopics = Object.entries(topicCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([topic]) => topic);
-  
-  // Check for toxicity
-  const isToxic = analysisResults.some(result => result.toxicity.isToxic);
-  
-  // Generate suggested responses (placeholder - would be more sophisticated in production)
-  const lastMessageAnalysis = analysisResults[analysisResults.length - 1];
-  const suggestedResponses: string[] = [];
-  
-  if (lastMessageAnalysis.intent.type === 'question') {
-    suggestedResponses.push("I'm not sure, but I'll find out for you!");
-    suggestedResponses.push("That's a good question, let me think about it.");
-  } else if (lastMessageAnalysis.intent.type === 'greeting') {
-    suggestedResponses.push("Hi there! How are you doing today?");
-    suggestedResponses.push("Hello! Hope you're having a great day!");
-  } else if (lastMessageAnalysis.intent.type === 'help_request') {
-    suggestedResponses.push("I'd be happy to help with that.");
-    suggestedResponses.push("Let me see how I can assist you.");
-  } else if (lastMessageAnalysis.intent.type === 'gratitude') {
-    suggestedResponses.push("You're welcome!");
-    suggestedResponses.push("Glad I could help!");
-  }
-  
-  return {
-    overallSentiment,
-    topTopics,
-    isToxic,
-    suggestedResponses: suggestedResponses.length > 0 ? suggestedResponses : undefined
-  };
-}
-
-// Export text summarization function
-export async function summarizeText(text: string, maxLength: number = 100): Promise<string> {
-  // Simplified extractive summarization
-  // In production, this would use a proper summarization model
-  
-  // Split into sentences
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
-  if (sentences.length <= 3) return text;
-  
-  // Simple importance scoring by sentence length and position
-  const scoredSentences = sentences.map((sentence, index) => {
-    const words = sentence.trim().split(/\s+/);
-    // Score based on word count (longer = more important) and position (earlier = more important)
-    const score = (words.length / 20) + (1 / (index + 1));
-    return { sentence, score };
-  });
-  
-  // Sort by score and take top sentences
-  const topSentences = scoredSentences
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
-    .sort((a, b) => text.indexOf(a.sentence) - text.indexOf(b.sentence)) // Restore original order
-    .map(item => item.sentence);
-  
-  let summary = topSentences.join(' ');
-  
-  // Truncate if still too long
-  if (summary.length > maxLength) {
-    summary = summary.substring(0, maxLength - 3) + '...';
-  }
-  
-  return summary;
 } 
-}
-
-// Export all functions
-export {
-  TextAnalysisResult,
-  IntentType
-}; 

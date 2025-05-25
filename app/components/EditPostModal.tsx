@@ -37,6 +37,8 @@ export default function EditPostModal({ isOpen, onClose, post, onSave }: EditPos
   const [tags, setTags] = useState(post.tags?.join(', ') || '')
   const [isLoading, setIsLoading] = useState(false)
   const [showFeelings, setShowFeelings] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [mediaPreview, setMediaPreview] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!isOpen) return null
@@ -46,15 +48,44 @@ export default function EditPostModal({ isOpen, onClose, post, onSave }: EditPos
 
     setIsLoading(true)
     try {
-      const updatedPost = {
-        id: post.id,
-        content: content.trim(),
-        feeling: feeling || undefined,
-        location: location || undefined,
-        tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : undefined
+      // Create FormData for file uploads
+      const formData = new FormData()
+      formData.append('content', content.trim())
+      
+      if (feeling) formData.append('feeling', feeling)
+      if (location) formData.append('location', location)
+      if (tags) formData.append('tags', tags)
+
+      // Add files if any are selected
+      selectedFiles.forEach((file) => {
+        formData.append('files', file)
+      })
+
+      // Call the API directly with FormData if files are present
+      if (selectedFiles.length > 0) {
+        const response = await fetch(`/api/posts/${post.id}/edit`, {
+          method: 'PATCH',
+          body: formData
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to update post')
+        }
+
+        const data = await response.json()
+        await onSave(data.post) // Pass the updated post data
+      } else {
+        // Use regular JSON if no files
+        const updatedPost = {
+          id: post.id,
+          content: content.trim(),
+          feeling: feeling || undefined,
+          location: location || undefined,
+          tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : undefined
+        }
+        await onSave(updatedPost)
       }
 
-      await onSave(updatedPost)
       onClose()
     } catch (error) {
       console.error('Error updating post:', error)
@@ -68,11 +99,26 @@ export default function EditPostModal({ isOpen, onClose, post, onSave }: EditPos
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files && files.length > 0) {
-      // Handle file upload logic here
-      console.log('Files selected:', files)
+    const files = Array.from(e.target.files || [])
+    if (files.length > 0) {
+      setSelectedFiles(files)
+      
+      // Create preview URLs
+      const previewUrls = files.map(file => {
+        if (file.type.startsWith('image/')) {
+          return URL.createObjectURL(file)
+        }
+        return '' // For videos, we could add video preview logic later
+      })
+      setMediaPreview(previewUrls)
     }
+  }
+
+  const removeFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index)
+    const newPreviews = mediaPreview.filter((_, i) => i !== index)
+    setSelectedFiles(newFiles)
+    setMediaPreview(newPreviews)
   }
 
   return (
@@ -211,19 +257,43 @@ export default function EditPostModal({ isOpen, onClose, post, onSave }: EditPos
           </div>
 
           {/* Current Media Preview */}
-          {(post.images || post.videos) && (
+          {(post.images || post.videos || selectedFiles.length > 0) && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Media
+                Media
               </label>
               <div className="space-y-2">
+                {/* Existing Media */}
                 {post.images && post.images.split(',').map((img, index) => (
-                  <div key={index} className="relative">
+                  <div key={`existing-${index}`} className="relative">
                     <img 
                       src={img.trim()} 
                       alt="Post media"
                       className="w-full h-32 object-cover rounded-lg"
                     />
+                    <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
+                      Current
+                    </div>
+                  </div>
+                ))}
+                
+                {/* New File Previews */}
+                {mediaPreview.map((previewUrl, index) => (
+                  <div key={`new-${index}`} className="relative">
+                    <img 
+                      src={previewUrl} 
+                      alt="New media"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <XMarkIcon className="w-4 h-4" />
+                    </button>
+                    <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                      New
+                    </div>
                   </div>
                 ))}
               </div>

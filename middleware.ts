@@ -60,6 +60,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/home', request.url))
   }
 
+  // If there's a session and trying to access root path, redirect to home
+  if (session && request.nextUrl.pathname === '/') {
+    return NextResponse.redirect(new URL('/home', request.url))
+  }
+
   return response
 }
 

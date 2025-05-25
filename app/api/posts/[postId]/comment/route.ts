@@ -12,7 +12,14 @@ export async function POST(
     }
 
     const body = await req.json()
-    const { content, userId = 'temp-user-id' } = body
+    const { 
+      content, 
+      userId = 'temp-user-id',
+      userEmail,
+      userFirstName,
+      userLastName,
+      userProfileImage
+    } = body
 
     if (!content || content.trim() === '') {
       return NextResponse.json({ error: 'Comment content is required' }, { status: 400 })
@@ -38,13 +45,36 @@ export async function POST(
       user = await prisma.user.create({
         data: {
           id: userId,
-          email: `${userId}@temp.com`,
+          email: userEmail || `${userId}@temp.com`,
           username: userId,
-          firstName: 'User',
-          lastName: `${userId.substring(0, 4)}`,
+          firstName: userFirstName || 'User',
+          lastName: userLastName || '',
           passwordHash: '',
+          profileImageUrl: userProfileImage || null,
         }
       })
+    } else {
+      // Update user data if provided and avoid "user user" issue
+      const updateData: any = {}
+      if (userFirstName && userFirstName !== 'User') {
+        updateData.firstName = userFirstName
+      }
+      if (userLastName && userLastName !== 'user' && userLastName !== 'User') {
+        updateData.lastName = userLastName
+      }
+      if (userEmail) {
+        updateData.email = userEmail
+      }
+      if (userProfileImage) {
+        updateData.profileImageUrl = userProfileImage
+      }
+      
+      if (Object.keys(updateData).length > 0) {
+        user = await prisma.user.update({
+          where: { id: userId },
+          data: updateData
+        })
+      }
     }
 
     // Create comment

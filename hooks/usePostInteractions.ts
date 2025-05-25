@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
 
 type PostInteractionHook = {
   likePost: (postId: string) => Promise<any>
@@ -26,12 +27,17 @@ const getSessionUserId = () => {
 }
 
 export function usePostInteractions(): PostInteractionHook {
+  const { user } = useAuth()
   const [likeLoading, setLikeLoading] = useState(false)
   const [commentLoading, setCommentLoading] = useState(false)
   const [shareLoading, setShareLoading] = useState(false)
   const [likeError, setLikeError] = useState<string | null>(null)
   const [commentError, setCommentError] = useState<string | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
+
+  const getUserId = () => {
+    return user?.id || getSessionUserId()
+  }
 
   const likePost = async (postId: string) => {
     try {
@@ -46,7 +52,7 @@ export function usePostInteractions(): PostInteractionHook {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: getSessionUserId()
+          userId: getUserId()
         })
       })
 
@@ -89,7 +95,11 @@ export function usePostInteractions(): PostInteractionHook {
         },
         body: JSON.stringify({
           content,
-          userId: getSessionUserId()
+          userId: getUserId(),
+          userEmail: user?.email,
+          userFirstName: user?.user_metadata?.firstName || user?.email?.split('@')[0] || 'User',
+          userLastName: user?.user_metadata?.lastName || '',
+          userProfileImage: user?.user_metadata?.avatar_url || user?.user_metadata?.profileImageUrl
         })
       })
 
@@ -126,7 +136,7 @@ export function usePostInteractions(): PostInteractionHook {
         },
         body: JSON.stringify({
           shareType,
-          userId: getSessionUserId()
+          userId: getUserId()
         })
       })
 

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { uploadToS3 } from '@/lib/s3'
+import { analyzeText } from '../ai/text-analysis'
 
 export async function POST(req: Request) {
   try {
@@ -55,6 +56,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
+    // Analyze content and auto-assign spoke if not provided
+    let assignedSpoke = spoke;
+    try {
+      if (!assignedSpoke) {
+        const analysis = await analyzeText(content);
+        if (analysis.spokeTag.confidence > 0.4) {
+          assignedSpoke = analysis.spokeTag.spoke;
+          console.log(`Auto-assigned spoke: ${assignedSpoke} (confidence: ${analysis.spokeTag.confidence})`);
+          console.log(`Reasoning: ${analysis.spokeTag.reasoning}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error analyzing content for spoke tagging:', error);
+      // Continue without auto-assignment if analysis fails
+    }
+
     // Upload media files
     const imageUrls: string[] = []
     const videoUrls: string[] = []
@@ -100,7 +117,7 @@ export async function POST(req: Request) {
         content,
         feeling: feeling || undefined,
         location: location || undefined,
-        spoke: spoke || undefined,
+        spoke: assignedSpoke || undefined,
         type,
         tags: tags.length > 0 ? tags.join(',') : undefined,
         images: imageUrls.length > 0 ? imageUrls.join(',') : undefined,
@@ -173,6 +190,7 @@ export async function GET(req: Request) {
     const where = {
       ...(spoke ? { spoke } : {}),
       ...(type ? { type } : {}),
+      isDeleted: false, // Only show non-deleted posts
     }
 
     const posts = await prisma.post.findMany({

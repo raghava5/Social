@@ -11,62 +11,51 @@ export async function PATCH(
     const { commentId, content, userId } = body
 
     if (!commentId || !content || !userId) {
-      return NextResponse.json({ error: 'Comment ID, content, and user ID are required' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    console.log(`Edit comment request: commentId=${commentId}, userId=${userId}`)
-
-    // Use transaction for consistency
-    const result = await prisma.$transaction(async (tx) => {
-      // Get the comment to verify ownership
-      const comment = await tx.comment.findUnique({
-        where: { id: commentId },
-        include: { user: true, post: true }
-      })
-
-      if (!comment) {
-        throw new Error('Comment not found')
-      }
-
-      // Check if user owns the comment
-      if (comment.userId !== userId) {
-        throw new Error('Unauthorized: You can only edit your own comments')
-      }
-
-      // Update the comment
-      const updatedComment = await tx.comment.update({
-        where: { id: commentId },
-        data: {
-          content: content.trim(),
-          isEdited: true,
-          updatedAt: new Date()
-        },
-        include: {
-          user: true
-        }
-      })
-
-      return updatedComment
+    // Verify the comment exists and belongs to the user
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { user: true }
     })
 
-    console.log(`Comment edited successfully: ${commentId}`)
+    if (!comment) {
+      return NextResponse.json({ error: 'Comment not found' }, { status: 404 })
+    }
+
+    if (comment.userId !== userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+    }
+
+    // Update the comment
+    const updatedComment = await prisma.comment.update({
+      where: { id: commentId },
+      data: {
+        content: content.trim(),
+        updatedAt: new Date()
+      },
+      include: { user: true }
+    })
 
     return NextResponse.json({
       success: true,
-      comment: result
+      comment: {
+        id: updatedComment.id,
+        content: updatedComment.content,
+        createdAt: updatedComment.createdAt,
+        updatedAt: updatedComment.updatedAt,
+        isEdited: true,
+        user: {
+          id: updatedComment.user.id,
+          firstName: updatedComment.user.firstName,
+          lastName: updatedComment.user.lastName,
+          profileImageUrl: updatedComment.user.profileImageUrl
+        }
+      }
     })
   } catch (error) {
     console.error('Error editing comment:', error)
-    
-    if (error instanceof Error) {
-      if (error.message.includes('Comment not found')) {
-        return NextResponse.json({ error: 'Comment not found' }, { status: 404 })
-      }
-      if (error.message.includes('Unauthorized')) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-      }
-    }
-    
     return NextResponse.json(
       { error: 'Failed to edit comment' },
       { status: 500 }

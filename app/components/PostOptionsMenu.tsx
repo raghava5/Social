@@ -8,19 +8,20 @@ import {
   BookmarkIcon,
   FlagIcon,
   EyeSlashIcon,
-  UserMinusIcon
+  UserMinusIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
 interface PostOptionsMenuProps {
   postId: string
   authorId: string
   currentUserId?: string
-  onEdit?: () => void
-  onDelete?: () => void
-  onSave?: () => void
-  onHide?: () => void
-  onReport?: () => void
-  onUnfollow?: () => void
+  onEdit: () => void
+  onDelete: () => void
+  onSave: () => void
+  onHide: () => void
+  onReport: () => void
+  onUnfollow: () => void
 }
 
 export default function PostOptionsMenu({
@@ -88,87 +89,48 @@ export default function PostOptionsMenu({
             // Options for own posts
             <>
               <button
-                onClick={() => handleMenuAction(onEdit)}
-                className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+                onClick={onEdit}
+                className="w-full flex items-center px-4 py-2 text-left hover:bg-gray-50 transition-colors"
               >
-                <PencilIcon className="w-5 h-5 text-gray-600 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium text-gray-900">Edit post</div>
-                  <div className="text-sm text-gray-500">Make changes to your post</div>
-                </div>
+                <PencilIcon className="w-4 h-4 mr-3 text-gray-500" />
+                <span className="text-sm text-gray-700">Edit post</span>
               </button>
               
               <button
-                onClick={() => handleMenuAction(onDelete)}
-                className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+                onClick={onDelete}
+                className="w-full flex items-center px-4 py-2 text-left hover:bg-gray-50 transition-colors"
               >
-                <TrashIcon className="w-5 h-5 text-red-600 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium text-red-600">Delete post</div>
-                  <div className="text-sm text-gray-500">Remove this post permanently</div>
-                </div>
-              </button>
-
-              <hr className="my-2 border-gray-100" />
-
-              <button
-                onClick={() => handleMenuAction(onSave)}
-                className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
-              >
-                <BookmarkIcon className="w-5 h-5 text-gray-600 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium text-gray-900">Save post</div>
-                  <div className="text-sm text-gray-500">Add to your saved items</div>
-                </div>
+                <TrashIcon className="w-4 h-4 mr-3 text-red-500" />
+                <span className="text-sm text-red-600">Delete post</span>
               </button>
             </>
           ) : (
             // Options for other people's posts
             <>
               <button
-                onClick={() => handleMenuAction(onSave)}
-                className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+                onClick={onHide}
+                className="w-full flex items-center px-4 py-2 text-left hover:bg-gray-50 transition-colors"
               >
-                <BookmarkIcon className="w-5 h-5 text-gray-600 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium text-gray-900">Save post</div>
-                  <div className="text-sm text-gray-500">Add to your saved items</div>
-                </div>
+                <EyeSlashIcon className="w-4 h-4 mr-3 text-gray-500" />
+                <span className="text-sm text-gray-700">Hide post</span>
               </button>
 
               <button
-                onClick={() => handleMenuAction(onHide)}
-                className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+                onClick={onUnfollow}
+                className="w-full flex items-center px-4 py-2 text-left hover:bg-gray-50 transition-colors"
               >
-                <EyeSlashIcon className="w-5 h-5 text-gray-600 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium text-gray-900">Hide post</div>
-                  <div className="text-sm text-gray-500">See fewer posts like this</div>
-                </div>
+                <UserMinusIcon className="w-4 h-4 mr-3 text-gray-500" />
+                <span className="text-sm text-gray-700">Unfollow user</span>
               </button>
 
-              <button
-                onClick={() => handleMenuAction(onUnfollow)}
-                className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
-              >
-                <UserMinusIcon className="w-5 h-5 text-gray-600 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium text-gray-900">Unfollow</div>
-                  <div className="text-sm text-gray-500">Stop seeing posts from this person</div>
-                </div>
-              </button>
-
-              <hr className="my-2 border-gray-100" />
+              <hr className="my-1" />
 
               <button
-                onClick={() => handleMenuAction(onReport)}
-                className="w-full flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
+                onClick={onReport}
+                className="w-full flex items-center px-4 py-2 text-left hover:bg-gray-50 transition-colors"
               >
-                <FlagIcon className="w-5 h-5 text-red-600 mr-3" />
-                <div className="text-left">
-                  <div className="font-medium text-red-600">Report post</div>
-                  <div className="text-sm text-gray-500">Report inappropriate content</div>
-                </div>
+                <ExclamationTriangleIcon className="w-4 h-4 mr-3 text-red-500" />
+                <span className="text-sm text-red-600">Report post</span>
               </button>
             </>
           )}

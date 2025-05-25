@@ -20,6 +20,8 @@ import {
   UserIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
+  BookmarkIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/context/AuthContext'
 
@@ -130,6 +132,26 @@ export default function TopNav() {
                     onClick={() => setShowProfileMenu(false)}
                   >
                     Your Profile
+                  </Link>
+                  <Link
+                    href="/saved-posts"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    <div className="flex items-center">
+                      <BookmarkIcon className="h-5 w-5 mr-2" />
+                      Saved Posts
+                    </div>
+                  </Link>
+                  <Link
+                    href="/deleted-posts"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    <div className="flex items-center">
+                      <TrashIcon className="h-5 w-5 mr-2" />
+                      Deleted Posts
+                    </div>
                   </Link>
                   <Link
                     href="/settings"

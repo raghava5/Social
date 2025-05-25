@@ -13,6 +13,8 @@ interface Comment {
   id: string
   content: string
   createdAt: string
+  updatedAt?: string
+  isEdited?: boolean
   user: {
     id: string
     firstName: string
@@ -34,6 +36,8 @@ interface Post {
   commentsList: Comment[]
   shares: number
   timestamp: string
+  updatedAt?: string
+  isEdited?: boolean
   spoke?: string
   location?: string
   feeling?: string
@@ -178,6 +182,8 @@ export function usePosts() {
     commentsList: post.comments || [],
     shares: post.shares || 0,
     timestamp: post.createdAt || new Date(),
+    updatedAt: post.updatedAt,
+    isEdited: post.isEdited,
     spoke: post.spoke,
     location: post.location,
     feeling: post.feeling,
