@@ -19,6 +19,21 @@
 .DS_Store
 *.pem
 
+# Security: Certificate and key files (CRITICAL: Never commit these!)
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+*.p7b
+*.p7c
+*.der
+*.cer
+*.csr
+*.jks
+*.keystore
+*.truststore
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -45,3 +60,22 @@ public/uploads/*-[0-9]*-[0-9]*.*
 # Temp files
 *.tmp
 *.temp
+
+# Security: Backup files that might contain secrets
+*.backup
+*.bak
+*.old
+*.orig
+*.save
+.env.backup*
+.env.old*
+.env.save*
+
+# Security: Common sensitive files
+secrets.json
+config.json
+credentials.json
+service-account.json
+.secrets/
+private/
+confidential/
