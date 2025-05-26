@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { cookies } from 'next/headers'
+import { createServerClient } from '@supabase/ssr'
 
 export async function DELETE(
   req: Request,
@@ -104,20 +106,49 @@ export async function PATCH(
 }
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { postId: string } }
 ) {
   try {
     const { postId } = params
 
+    // Get current user session
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {
+              // Handle cookie setting error
+            }
+          },
+        },
+      }
+    )
+
+    const { data: { session } } = await supabase.auth.getSession()
+
     const post = await prisma.post.findUnique({
-      where: { id: postId },
+      where: { 
+        id: postId,
+        isDeleted: false
+      },
       include: {
         author: true,
         likes: true,
         comments: {
           include: {
             user: true,
+            likes: true,
           },
           orderBy: {
             createdAt: 'desc',
@@ -130,7 +161,18 @@ export async function GET(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    return NextResponse.json(post)
+    // Add user-specific like status
+    const isLikedByCurrentUser = session?.user?.id 
+      ? post.likes.some(like => like.userId === session.user.id) 
+      : false
+
+    const postWithLikeStatus = {
+      ...post,
+      isLikedByCurrentUser,
+    }
+
+    return NextResponse.json(postWithLikeStatus)
+
   } catch (error) {
     console.error('Error fetching post:', error)
     return NextResponse.json(

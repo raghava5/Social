@@ -49,8 +49,13 @@ export async function POST(req: Request) {
     const type = formData.get('type') as string || 'user-post'
     const tags = formData.getAll('tags') as string[]
     const files = formData.getAll('files') as File[]
+    
+    // Check for pre-uploaded media URLs
+    const uploadedVideoUrl = formData.get('uploadedVideoUrl') as string
+    const uploadedImageUrl = formData.get('uploadedImageUrl') as string
 
     console.log('Post data:', { content, feeling, location, spoke, type, tags })
+    console.log('Pre-uploaded media:', { uploadedVideoUrl, uploadedImageUrl })
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -72,22 +77,36 @@ export async function POST(req: Request) {
       // Continue without auto-assignment if analysis fails
     }
 
-    // Upload media files
+    // Handle media files - use pre-uploaded URLs if available, otherwise upload new files
     const imageUrls: string[] = []
     const videoUrls: string[] = []
 
-    try {
-      for (const file of files) {
-        const url = await uploadToS3(file)
-        if (file.type.startsWith('image/')) {
-          imageUrls.push(url)
-        } else if (file.type.startsWith('video/')) {
-          videoUrls.push(url)
+    // Add pre-uploaded URLs first
+    if (uploadedVideoUrl) {
+      videoUrls.push(uploadedVideoUrl)
+      console.log('✅ Using pre-uploaded video URL:', uploadedVideoUrl)
+    }
+    
+    if (uploadedImageUrl) {
+      imageUrls.push(uploadedImageUrl)
+      console.log('✅ Using pre-uploaded image URL:', uploadedImageUrl)
+    }
+
+    // Upload any new files if not pre-uploaded
+    if (files.length > 0 && !uploadedVideoUrl && !uploadedImageUrl) {
+      try {
+        for (const file of files) {
+          const url = await uploadToS3(file)
+          if (file.type.startsWith('image/')) {
+            imageUrls.push(url)
+          } else if (file.type.startsWith('video/')) {
+            videoUrls.push(url)
+          }
         }
+      } catch (uploadError) {
+        console.error('Error uploading files:', uploadError)
+        return NextResponse.json({ error: 'Failed to upload media files' }, { status: 500 })
       }
-    } catch (uploadError) {
-      console.error('Error uploading files:', uploadError)
-      return NextResponse.json({ error: 'Failed to upload media files' }, { status: 500 })
     }
 
     console.log('Media URLs:', { imageUrls, videoUrls })
@@ -142,6 +161,30 @@ export async function POST(req: Request) {
       console.log('WebSocket server not available')
     }
 
+    // Auto-trigger FREE transcription for ALL videos
+    if (videoUrls.length > 0) {
+      try {
+        console.log(`🆓 Auto-triggering FREE transcription for ${videoUrls.length} video(s) in post:`, post.id)
+        
+        // Import the auto-transcribe function
+        const { autoTranscribeVideo } = await import('../transcribe-free/route')
+        
+        // Transcribe each video
+        for (const videoUrl of videoUrls) {
+          console.log(`🎥 Transcribing video: ${videoUrl}`)
+          autoTranscribeVideo(post.id, videoUrl)
+            .catch(error => {
+              console.error(`Failed to transcribe video ${videoUrl}:`, error)
+            })
+        }
+        
+        console.log('✅ FREE transcription started for all videos')
+      } catch (transcribeError) {
+        console.warn('⚠️ Failed to auto-trigger transcription:', transcribeError)
+        // Don't fail the post creation if transcription fails
+      }
+    }
+
     return NextResponse.json(post)
   } catch (error) {
     console.error('Error creating post:', error)
@@ -158,8 +201,10 @@ export async function GET(req: Request) {
     const spoke = searchParams.get('spoke')
     const type = searchParams.get('type')
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50) // Cap at 50 posts per request
     const skip = (page - 1) * limit
+    
+    console.log(`📄 Fetching posts: page=${page}, limit=${limit}, skip=${skip}`);
 
     // Get current user session for like status
     const cookieStore = await cookies()
@@ -229,11 +274,20 @@ export async function GET(req: Request) {
 
     const total = await prisma.post.count({ where })
 
-    return NextResponse.json({
+    const response = {
       posts: postsWithLikeStatus,
-      total,
-      hasMore: skip + posts.length < total,
-    })
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasMore: skip + posts.length < total,
+        count: posts.length
+      }
+    }
+    
+    console.log(`📄 Returning ${posts.length} posts, hasMore: ${response.pagination.hasMore}`)
+    return NextResponse.json(response)
   } catch (error) {
     console.error('Error fetching posts:', error)
     return NextResponse.json(

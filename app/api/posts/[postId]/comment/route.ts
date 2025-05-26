@@ -91,6 +91,31 @@ export async function POST(
 
     console.log(`Comment created: ${comment.id}`)
 
+    // Get updated comment count for the post
+    const commentCount = await prisma.comment.count({
+      where: { postId }
+    })
+
+    // 🚀 REAL-TIME UPDATE: Broadcast comment update via WebSocket
+    if (global.io) {
+      global.io.emit('post_commented', {
+        postId,
+        commentCount,
+        comment: {
+          id: comment.id,
+          content: comment.content,
+          createdAt: comment.createdAt,
+          user: {
+            id: comment.user.id,
+            firstName: comment.user.firstName,
+            lastName: comment.user.lastName,
+            profileImageUrl: comment.user.profileImageUrl
+          }
+        }
+      })
+      console.log(`📡 Broadcasted comment update for post ${postId}: ${commentCount} comments`)
+    }
+
     return NextResponse.json({
       success: true,
       comment: {
@@ -103,7 +128,8 @@ export async function POST(
           lastName: comment.user.lastName,
           profileImageUrl: comment.user.profileImageUrl
         }
-      }
+      },
+      commentCount
     })
   } catch (error) {
     console.error('Error creating comment:', error)

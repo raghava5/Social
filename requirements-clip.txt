@@ -1,0 +1,17 @@
+# CLIP Image Analysis Dependencies
+# Install with: pip install -r requirements-clip.txt
+
+torch>=2.0.0
+torchvision>=0.15.0
+ftfy>=6.1.1
+regex>=2023.0.0
+tqdm>=4.64.0
+Pillow>=9.0.0
+numpy>=1.21.0
+
+# Install CLIP from GitHub (latest version)
+git+https://github.com/openai/CLIP.git
+
+# Optional: For CUDA support (if you have a compatible GPU)
+# torch==2.0.0+cu118 --index-url https://download.pytorch.org/whl/cu118
+# torchvision==0.15.0+cu118 --index-url https://download.pytorch.org/whl/cu118 

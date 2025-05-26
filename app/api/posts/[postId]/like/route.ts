@@ -89,6 +89,17 @@ export async function POST(
 
     console.log(`Like processed: liked=${result.liked}, count=${result.likeCount}`)
 
+    // 🚀 REAL-TIME UPDATE: Broadcast like update via WebSocket
+    if (global.io) {
+      global.io.emit('post_liked', {
+        postId: result.postId,
+        likeCount: result.likeCount,
+        userId: userId,
+        liked: result.liked
+      })
+      console.log(`📡 Broadcasted like update for post ${postId}: ${result.likeCount} likes`)
+    }
+
     return NextResponse.json({ 
       success: true,
       ...result

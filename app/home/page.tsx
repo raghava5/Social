@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import CreatePost from '../components/CreatePost'
 import EmptyFeed from '../components/EmptyFeed'
-import { usePosts } from '@/hooks/usePosts'
+import ErrorBoundary from '../components/ErrorBoundary'
+import SkeletonFeed from '../components/SkeletonFeed'
+import { usePosts } from '../../hooks/usePosts'
 import { usePostInteractions } from '@/hooks/usePostInteractions'
 import TopNav from '../components/TopNav'
 import PostCard from '../components/PostCard'
@@ -11,6 +13,7 @@ import { useAuth } from '@/context/AuthContext'
 import { Post, PostType, Spoke, Prompt, LiveEvent, TrendingItem, Recommendation } from '@/types/post'
 import Link from 'next/link'
 import { BookmarkIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { io, Socket } from 'socket.io-client'
 
 // Configuration
 const spokes: Spoke[] = [
@@ -49,16 +52,88 @@ const recommendations: Recommendation[] = [
 ]
 
 export default function Home() {
-  const { posts: allPosts, loading, error, createPost, refreshPosts } = usePosts()
+  const { 
+    posts: allPosts, 
+    loading, 
+    loadingMore, 
+    error, 
+    pagination, 
+    createPost, 
+    refreshPosts, 
+    loadMorePosts, 
+    optimisticLike, 
+    optimisticSave, 
+    uploadingMedia 
+  } = usePosts()
   const { user } = useAuth()
-  const [priorityFeed, setPriorityFeed] = useState<Post[]>([])
-  const [displayedPosts, setDisplayedPosts] = useState<Post[]>([])
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [activeSpoke, setActiveSpoke] = useState<string | null>(null)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  const [socket, setSocket] = useState<Socket | null>(null)
+  const [connected, setConnected] = useState(false)
 
   const POSTS_PER_BATCH = 3 // Load 3 posts at a time
+
+  // 🚀 REAL-TIME: Initialize WebSocket connection
+  useEffect(() => {
+    if (!user?.id) return
+
+    const newSocket = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      timeout: 10000,
+    })
+
+    newSocket.on('connect', () => {
+      console.log('🔌 Connected to WebSocket')
+      setConnected(true)
+      
+      // Authenticate with the server
+      newSocket.emit('authenticate', { 
+        userId: user.id,
+        token: localStorage.getItem('authToken') || 'dummy-token' 
+      })
+    })
+
+    newSocket.on('connect_error', (error) => {
+      console.warn('🔥 WebSocket connection error:', error)
+      setConnected(false)
+    })
+
+    newSocket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 WebSocket reconnected after', attemptNumber, 'attempts')
+      setConnected(true)
+    })
+
+    newSocket.on('authenticated', () => {
+      console.log('✅ WebSocket authenticated')
+    })
+
+    newSocket.on('disconnect', () => {
+      console.log('🔌 Disconnected from WebSocket')
+      setConnected(false)
+    })
+
+    // 🚀 REAL-TIME: Listen for new posts from other users (Facebook-style)
+    newSocket.on('new_post', (data) => {
+      console.log('📬 New post received from others:', data)
+      // Real-time posts will be handled by usePosts hook
+    })
+
+    // 🚀 REAL-TIME: Listen for broadcasts from other users
+    newSocket.on('broadcast_new_post', (data) => {
+      console.log('📡 Broadcast received from other user:', data)
+      // Real-time posts will be handled by usePosts hook
+    })
+
+    // Store socket globally for PostCard to use
+    ;(window as any).socket = newSocket
+    setSocket(newSocket)
+
+    return () => {
+      newSocket.close()
+      ;(window as any).socket = null
+    }
+  }, [user?.id])
 
   const handleCompleteOnboarding = () => {
     setShowOnboarding(false)
@@ -71,47 +146,13 @@ export default function Home() {
     } else {
       setActiveSpoke(spokeName) // Apply filter
     }
-    setDisplayedPosts([]) // Reset displayed posts
-    setHasMore(true) // Reset pagination
+    // Refresh posts with filter
+    refreshPosts(1, 10, true)
   }
 
-  useEffect(() => {
-    if (allPosts.length > 0) {
-      buildPriorityFeed(allPosts)
-    } else {
-      setPriorityFeed([])
-      setDisplayedPosts([])
-    }
-  }, [allPosts, activeSpoke])
-
-  // Progressive loading effect
-  useEffect(() => {
-    if (priorityFeed.length > 0 && displayedPosts.length === 0) {
-      // Load first batch immediately
-      loadNextBatch()
-    }
-  }, [priorityFeed])
-
   const loadNextBatch = () => {
-    if (loadingMore || !hasMore) return
-
-    setLoadingMore(true)
-    
-    // Simulate loading delay for better UX
-    setTimeout(() => {
-      const currentLength = displayedPosts.length
-      const nextBatch = priorityFeed.slice(currentLength, currentLength + POSTS_PER_BATCH)
-      
-      if (nextBatch.length > 0) {
-        setDisplayedPosts(prev => [...prev, ...nextBatch])
-      }
-      
-      if (currentLength + nextBatch.length >= priorityFeed.length) {
-        setHasMore(false)
-      }
-      
-      setLoadingMore(false)
-    }, 300) // 300ms delay for smooth loading
+    if (loadingMore || !pagination.hasMore) return
+    loadMorePosts()
   }
 
   // Infinite scroll handler
@@ -127,71 +168,38 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [displayedPosts, loadingMore, hasMore])
-
-  const buildPriorityFeed = (posts: Post[]) => {
-    // Filter by active spoke if one is selected
-    let filteredPosts = activeSpoke 
-      ? posts.filter(post => post.spoke === activeSpoke)
-      : posts
-
-    // Get or initialize spoke rotation
-    const storedRotation = localStorage.getItem('spokeRotation')
-    let spokeRotation = storedRotation ? JSON.parse(storedRotation) : spokes.map(spoke => spoke.name)
-    
-    // Rotate spokes
-    const [firstSpoke, ...restSpokes] = spokeRotation
-    spokeRotation = [...restSpokes, firstSpoke]
-    localStorage.setItem('spokeRotation', JSON.stringify(spokeRotation))
-    
-    // Priority order for post types
-    const postTypeOrder: PostType[] = [
-      'help-request',
-      'spend-time',
-      'user-post',
-      'campaign',
-      'activity',
-      'tool',
-      'game'
-    ]
-    
-    // Build feed based on priority and spoke rotation
-    const feed = postTypeOrder.reduce<Post[]>((acc, postType) => {
-      const postsOfType = filteredPosts.filter(post => post.type === postType)
-      if (postsOfType.length === 0) return acc
-      
-      // Try to find a post from the current spoke rotation
-      const postFromRotation = postsOfType.find(post => 
-        post.spoke && spokeRotation.includes(post.spoke)
-      )
-      
-      if (postFromRotation) {
-        acc.push(postFromRotation)
-      } else {
-        // If no post from rotation, take the first available
-        acc.push(postsOfType[0])
-      }
-      
-      return acc
-    }, [])
-    
-    // Add remaining posts that weren't included
-    const usedPostIds = new Set(feed.map(post => post.id))
-    const remainingPosts = filteredPosts.filter(post => !usedPostIds.has(post.id))
-    
-    setPriorityFeed([...feed, ...remainingPosts])
-  }
+  }, [allPosts, loadingMore, pagination.hasMore])
 
   const { likePost, commentOnPost, sharePost } = usePostInteractions()
 
-  // Simplified like handler 
+  // 🚀 FACEBOOK-STYLE LIKE: Instant UI + Background API
   const handleLike = async (postId: string) => {
     try {
-      const response = await likePost(postId)
-      console.log('Like response:', response)
-      return response
+      // STEP 1: Instant UI update (optimistic)
+      if (optimisticLike) {
+        optimisticLike(postId, user?.id || 'temp-user-id')
+      }
+      
+      // STEP 2: Background API call
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id || 'temp-user-id' })
+      })
+      
+      if (!response.ok) {
+        // Rollback optimistic update on failure
+        if (optimisticLike) {
+          optimisticLike(postId, user?.id || 'temp-user-id') // Revert
+        }
+        throw new Error('Failed to like post')
+      }
+      
+      const data = await response.json()
+      console.log('✅ Like confirmed by server:', data)
+      return data
     } catch (error) {
-      console.error('Error liking post:', error)
+      console.error('❌ Like failed:', error)
       throw error
     }
   }
@@ -199,9 +207,26 @@ export default function Home() {
   // Simplified comment handler
   const handleComment = async (postId: string, content: string) => {
     try {
-      const response = await commentOnPost(postId, content)
-      console.log('Comment response:', response)
-      return response
+      const response = await fetch(`/api/posts/${postId}/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          content,
+          userId: user?.id || 'temp-user-id',
+          userEmail: user?.email,
+          userFirstName: (user as any)?.firstName || 'User',
+          userLastName: (user as any)?.lastName || '',
+          userProfileImage: (user as any)?.profileImageUrl
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to comment on post')
+      }
+      
+      const data = await response.json()
+      console.log('Comment response:', data)
+      return data
     } catch (error) {
       console.error('Error commenting on post:', error)
       throw error
@@ -254,13 +279,7 @@ export default function Home() {
         isLikedByCurrentUser: data.post.likes?.some((like: any) => like.userId === user?.id) || false
       }
 
-      // Update both displayed posts and priority feed
-      setDisplayedPosts(prev => 
-        prev.map(post => post.id === postId ? updatedPostData : post)
-      )
-      setPriorityFeed(prev => 
-        prev.map(post => post.id === postId ? updatedPostData : post)
-      )
+      // Post updates will be handled by usePosts hook
       
       return data
     } catch (error) {
@@ -286,9 +305,7 @@ export default function Home() {
         throw new Error('Failed to delete post')
       }
 
-      // Remove post from local state immediately for better UX
-      setDisplayedPosts(prev => prev.filter(post => post.id !== postId))
-      setPriorityFeed(prev => prev.filter(post => post.id !== postId))
+      // Post deletion will be handled by usePosts hook
       
       // Do not refresh posts from server - just keep local state
       
@@ -298,9 +315,15 @@ export default function Home() {
     }
   }
 
-  // Save post handler
+  // 🚀 FACEBOOK-STYLE SAVE: Instant UI + Background API
   const handleSavePost = async (postId: string) => {
     try {
+      // STEP 1: Instant UI feedback (optimistic)
+      if (optimisticSave) {
+        optimisticSave(postId)
+      }
+      
+      // STEP 2: Background API call
       const response = await fetch(`/api/posts/${postId}/save`, {
         method: 'POST',
         headers: {
@@ -316,43 +339,44 @@ export default function Home() {
       }
 
       const data = await response.json()
-      console.log('Save response:', data)
+      console.log('✅ Save confirmed by server:', data)
       
       return data
     } catch (error) {
-      console.error('Error saving post:', error)
+      console.error('❌ Save failed:', error)
       throw error
     }
   }
 
   const renderPostCard = (post: Post) => {
     return (
-      <PostCard 
-        key={post.id}
-        id={post.id}
-        author={post.author}
-        content={post.content}
-        images={post.images}
-        videos={post.videos}
-        likes={[]}
-        comments={post.commentsList}
-        shares={post.shares || 0}
-        createdAt={post.timestamp || new Date()}
-        updatedAt={post.updatedAt}
-        isEdited={post.isEdited || false}
-        spoke={post.spoke}
-        location={post.location}
-        feeling={post.feeling}
-        type={post.type}
-        isLikedByCurrentUser={post.isLikedByCurrentUser}
-        onLike={handleLike}
-        onComment={handleComment}
-        onShare={sharePost}
-        onEdit={handleEditPost}
-        onDelete={handleDeletePost}
-        onSave={handleSavePost}
-        currentUserId={user?.id}
-      />
+      <ErrorBoundary key={post.id}>
+        <PostCard 
+          id={post.id}
+          author={post.author}
+          content={post.content}
+          images={post.images}
+          videos={post.videos}
+          likes={[]}
+          comments={post.commentsList}
+          shares={post.shares || 0}
+          createdAt={post.timestamp || new Date()}
+          updatedAt={post.updatedAt}
+          isEdited={post.isEdited || false}
+          spoke={post.spoke}
+          location={post.location}
+          feeling={post.feeling}
+          type={post.type}
+          isLikedByCurrentUser={post.isLikedByCurrentUser}
+          onLike={handleLike}
+          onComment={handleComment}
+          onShare={sharePost}
+          onEdit={handleEditPost}
+          onDelete={handleDeletePost}
+          onSave={handleSavePost}
+          currentUserId={user?.id}
+        />
+      </ErrorBoundary>
     )
   }
 
@@ -367,63 +391,61 @@ export default function Home() {
         throw new Error('Post content is required')
       }
 
-      // Create optimistic post for instant feedback
-      const tempId = `temp-${Date.now()}`
-      const optimisticPost: Post = {
-        id: tempId,
-        type: 'user-post',
-        author: {
-          id: user.id,
-          name: `${user.user_metadata?.firstName || 'User'} ${user.user_metadata?.lastName || ''}`.trim() || user.email?.split('@')[0] || 'User',
-          avatar: user.user_metadata?.avatar_url || user.user_metadata?.profileImageUrl || '/images/avatars/default.svg'
-        },
-        content: content,
-        images: '',
-        videos: '',
-        likes: 0,
-        comments: 0,
-        commentsList: [],
-        shares: 0,
-        timestamp: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isEdited: false,
-        spoke: formData.get('spoke')?.toString() || undefined,
-        location: formData.get('location')?.toString() || undefined,
-        feeling: formData.get('feeling')?.toString() || undefined,
-        tags: [],
-        isLikedByCurrentUser: false
-      }
+      console.log('🚀 Starting Facebook-style post creation...')
 
-      // Add optimistic post immediately
-      setDisplayedPosts(prev => [optimisticPost, ...prev])
-      setPriorityFeed(prev => [optimisticPost, ...prev])
-
-      try {
-        // Create actual post
-        await createPost(formData)
-        
-        // Remove the optimistic post since createPost will add the real one
-        setDisplayedPosts(prev => prev.filter(post => post.id !== tempId))
-        setPriorityFeed(prev => prev.filter(post => post.id !== tempId))
-        
-      } catch (error) {
-        // Remove optimistic post on error
-        setDisplayedPosts(prev => prev.filter(post => post.id !== tempId))
-        setPriorityFeed(prev => prev.filter(post => post.id !== tempId))
-        throw error
+      // 🚀 FACEBOOK-STYLE: usePosts hook handles:
+      // 1. ⚡ Optimistic UI (instant post appearance)
+      // 2. 📡 Backend creation
+      // 3. 🎯 Real-time broadcast to other users
+      // 4. 🔍 Background spoke detection
+      const success = await createPost(formData)
+      
+      if (!success) {
+        throw new Error('Failed to create post')
       }
+      
+      console.log('🎊 Facebook-style post creation completed!')
+      
+      // Post creation handled by usePosts hook
+        
     } catch (error: any) {
-      console.error('Error creating post:', error)
+      console.error('❌ Post creation error:', error)
+      // Show user-friendly error message
+      alert(error.message || 'Failed to create post. Please try again.')
       throw error
     }
   }
 
-  if (loading) {
-    return <div className="p-4">Loading...</div>
+  if (loading && allPosts.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TopNav />
+        <main className="flex-1 lg:ml-64 container mx-auto px-4 py-8">
+          <CreatePost onSubmit={handlePostSubmit} />
+          <SkeletonFeed count={5} />
+        </main>
+      </div>
+    )
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TopNav />
+        <main className="flex-1 lg:ml-64 container mx-auto px-4 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <h3 className="text-red-800 font-medium mb-2">Failed to load posts</h3>
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => refreshPosts(1, 10, true)}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+            >
+              Try Again
+            </button>
+          </div>
+        </main>
+      </div>
+    )
   }
 
   return (
@@ -516,6 +538,25 @@ export default function Home() {
 
           {/* Main Content */}
           <main className="flex-1 lg:ml-64 container mx-auto px-4 py-8">
+            {/* Status Indicators */}
+            <div className="mb-4 flex items-center justify-center space-x-4">
+              {/* Upload Progress Indicator */}
+              {uploadingMedia && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-blue-700 text-sm font-medium">Uploading media...</span>
+                </div>
+              )}
+              
+              {/* WebSocket Status Indicator */}
+              {connected && !uploadingMedia && (
+                <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-700 text-sm font-medium">Real-time updates active</span>
+                </div>
+              )}
+            </div>
+            
             <CreatePost onSubmit={handlePostSubmit} />
             
             {/* Filter Indicator */}
@@ -536,30 +577,43 @@ export default function Home() {
               </div>
             )}
             
-            {displayedPosts.length === 0 ? (
+            {loading ? (
+              <SkeletonFeed count={5} />
+            ) : allPosts.length === 0 ? (
               <EmptyFeed />
             ) : (
-              <div className="space-y-6 mt-6">
-                {displayedPosts.map(renderPostCard)}
-                
-                {/* Loading indicator */}
-                {loadingMore && (
-                  <div className="flex justify-center py-8">
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span>Loading more posts...</span>
+              <ErrorBoundary>
+                <div className="space-y-6 mt-6">
+                  {allPosts.map(renderPostCard)}
+                  
+                  {/* Load More Button / Loading indicator */}
+                  {pagination.hasMore ? (
+                    <div className="flex justify-center py-8">
+                      {loadingMore ? (
+                        <div className="flex items-center space-x-2 text-gray-600">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span>Loading more posts...</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={loadMorePosts}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                        >
+                          Load More Posts
+                        </button>
+                      )}
                     </div>
-                  </div>
-                )}
-                
-                {/* End of posts indicator */}
-                {!hasMore && displayedPosts.length > 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>You've reached the end! 🎉</p>
-                    <p className="text-sm mt-1">Check back later for more posts</p>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    /* End of posts indicator */
+                    allPosts.length > 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>You've reached the end! 🎉</p>
+                        <p className="text-sm mt-1">Check back later for more posts</p>
+                      </div>
+                    )
+                  )}
+                </div>
+              </ErrorBoundary>
             )}
           </main>
         </div>

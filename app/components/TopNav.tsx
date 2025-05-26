@@ -36,12 +36,25 @@ const navigation = [
   { name: 'Notifications', href: '/notifications', icon: BellIcon },
 ]
 
+const homeNavigation = [
+  { name: 'Home', href: '/home', icon: HomeIcon },
+  { name: 'People', href: '/people', icon: UserGroupIcon },
+  { name: 'Messages', href: '/messages', icon: ChatBubbleLeftIcon },
+  { name: 'Activities', href: '/activities', icon: ClipboardDocumentListIcon },
+  { name: 'Discover', href: '/discover', icon: GlobeAltIcon },
+  { name: 'Spend time with others', href: '/spend-time-with-others', icon: UsersIcon },
+  { name: 'Help Others', href: '/help-others', icon: HandRaisedIcon },
+  { name: 'Profile', href: '/profile', icon: UserIcon },
+]
+
 export default function TopNav() {
   const pathname = usePathname()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const { user, signOut } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
+  
+  const isHomePage = pathname === '/home'
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -88,6 +101,27 @@ export default function TopNav() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Navigation Icons - Show on all pages */}
+          <div className="hidden lg:flex items-center space-x-1 px-4">
+            {homeNavigation.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`p-2 rounded-lg transition-colors ${
+                    isActive 
+                      ? 'bg-blue-100 text-blue-600' 
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                  title={item.name}
+                >
+                  <item.icon className="h-6 w-6" aria-hidden="true" />
+                </Link>
+              )
+            })}
           </div>
 
           {/* Right side navigation items */}

@@ -1,0 +1,318 @@
+version: '3.8'
+
+services:
+  # Application Load Balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - app-1
+      - app-2
+      - app-3
+    networks:
+      - social-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # Application instances (horizontal scaling)
+  app-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres-primary:5432/social_db
+      - REDIS_HOST_1=redis-1
+      - REDIS_HOST_2=redis-2
+      - REDIS_HOST_3=redis-3
+      - SERVER_ID=app-1
+      - PORT=3000
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    networks:
+      - social-network
+    depends_on:
+      - postgres-primary
+      - redis-1
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  app-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres-primary:5432/social_db
+      - REDIS_HOST_1=redis-1
+      - REDIS_HOST_2=redis-2
+      - REDIS_HOST_3=redis-3
+      - SERVER_ID=app-2
+      - PORT=3000
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    networks:
+      - social-network
+    depends_on:
+      - postgres-primary
+      - redis-1
+
+  app-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres-primary:5432/social_db
+      - REDIS_HOST_1=redis-1
+      - REDIS_HOST_2=redis-2
+      - REDIS_HOST_3=redis-3
+      - SERVER_ID=app-3
+      - PORT=3000
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    networks:
+      - social-network
+    depends_on:
+      - postgres-primary
+      - redis-1
+
+  # PostgreSQL Primary (Write operations)
+  postgres-primary:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: social_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_primary_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - social-network
+    command: |
+      postgres
+      -c max_connections=1000
+      -c shared_buffers=2GB
+      -c effective_cache_size=6GB
+      -c maintenance_work_mem=512MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=10MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+
+  # PostgreSQL Read Replica 1
+  postgres-replica-1:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: social_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      PGUSER: postgres
+    volumes:
+      - postgres_replica_1_data:/var/lib/postgresql/data
+    networks:
+      - social-network
+    depends_on:
+      - postgres-primary
+
+  # Redis Cluster for caching and sessions
+  redis-1:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_1_data:/data
+    networks:
+      - social-network
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+
+  redis-2:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_2_data:/data
+    networks:
+      - social-network
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+
+  redis-3:
+    image: redis:7-alpine
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_3_data:/data
+    networks:
+      - social-network
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+
+  # Elasticsearch for search functionality
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - social-network
+
+  # MinIO for media storage
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio_data:/data
+    networks:
+      - social-network
+    command: server /data --console-address ":9001"
+
+  # Background job processor
+  worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres-primary:5432/social_db
+      - REDIS_HOST_1=redis-1
+      - WORKER_ID=worker-1
+    networks:
+      - social-network
+    depends_on:
+      - postgres-primary
+      - redis-1
+
+  worker-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:password@postgres-primary:5432/social_db
+      - REDIS_HOST_1=redis-1
+      - WORKER_ID=worker-2
+    networks:
+      - social-network
+    depends_on:
+      - postgres-primary
+      - redis-1
+
+  # Monitoring services
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - social-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - social-network
+
+  # Log aggregation
+  elasticsearch-logs:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - elasticsearch_logs_data:/usr/share/elasticsearch/data
+    networks:
+      - social-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline
+    networks:
+      - social-network
+    depends_on:
+      - elasticsearch-logs
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch-logs:9200
+    networks:
+      - social-network
+    depends_on:
+      - elasticsearch-logs
+
+  # Message queue for async processing
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - social-network
+
+volumes:
+  postgres_primary_data:
+  postgres_replica_1_data:
+  redis_1_data:
+  redis_2_data:
+  redis_3_data:
+  elasticsearch_data:
+  elasticsearch_logs_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  rabbitmq_data:
+
+networks:
+  social-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 

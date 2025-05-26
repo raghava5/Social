@@ -34,6 +34,7 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
   const [location, setLocation] = useState('')
   const [showFeelings, setShowFeelings] = useState(false)
   const [showLocationInput, setShowLocationInput] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
 
@@ -106,6 +107,7 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
     })
 
     try {
+      setIsSubmitting(true)
       await onSubmit(formData)
 
       // Reset form
@@ -118,6 +120,8 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
       setShowLocationInput(false)
     } catch (error) {
       console.error('Error creating post:', error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -360,10 +364,17 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
           </div>
           <button
             type="submit"
-            disabled={!content.trim() && selectedFiles.length === 0}
+            disabled={(!content.trim() && selectedFiles.length === 0) || isSubmitting}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Post
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Posting...
+              </>
+            ) : (
+              'Post'
+            )}
           </button>
         </div>
       </form>

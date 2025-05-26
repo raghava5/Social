@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   HeartIcon as HeartOutline,
   ChatBubbleOvalLeftIcon as ChatOutline,
@@ -106,6 +106,8 @@ export default function PostCard({
   const [showMediaViewer, setShowMediaViewer] = useState(false)
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0)
   const [saved, setSaved] = useState(false)
+  const videoRefs = useRef<{ [key: number]: HTMLVideoElement }>({})
+  const [currentVideoTime, setCurrentVideoTime] = useState(0)
 
   // Update when props change
   useEffect(() => {
@@ -113,6 +115,59 @@ export default function PostCard({
     setLikeCount(likes.length)
     setCommentCount(comments.length)
   }, [isLikedByCurrentUser, likes.length, comments.length])
+
+  // 🚀 REAL-TIME UPDATES: Listen for WebSocket events
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const socket = (window as any).socket
+    if (!socket) return
+
+    // Listen for real-time like updates
+    const handleLikeUpdate = (data: any) => {
+      if (data.postId === id) {
+        setLikeCount(data.likeCount)
+        // Don't update liked state if it's the current user's action
+        if (data.userId !== currentUserId) {
+          setLiked(data.liked)
+        }
+        console.log(`📡 Received like update for post ${id}: ${data.likeCount} likes`)
+      }
+    }
+
+    // Listen for real-time comment updates
+    const handleCommentUpdate = (data: any) => {
+      if (data.postId === id) {
+        setCommentCount(data.commentCount)
+        // Add new comment to the list if provided
+        if (data.comment && data.comment.user.id !== currentUserId) {
+          comments.unshift(data.comment)
+        }
+        console.log(`📡 Received comment update for post ${id}: ${data.commentCount} comments`)
+      }
+    }
+
+    // Listen for spoke tag updates
+    const handleSpokeUpdate = (data: any) => {
+      if (data.postId === id && data.spoke) {
+        // Update the spoke tag in real-time
+        spoke = data.spoke
+        console.log(`📡 Received spoke update for post ${id}: ${data.spoke}`)
+        // Force re-render to show the new spoke tag
+        window.location.reload() // Temporary - ideally use state management
+      }
+    }
+
+    socket.on('post_liked', handleLikeUpdate)
+    socket.on('post_commented', handleCommentUpdate)
+    socket.on('post_spoke_updated', handleSpokeUpdate)
+
+    return () => {
+      socket.off('post_liked', handleLikeUpdate)
+      socket.off('post_commented', handleCommentUpdate)
+      socket.off('post_spoke_updated', handleSpokeUpdate)
+    }
+  }, [id, currentUserId, spoke])
 
   const timestamp = typeof createdAt === 'string' 
     ? formatDistanceToNow(new Date(createdAt), { addSuffix: true })
@@ -126,7 +181,7 @@ export default function PostCard({
 
   const avatarUrl = author.avatar || author.profileImageUrl || '/images/avatars/default.svg'
 
-  // Facebook-style like handler - instant feedback
+  // Facebook-style like handler with rate limiting and real-time updates
   const handleLike = async () => {
     if (!onLike) return
     
@@ -138,11 +193,38 @@ export default function PostCard({
     setLikeCount(newCount)
     
     try {
+      // Check rate limit before making request
+      const rateLimitResponse = await fetch('/api/rate-limit/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'like_post', postId: id })
+      })
+      
+      if (!rateLimitResponse.ok) {
+        const rateLimitData = await rateLimitResponse.json()
+        if (rateLimitResponse.status === 429) {
+          // Revert on rate limit
+          setLiked(!newLiked)
+          setLikeCount(likeCount)
+          console.warn('Like rate limit exceeded:', rateLimitData.retryAfter)
+          return
+        }
+      }
+
       const response = await onLike(id)
       // Sync with server response if needed
       if (response?.success) {
         setLiked(response.liked)
         setLikeCount(response.likeCount)
+        
+        // Emit real-time event for connected users
+        if (typeof window !== 'undefined' && (window as any).socket) {
+          (window as any).socket.emit('post_liked', {
+            postId: id,
+            liked: response.liked,
+            likeCount: response.likeCount
+          })
+        }
       }
     } catch (error) {
       // Revert on error
@@ -327,6 +409,13 @@ export default function PostCard({
   }
 
   const handleMediaClick = (index: number) => {
+    // If it's a video, pause it and get current time
+    const videoRef = videoRefs.current[index]
+    if (videoRef) {
+      setCurrentVideoTime(videoRef.currentTime)
+      videoRef.pause()
+    }
+    
     setSelectedMediaIndex(index)
     setShowMediaViewer(true)
   }
@@ -411,17 +500,40 @@ export default function PostCard({
       </div>
 
       {/* Media */}
-      {images && (
+      {(images || videos) && (
         <div className="mb-3">
-          {images.split(',').filter(img => img.trim()).map((img, index) => (
+          {/* Images */}
+          {images && images.split(',').filter(img => img.trim()).map((img, index) => (
             <img 
-              key={index}
+              key={`img-${index}`}
               src={img.trim()} 
               alt="Post image"
               className="w-full object-cover max-h-96 cursor-pointer hover:opacity-95 transition-opacity"
               onClick={() => handleMediaClick(index)}
             />
           ))}
+          
+          {/* Videos */}
+          {videos && videos.split(',').filter(vid => vid.trim()).map((video, index) => {
+            const videoIndex = images ? images.split(',').filter(img => img.trim()).length + index : index
+            return (
+              <video 
+                key={`vid-${index}`}
+                ref={(el) => {
+                  if (el) {
+                    videoRefs.current[videoIndex] = el
+                  }
+                }}
+                src={video.trim()} 
+                className="w-full object-cover max-h-96 cursor-pointer hover:opacity-95 transition-opacity"
+                controls
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleMediaClick(videoIndex)
+                }}
+              />
+            )
+          })}
         </div>
       )}
 
@@ -460,7 +572,7 @@ export default function PostCard({
           ) : (
             <HeartOutline className="w-5 h-5 mr-2" />
           )}
-          <span className="font-medium">Like</span>
+          <span className="font-medium">{liked ? 'Liked' : 'Like'}</span>
         </button>
         
         <button 
@@ -650,9 +762,16 @@ export default function PostCard({
       {showMediaViewer && (
         <MediaViewer
           isOpen={showMediaViewer}
-          onClose={() => setShowMediaViewer(false)}
-          media={images?.split(',').filter(img => img.trim()) || []}
+          onClose={() => {
+            setShowMediaViewer(false)
+            setCurrentVideoTime(0) // Reset when closing
+          }}
+          media={[
+            ...(images?.split(',').filter(img => img.trim()) || []),
+            ...(videos?.split(',').filter(vid => vid.trim()) || [])
+          ]}
           initialIndex={selectedMediaIndex}
+          initialVideoTime={currentVideoTime}
           post={{
             id,
             author,
@@ -669,6 +788,8 @@ export default function PostCard({
           onLike={onLike}
           onComment={onComment}
           onShare={onShare}
+          onEdit={(postId) => setShowEditModal(true)}
+          onDelete={handleDelete}
           currentUserId={currentUserId}
         />
       )}
