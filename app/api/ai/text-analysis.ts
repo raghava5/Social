@@ -11,7 +11,7 @@ const SPOKE_KEYWORDS: Record<SpokeType, string[]> = {
   'Spiritual': ['god', 'prayer', 'faith', 'soul', 'spirit', 'divine', 'blessed', 'gratitude', 'meditation', 'worship', 'church', 'temple', 'scripture', 'purpose', 'meaning', 'peace'],
   'Mental': ['anxiety', 'depression', 'stress', 'therapy', 'counseling', 'psychology', 'mental health', 'mind', 'thoughts', 'emotions', 'feelings', 'overwhelmed', 'panic', 'worry', 'calm'],
   'Physical': ['exercise', 'workout', 'fitness', 'gym', 'running', 'training', 'health', 'nutrition', 'diet', 'weight', 'muscle', 'cardio', 'strength', 'energy', 'stamina', 'athletic'],
-  'Personal': ['growth', 'development', 'self-improvement', 'goals', 'habits', 'discipline', 'motivation', 'confidence', 'self-esteem', 'identity', 'values', 'personality', 'character'],
+  'Personal': ['growth', 'development', 'self-improvement', 'goals', 'habits', 'discipline', 'motivation', 'confidence', 'self-esteem', 'identity', 'values', 'personality', 'character', 'music', 'piano', 'guitar', 'singing', 'art', 'creative', 'hobby', 'skill', 'learning', 'practice', 'talent', 'passion'],
   'Professional': ['work', 'career', 'job', 'business', 'office', 'colleagues', 'boss', 'promotion', 'salary', 'skills', 'productivity', 'deadlines', 'meeting', 'project', 'client'],
   'Financial': ['money', 'budget', 'savings', 'investment', 'income', 'expenses', 'debt', 'loan', 'bank', 'financial', 'wealth', 'economy', 'stocks', 'retirement'],
   'Social': ['friends', 'family', 'relationship', 'dating', 'marriage', 'social', 'community', 'people', 'connection', 'love', 'friendship', 'partner', 'gathering', 'party'],

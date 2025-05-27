@@ -15,22 +15,32 @@ import {
   GlobeAltIcon,
   SparklesIcon,
   UsersIcon,
+  TrashIcon,
+  HeartIcon,
+  PuzzlePieceIcon,
+  FireIcon,
+  CurrencyDollarIcon,
+  BriefcaseIcon,
+  AcademicCapIcon,
 } from '@heroicons/react/24/outline'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 const navigation = [
-  { name: 'Home', href: '/home', icon: HomeIcon },
-  { name: 'People', href: '/people', icon: UserGroupIcon },
-  { name: 'Messages', href: '/chat', icon: ChatBubbleLeftIcon },
-  { name: 'Activities', href: '/activities', icon: ClipboardDocumentListIcon },
-  { name: 'Discover', href: '/discover', icon: GlobeAltIcon },
-  { name: 'Spend time with others', href: '/spend-time', icon: UsersIcon },
-  { name: 'Help Others', href: '/help-others', icon: HandRaisedIcon },
-  { name: 'Profile', href: '/profile', icon: UserIcon },
+  { name: 'All Posts', href: '/home', icon: HomeIcon },
+  { name: 'Spiritual', href: '/home?spoke=Spiritual', icon: SparklesIcon },
+  { name: 'Mental', href: '/home?spoke=Mental', icon: AcademicCapIcon },
+  { name: 'Physical', href: '/home?spoke=Physical', icon: FireIcon },
+  { name: 'Personal', href: '/home?spoke=Personal', icon: HeartIcon },
+  { name: 'Professional', href: '/home?spoke=Professional', icon: BriefcaseIcon },
+  { name: 'Financial', href: '/home?spoke=Financial', icon: CurrencyDollarIcon },
+  { name: 'Social', href: '/home?spoke=Social', icon: UserGroupIcon },
+  { name: 'Societal', href: '/home?spoke=Societal', icon: GlobeAltIcon },
+  { name: 'Fun & Recreation', href: '/home?spoke=Fun', icon: UsersIcon },
 ]
 
 const shortcuts = [
-  { name: 'Saved Posts', href: '/saved', icon: BookmarkIcon },
+  { name: 'Saved Posts', href: '/saved-posts', icon: BookmarkIcon },
+  { name: 'Deleted Posts', href: '/deleted-posts', icon: TrashIcon },
   { name: 'Events', href: '/events', icon: CalendarIcon },
   { name: 'Photos', href: '/photos', icon: PhotoIcon },
   { name: 'Videos', href: '/videos', icon: VideoCameraIcon },
@@ -38,13 +48,18 @@ const shortcuts = [
 
 export default function LeftSidebar() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   return (
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:border-r lg:border-gray-200 lg:bg-white lg:pt-16">
       <div className="flex flex-col flex-grow overflow-y-auto">
         <nav className="flex-1 px-2 py-4 space-y-1">
           {navigation.map((item) => {
-            const isActive = pathname === item.href
+            // Extract spoke parameter from href for navigation items
+            const spokeParam = item.href.includes('spoke=') ? item.href.split('spoke=')[1] : null
+            const currentSpoke = searchParams?.get('spoke')
+            const isActive = pathname === '/home' && spokeParam === currentSpoke
+            
             return (
               <Link
                 key={item.name}

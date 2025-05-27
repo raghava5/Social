@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import PostCard from '../components/PostCard'
 import CreatePost from '../components/CreatePost'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Author {
   id: string
@@ -33,16 +33,21 @@ interface Post {
   tags?: string[]
   type?: string
   isLikedByCurrentUser?: boolean
+  isSaved?: boolean
   author: Author
 }
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  
+  // Get spoke filter from URL parameters
+  const spokeFilter = searchParams?.get('spoke')
 
   // Mount detection
   useEffect(() => {
@@ -57,50 +62,54 @@ export default function HomePage() {
     }
   }, [authLoading, user, router])
 
-  // Fetch posts - only once on mount
+  // Fetch posts function - reusable
+  const fetchPosts = useCallback(async () => {
+    if (!user) return
+
+    try {
+      console.log('📡 Fetching posts...')
+      setLoading(true)
+      const spokeParam = spokeFilter ? `&spoke=${spokeFilter}` : ''
+      const response = await fetch(`/api/posts?page=1&limit=10&userId=${user.id}${spokeParam}`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      
+      if (data.posts && Array.isArray(data.posts)) {
+        // Fix author name mapping: API returns firstName/lastName, PostCard expects name
+        const postsWithFixedNames = data.posts.map((post: any) => ({
+          ...post,
+          author: {
+            ...post.author,
+            name: post.author.firstName && post.author.lastName 
+              ? `${post.author.firstName} ${post.author.lastName}`.trim()
+              : post.author.firstName || post.author.lastName || 'Anonymous User'
+          },
+          // Ensure comments and likes are always arrays
+          comments: post.comments || [],
+          likes: post.likes || []
+        }))
+        setPosts(postsWithFixedNames)
+        console.log(`✅ Loaded ${postsWithFixedNames.length} posts`)
+      } else if (data.error) {
+        throw new Error(data.message || data.error)
+      } else {
+        throw new Error('Invalid response format')
+      }
+    } catch (error) {
+      console.error('❌ Error fetching posts:', error)
+      setError('Failed to load posts. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [user, spokeFilter])
+
+  // Fetch posts - when mounted, user changes, or spoke filter changes
   useEffect(() => {
     if (!mounted || !user) return
-
-    const fetchPosts = async () => {
-      try {
-        console.log('📡 Fetching posts...')
-        const response = await fetch('/api/posts?page=1&limit=10')
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
-        
-        if (data.posts && Array.isArray(data.posts)) {
-          // Fix author name mapping: API returns firstName/lastName, PostCard expects name
-          const postsWithFixedNames = data.posts.map((post: any) => ({
-            ...post,
-            author: {
-              ...post.author,
-              name: post.author.firstName && post.author.lastName 
-                ? `${post.author.firstName} ${post.author.lastName}`.trim()
-                : post.author.firstName || post.author.lastName || 'Anonymous User'
-            },
-            // Ensure comments and likes are always arrays
-            comments: post.comments || [],
-            likes: post.likes || []
-          }))
-          setPosts(postsWithFixedNames)
-          console.log(`✅ Loaded ${postsWithFixedNames.length} posts`)
-        } else if (data.error) {
-          throw new Error(data.message || data.error)
-        } else {
-          throw new Error('Invalid response format')
-        }
-      } catch (error) {
-        console.error('❌ Error fetching posts:', error)
-        setError('Failed to load posts. Please try again.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchPosts()
-  }, [mounted, user])
+  }, [mounted, user, spokeFilter, fetchPosts])
 
   // Optimized handlers
   const handleLike = useCallback(async (postId: string) => {
@@ -168,23 +177,69 @@ export default function HomePage() {
   }, [])
 
   const handleEdit = useCallback(async (postId: string, updatedPost: any) => {
-    console.log('Edit post:', postId, updatedPost)
-  }, [])
+    try {
+      const response = await fetch(`/api/posts/${postId}/edit`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          ...updatedPost,
+          userId: user?.id 
+        }),
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        
+        // Update local state with edited post
+        setPosts(prev => prev.map(post => 
+          post.id === postId 
+            ? { 
+                ...post,
+                ...result.post,
+                isEdited: true,
+                updatedAt: new Date().toISOString(),
+                author: {
+                  ...post.author,
+                  name: result.post.author?.firstName && result.post.author?.lastName 
+                    ? `${result.post.author.firstName} ${result.post.author.lastName}`.trim()
+                    : post.author.name
+                }
+              }
+            : post
+        ))
+        
+        console.log(`✅ Post ${postId} edited successfully`)
+      } else {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to edit post')
+      }
+    } catch (error) {
+      console.error('❌ Edit failed:', error)
+      alert('Failed to edit post. Please try again.')
+    }
+  }, [user?.id])
 
   const handleDelete = useCallback(async (postId: string) => {
     try {
       const response = await fetch(`/api/posts/${postId}/delete`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id }),
       })
       
       if (response.ok) {
+        // Optimistically remove post from UI
         setPosts(prev => prev.filter(post => post.id !== postId))
+        console.log(`✅ Post ${postId} deleted successfully`)
+      } else {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to delete post')
       }
     } catch (error) {
-      console.error('Delete failed:', error)
+      console.error('❌ Delete failed:', error)
+      alert('Failed to delete post. Please try again.')
     }
-  }, [])
+  }, [user?.id])
 
   const handleSave = useCallback(async (postId: string) => {
     try {
@@ -196,13 +251,24 @@ export default function HomePage() {
       const result = await response.json()
       
       if (result.success) {
-        console.log(`✅ Post ${postId} saved successfully`)
-        // You could update local state here to show saved status
+        // Update local state to show saved status
+        setPosts(prev => prev.map(post => 
+          post.id === postId 
+            ? { 
+                ...post, 
+                isSaved: result.saved // Toggle saved status
+              }
+            : post
+        ))
+        console.log(`✅ Post ${postId} ${result.saved ? 'saved' : 'unsaved'} successfully`)
+      } else {
+        throw new Error(result.message || 'Failed to save post')
       }
       
       return result
     } catch (error) {
-      console.error('Save failed:', error)
+      console.error('❌ Save failed:', error)
+      alert('Failed to save post. Please try again.')
       throw error
     }
   }, [user?.id])
@@ -246,6 +312,18 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto px-4">
+        {/* Spoke Filter Header */}
+        {spokeFilter && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-blue-800">
+              {spokeFilter} Posts
+            </h2>
+            <p className="text-sm text-blue-600">
+              Showing posts tagged with "{spokeFilter}" spoke
+            </p>
+          </div>
+        )}
+        
         {/* Create Post */}
         <div className="mb-6">
           <CreatePost onSubmit={async (formData) => {
@@ -304,6 +382,7 @@ export default function HomePage() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onSave={handleSave}
+                onRefresh={fetchPosts}
               />
             ))}
           </div>

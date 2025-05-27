@@ -282,13 +282,14 @@ export const GET = async function(req: Request) {
     const { searchParams } = new URL(req.url)
     const spoke = searchParams.get('spoke')
     const type = searchParams.get('type')
+    const userId = searchParams.get('userId') // ✅ GET CURRENT USER ID FOR LIKE STATUS
     const page = parseInt(searchParams.get('page') || '1')
     const limit = Math.min(parseInt(searchParams.get('limit') || '5'), 5) // ✅ INCREASED: Allow up to 5 posts
     
     console.log(`📄 Fetching posts: page=${page}, limit=${limit}`)
 
     // 🚀 CACHE CHECK: Try to get from cache first
-    const cacheParams = { page, limit, spoke: spoke || undefined, type: type || undefined }
+    const cacheParams = { page, limit, spoke: spoke || undefined, type: type || undefined, userId: userId || undefined }
     const cachedResult = getCachedPosts(cacheParams)
     
     if (cachedResult) {
@@ -359,41 +360,109 @@ export const GET = async function(req: Request) {
       })
     }
 
-    // 🚀 STEP 2: Get authors only - NO other data
+    // 🚀 STEP 2: Get authors AND essential interaction data
     const batchStartTime = Date.now()
-    const authorIds = [...new Set(posts.map(p => p.authorId))]
+    const authorIds = [...new Set(posts.map((p: any) => p.authorId))]
+    const postIds = posts.map((p: any) => p.id)
     
-    const authors = await prisma.user.findMany({
-      where: { id: { in: authorIds } },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        profileImageUrl: true, // ✅ RESTORED: For user avatars
-      }
-    })
+    // Get authors, likes, comments, and bookmarks in parallel
+    const [authors, likes, comments, bookmarks] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: authorIds } },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          profileImageUrl: true,
+        }
+      }),
+      prisma.like.findMany({
+        where: { postId: { in: postIds } },
+        select: { postId: true, userId: true }
+      }),
+      prisma.comment.findMany({
+        where: { postId: { in: postIds } },
+        select: { 
+          id: true,
+          postId: true, 
+          content: true,
+          createdAt: true,
+          updatedAt: true,
+          isEdited: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              profileImageUrl: true
+            }
+          }
+        }
+      }),
+      prisma.bookmark.findMany({
+        where: { 
+          postId: { in: postIds },
+          ...(userId ? { userId } : {})
+        },
+        select: { postId: true, userId: true }
+      })
+    ])
 
-    console.log(`⚡ Authors query: ${Date.now() - batchStartTime}ms`)
+    console.log(`⚡ Batch queries: ${Date.now() - batchStartTime}ms`)
 
     // 🚀 STEP 3: Combine data - ESSENTIAL FIELDS WITH NULL SAFETY
     const processingStartTime = Date.now()
-    const authorsMap = new Map(authors.map(author => [author.id, author]))
+    const authorsMap = new Map(authors.map((author: any) => [author.id, author]))
+    
+    // Group likes, comments, and bookmarks by post
+    const likesMap = new Map()
+    const commentsMap = new Map()
+    const bookmarksMap = new Map()
+    
+    likes.forEach((like: any) => {
+      if (!likesMap.has(like.postId)) likesMap.set(like.postId, [])
+      likesMap.get(like.postId).push(like)
+    })
+    
+    comments.forEach((comment: any) => {
+      if (!commentsMap.has(comment.postId)) commentsMap.set(comment.postId, [])
+      commentsMap.get(comment.postId).push(comment)
+    })
 
-    const postsWithData = posts.map(post => ({
-      id: post.id,
-      content: post.content || '',                    // ✅ NULL SAFETY: Prevent crashes
-      images: post.images || null,                    // ✅ RESTORED: Media support
-      videos: post.videos || null,                    // ✅ RESTORED: Video support  
-      audios: post.audios || null,                    // ✅ RESTORED: Audio support
-      documents: post.documents || null,              // ✅ RESTORED: Document support
-      feeling: post.feeling || null,
-      spoke: post.spoke || null,
-      createdAt: post.createdAt,
-      author: authorsMap.get(post.authorId) || null,
-      likesCount: 0, // Skip for speed but could be restored if needed
-      commentsCount: 0, // Skip for speed but could be restored if needed
-      isLikedByCurrentUser: false,
-    }))
+    bookmarks.forEach((bookmark: any) => {
+      if (!bookmarksMap.has(bookmark.postId)) bookmarksMap.set(bookmark.postId, [])
+      bookmarksMap.get(bookmark.postId).push(bookmark)
+    })
+
+    const postsWithData = posts.map((post: any) => {
+      const postLikes = likesMap.get(post.id) || []
+      const postComments = commentsMap.get(post.id) || []
+      const postBookmarks = bookmarksMap.get(post.id) || []
+      
+      // ✅ CHECK IF CURRENT USER LIKED THIS POST
+      const isLikedByCurrentUser = userId ? postLikes.some((like: any) => like.userId === userId) : false
+      
+      // ✅ CHECK IF CURRENT USER SAVED THIS POST
+      const isSaved = userId ? postBookmarks.some((bookmark: any) => bookmark.userId === userId) : false
+      
+      return {
+        id: post.id,
+        content: post.content || '',                    // ✅ NULL SAFETY: Prevent crashes
+        images: post.images || null,                    // ✅ RESTORED: Media support
+        videos: post.videos || null,                    // ✅ RESTORED: Video support  
+        audios: post.audios || null,                    // ✅ RESTORED: Audio support
+        documents: post.documents || null,              // ✅ RESTORED: Document support
+        feeling: post.feeling || null,
+        spoke: post.spoke || null,                      // ✅ RESTORED: Spoke data
+        createdAt: post.createdAt,
+        author: authorsMap.get(post.authorId) || null,
+        likes: postLikes,                               // ✅ RESTORED: Real like data
+        comments: postComments,                         // ✅ RESTORED: Real comment data
+        shares: 0,                                      // Placeholder
+        isLikedByCurrentUser,                           // ✅ FIXED: Real like status
+        isSaved,                                        // ✅ ADDED: Real saved status
+      }
+    })
 
     console.log(`⚡ Data processing: ${Date.now() - processingStartTime}ms`)
 

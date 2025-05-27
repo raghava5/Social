@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { getOptimizedPrisma } from '@/lib/prisma-optimized'
 import { uploadToS3 } from '@/lib/s3'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -73,6 +73,8 @@ export async function PATCH(
     }
 
     console.log(`Edit post request: postId=${postId}, userId=${userId}`)
+
+    const prisma = getOptimizedPrisma()
 
     // Verify the post exists and belongs to the user
     const post = await prisma.post.findUnique({
@@ -198,3 +200,5 @@ export async function PATCH(
     )
   }
 } 
+// Support PUT method as well (alias for PATCH)
+export const PUT = PATCH

@@ -19,6 +19,7 @@ import PostOptionsMenu from './PostOptionsMenu'
 import EditPostModal from './EditPostModal'
 import MediaViewer from './MediaViewer'
 import MusicPost from './MusicPost'
+import PostModal from './PostModal'
 
 interface Author {
   id: string
@@ -63,12 +64,14 @@ interface PostProps {
   tags?: string[]
   type?: string
   isLikedByCurrentUser?: boolean
+  isSaved?: boolean
   onLike?: (postId: string) => Promise<any>
   onComment?: (postId: string, comment: string) => Promise<any>
   onShare?: (postId: string) => Promise<void>
   onEdit?: (postId: string, updatedPost: any) => Promise<void>
   onDelete?: (postId: string) => Promise<void>
   onSave?: (postId: string) => Promise<void>
+  onRefresh?: () => Promise<void> // ✅ ADD REFRESH CALLBACK
   currentUserId?: string
 }
 
@@ -92,12 +95,14 @@ export default function PostCard({
   tags,
   type = 'user-post',
   isLikedByCurrentUser = false,
+  isSaved = false,
   onLike,
   onComment,
   onShare,
   onEdit,
   onDelete,
   onSave,
+  onRefresh,
   currentUserId
 }: PostProps) {
   const router = useRouter()
@@ -115,10 +120,11 @@ export default function PostCard({
   const [editingCommentText, setEditingCommentText] = useState('')
   const [showMediaViewer, setShowMediaViewer] = useState(false)
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0)
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(isSaved)
   const [mounted, setMounted] = useState(false)
   const [relativeTime, setRelativeTime] = useState('')
   const [editedRelativeTime, setEditedRelativeTime] = useState<string | null>(null)
+  const [showPostModal, setShowPostModal] = useState(false)
   
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement }>({})
   const [currentVideoTime, setCurrentVideoTime] = useState(0)
@@ -133,6 +139,10 @@ export default function PostCard({
   useEffect(() => {
     setLiked(isLikedByCurrentUser)
   }, [isLikedByCurrentUser])
+
+  useEffect(() => {
+    setSaved(isSaved)
+  }, [isSaved])
 
   useEffect(() => {
     setLikeCount((likes || []).length)
@@ -207,9 +217,9 @@ export default function PostCard({
       return
     }
     
-    console.log(`🔗 Navigating to post ${id}`)
-    router.push(`/posts/${id}`)
-  }, [mounted, id, router])
+    console.log(`🔗 Opening post ${id} in modal`)
+    setShowPostModal(true)
+  }, [mounted, id])
 
   const toggleComments = useCallback(() => {
     setShowComments(prev => !prev)
@@ -296,10 +306,11 @@ export default function PostCard({
         <p className="text-gray-800 whitespace-pre-wrap">{content}</p>
         
         {spoke && (
-          <div className="mt-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              🎯 {spoke}
-            </span>
+          <div className="mt-3">
+            <div className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border border-green-200">
+              <span className="mr-1.5">🎯</span>
+              <span className="font-semibold">{spoke}</span>
+            </div>
           </div>
         )}
         
@@ -349,21 +360,96 @@ export default function PostCard({
             />
           ))}
 
-          {/* Audio Files */}
+          {/* Audio Files - Enhanced with Classification */}
           {audios && audios.split(',').filter(audio => audio.trim()).map((audio, index) => {
             const fileName = audio.split('/').pop() || `Audio ${index + 1}`
+            const isMusic = fileName.toLowerCase().includes('music') || fileName.toLowerCase().includes('song') || type === 'music'
+            const isSpeech = !isMusic || type === 'speech'
+            
             return (
-              <div key={`audio-${index}`} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <MicrophoneIcon className="h-5 w-5 text-blue-600" />
+              <div key={`audio-${index}`} className={`rounded-lg p-4 border-2 ${
+                isMusic 
+                  ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200' 
+                  : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
+              }`}>
+                <div className="space-y-3">
+                  {/* Audio Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-12 w-12 rounded-lg flex items-center justify-center ${
+                        isMusic ? 'bg-purple-100' : 'bg-blue-100'
+                      }`}>
+                        {isMusic ? (
+                          <span className="text-2xl">🎵</span>
+                        ) : (
+                          <MicrophoneIcon className={`h-6 w-6 ${isMusic ? 'text-purple-600' : 'text-blue-600'}`} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
+                        <div className="flex items-center space-x-2">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            isMusic 
+                              ? 'bg-purple-100 text-purple-800' 
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {isMusic ? '🎵 Music' : '🗣️ Speech'}
+                          </span>
+                          {spoke && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              🎯 {spoke}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Audio Actions */}
+                    <div className="flex space-x-2">
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-white">
+                        <ArrowDownTrayIcon className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
-                    <audio src={audio.trim()} controls className="mt-2 w-full" />
-                  </div>
+
+                  {/* Audio Player */}
+                  <audio 
+                    src={audio.trim()} 
+                    controls 
+                    className="w-full h-8"
+                    style={{ 
+                      filter: isMusic ? 'hue-rotate(270deg) saturate(1.2)' : 'hue-rotate(200deg)',
+                      borderRadius: '8px'
+                    }}
+                  />
+
+                  {/* Transcription Placeholder */}
+                  {isSpeech && (
+                    <div className="bg-white rounded-lg p-3 border border-blue-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-medium text-gray-900">Transcription</h4>
+                        <button className="text-xs text-blue-600 hover:underline">
+                          Show full transcript
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-600 italic">
+                        Click to generate AI transcription...
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Music Info Placeholder */}
+                  {isMusic && (
+                    <div className="bg-white rounded-lg p-3 border border-purple-100">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg">🎼</span>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Music Analysis</p>
+                          <p className="text-xs text-gray-600">Genre detection, mood analysis available</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -459,11 +545,16 @@ export default function PostCard({
         </button>
       </div>
 
-      {/* Comments Section - Simplified */}
+      {/* Comments Section - Full Featured */}
       {showComments && (
-        <div className="px-4 py-3 space-y-3">
-          <p className="text-sm text-gray-600">Comments: {commentCount}</p>
+        <div className="px-4 py-3 space-y-4">
+          {/* Add Comment Input */}
           <div className="flex space-x-2">
+            <img 
+              src={avatarUrl} 
+              alt="Your avatar"
+              className="w-8 h-8 rounded-full object-cover"
+            />
             <input
               type="text"
               value={commentText}
@@ -475,7 +566,6 @@ export default function PostCard({
                   try {
                     await onComment?.(id, commentText)
                     setCommentText('')
-                    setCommentCount(prev => prev + 1)
                   } catch (error) {
                     console.error('Comment failed:', error)
                   }
@@ -483,6 +573,145 @@ export default function PostCard({
               }}
             />
           </div>
+
+          {/* Display Comments */}
+          {comments && comments.length > 0 && (
+            <div className="space-y-3">
+              {(showAllComments ? comments : comments.slice(0, 3)).map((comment) => (
+                <div key={comment.id} className="flex space-x-2">
+                  <img 
+                    src={comment.user?.profileImageUrl || comment.user?.avatar || '/images/avatars/default.svg'} 
+                    alt={`${comment.user?.firstName || 'User'}'s avatar`}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1">
+                    <div className="bg-gray-100 rounded-2xl px-3 py-2">
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium text-sm text-gray-900">
+                          {comment.user?.firstName && comment.user?.lastName 
+                            ? `${comment.user.firstName} ${comment.user.lastName}`.trim()
+                            : comment.user?.firstName || 'User'}
+                        </div>
+                        {/* Comment Actions */}
+                        {comment.user?.id === currentUserId && (
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => {
+                                setEditingCommentId(comment.id)
+                                setEditingCommentText(comment.content)
+                              }}
+                              className="text-xs text-gray-500 hover:text-blue-600"
+                            >
+                              Edit
+                            </button>
+                            <span className="text-gray-300">•</span>
+                            <button
+                              onClick={async () => {
+                                if (window.confirm('Delete this comment?')) {
+                                  try {
+                                    const response = await fetch(`/api/posts/${id}/comment/delete`, {
+                                      method: 'DELETE',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ commentId: comment.id, userId: currentUserId }),
+                                    })
+                                    if (response.ok) {
+                                      // Refresh post data to remove comment
+                                      await onRefresh?.()
+                                    }
+                                  } catch (error) {
+                                    console.error('Delete comment failed:', error)
+                                  }
+                                }
+                              }}
+                              className="text-xs text-gray-500 hover:text-red-600"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Comment Content - Editable if editing */}
+                      {editingCommentId === comment.id ? (
+                        <div className="mt-1">
+                          <input
+                            type="text"
+                            value={editingCommentText}
+                            onChange={(e) => setEditingCommentText(e.target.value)}
+                            className="w-full p-1 bg-white border border-gray-300 rounded text-sm"
+                            onKeyPress={async (e) => {
+                              if (e.key === 'Enter' && editingCommentText.trim()) {
+                                try {
+                                  const response = await fetch(`/api/posts/${id}/comment/edit`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ 
+                                      commentId: comment.id,
+                                      content: editingCommentText,
+                                      userId: currentUserId 
+                                    }),
+                                  })
+                                  if (response.ok) {
+                                    setEditingCommentId(null)
+                                    setEditingCommentText('')
+                                    await onRefresh?.() // ✅ REFRESH POST DATA
+                                  }
+                                } catch (error) {
+                                  console.error('Edit comment failed:', error)
+                                }
+                              }
+                              if (e.key === 'Escape') {
+                                setEditingCommentId(null)
+                                setEditingCommentText('')
+                              }
+                            }}
+                            onBlur={() => {
+                              setEditingCommentId(null)
+                              setEditingCommentText('')
+                            }}
+                            autoFocus
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Press Enter to save, Escape to cancel</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-800 mt-1">{comment.content}</p>
+                      )}
+                    </div>
+                    
+                    {/* Comment Meta */}
+                    <div className="flex items-center space-x-2 mt-1 ml-1">
+                      <span className="text-xs text-gray-500" suppressHydrationWarning>
+                        {mounted && formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                      </span>
+                      {comment.isEdited && (
+                        <>
+                          <span className="text-gray-300">•</span>
+                          <span className="text-xs text-gray-500">
+                            Edited {mounted && comment.updatedAt && formatDistanceToNow(new Date(comment.updatedAt), { addSuffix: true })}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Show More/Less Comments */}
+              {comments.length > 3 && (
+                <button
+                  onClick={() => setShowAllComments(!showAllComments)}
+                  className="text-sm text-blue-600 hover:underline ml-10"
+                >
+                  {showAllComments ? 'Show less' : `View ${comments.length - 3} more comments`}
+                </button>
+              )}
+            </div>
+          )}
+          
+          {/* No Comments Message */}
+          {(!comments || comments.length === 0) && (
+            <p className="text-sm text-gray-500 text-center py-2">No comments yet. Be the first to comment!</p>
+          )}
         </div>
       )}
 
@@ -514,6 +743,16 @@ export default function PostCard({
             await onEdit?.(id, updatedPost)
             setShowEditModal(false)
           }}
+        />
+      )}
+
+      {/* Post Modal */}
+      {showPostModal && (
+        <PostModal
+          postId={id}
+          isOpen={showPostModal}
+          onClose={() => setShowPostModal(false)}
+          currentUserId={currentUserId}
         />
       )}
     </div>

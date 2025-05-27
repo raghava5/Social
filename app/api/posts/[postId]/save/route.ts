@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { getOptimizedPrisma } from '@/lib/prisma-optimized'
+import { invalidatePostsCache } from '@/lib/posts-cache'
 
 export async function POST(
   req: Request,
@@ -15,6 +16,8 @@ export async function POST(
     const userId = body.userId || 'temp-user-id'
 
     console.log(`Save post request: postId=${postId}, userId=${userId}`)
+
+    const prisma = getOptimizedPrisma()
 
     // Use transaction for consistency
     const result = await prisma.$transaction(async (tx: any) => {
@@ -77,6 +80,9 @@ export async function POST(
 
     console.log(`Post save toggled: saved=${result.saved}`)
 
+    // 🚀 CACHE INVALIDATION: Clear cache for this user
+    invalidatePostsCache({ userId })
+
     return NextResponse.json({
       success: true,
       ...result
@@ -115,6 +121,8 @@ export async function DELETE(
     }
 
     console.log(`Unsave post request: postId=${postId}, userId=${userId}`)
+
+    const prisma = getOptimizedPrisma()
 
     // Find and delete the bookmark
     const bookmark = await prisma.bookmark.findFirst({

@@ -3,9 +3,15 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { usePostInteractions } from '@/hooks/usePostInteractions'
 import PostCard from '@/app/components/PostCard'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { 
+  ArrowLeftIcon,
+  ShareIcon,
+  BookmarkIcon,
+  EllipsisHorizontalIcon,
+  SpeakerWaveIcon,
+  DocumentTextIcon
+} from '@heroicons/react/24/outline'
 import ErrorBoundary from '@/app/components/ErrorBoundary'
 
 interface Post {
@@ -30,6 +36,8 @@ interface Post {
   author: {
     id: string
     name: string
+    firstName?: string
+    lastName?: string
     username?: string
     avatar?: string
     profileImageUrl?: string
@@ -39,214 +47,319 @@ interface Post {
 export default function PostDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuth()
-  const { likePost, commentOnPost, sharePost } = usePostInteractions()
+  const { user, loading: authLoading } = useAuth()
   const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showTranscription, setShowTranscription] = useState(false)
+  const [transcription, setTranscription] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const postId = params?.postId as string
 
   useEffect(() => {
-    if (!postId) return
-
-    const fetchPost = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch(`/api/posts/${postId}`)
-        
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('Post not found')
-          } else {
-            setError('Failed to load post')
-          }
-          return
-        }
-
-        const data = await response.json()
-        setPost(data.post)
-      } catch (err) {
-        console.error('Error fetching post:', err)
-        setError('Failed to load post')
-      } finally {
-        setLoading(false)
-      }
+    if (!authLoading && !user) {
+      router.push('/login')
+      return
     }
 
-    fetchPost()
-  }, [postId])
-
-  const handleLike = async (postId: string) => {
-    try {
-      const result = await likePost(postId)
-      if (post && result) {
-        setPost({
-          ...post,
-          isLikedByCurrentUser: result.liked,
-          likes: result.liked 
-            ? [...post.likes, { userId: user?.id }]
-            : post.likes.filter(like => like.userId !== user?.id)
-        })
-      }
-    } catch (error) {
-      console.error('Failed to like post:', error)
+    if (postId && user) {
+      fetchPost()
     }
-  }
+  }, [postId, user, authLoading])
 
-  const handleComment = async (postId: string, content: string) => {
+  const fetchPost = async () => {
     try {
-      const result = await commentOnPost(postId, content)
-      if (post && result) {
-        setPost({
-          ...post,
-          comments: [...post.comments, result.comment]
-        })
+      setLoading(true)
+      const response = await fetch(`/api/posts/${postId}`)
+      if (!response.ok) {
+        throw new Error(`Post not found (${response.status})`)
       }
-    } catch (error) {
-      console.error('Failed to comment on post:', error)
-    }
-  }
-
-  const handleShare = async (postId: string) => {
-    try {
-      await sharePost(postId)
-      if (post) {
-        setPost({
-          ...post,
-          shares: post.shares + 1
-        })
-      }
-    } catch (error) {
-      console.error('Failed to share post:', error)
-    }
-  }
-
-  const handleEdit = async (postId: string, updatedPost: any) => {
-    try {
-      const response = await fetch(`/api/posts/${postId}/edit`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
+      
+      const data = await response.json()
+      
+      // Fix author name mapping
+      const postWithFixedName = {
+        ...data,
+        author: {
+          ...data.author,
+          name: data.author.firstName && data.author.lastName 
+            ? `${data.author.firstName} ${data.author.lastName}`.trim()
+            : data.author.firstName || data.author.lastName || 'Anonymous User'
         },
-        body: JSON.stringify(updatedPost)
-      })
+        comments: data.comments || [],
+        likes: data.likes || []
+      }
+      
+      setPost(postWithFixedName)
+    } catch (error) {
+      console.error('Error fetching post:', error)
+      setError('Failed to load post')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      if (response.ok) {
-        const data = await response.json()
-        setPost(data.post)
+  const handlePostAction = async (action: string, ...args: any[]) => {
+    if (!post) return
+
+    try {
+      switch (action) {
+        case 'like':
+          const likeResponse = await fetch(`/api/posts/${postId}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user?.id }),
+          })
+          const likeResult = await likeResponse.json()
+          if (likeResult.success) {
+            setPost(prev => prev ? {
+              ...prev,
+              isLikedByCurrentUser: likeResult.liked,
+              likes: Array(likeResult.likeCount || 0).fill({})
+            } : null)
+          }
+          break
+
+        case 'comment':
+          const [comment] = args
+          const commentResponse = await fetch(`/api/posts/${postId}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: comment, userId: user?.id }),
+          })
+          if (commentResponse.ok) {
+            fetchPost() // Refresh to get new comment
+          }
+          break
+
+        case 'save':
+          const saveResponse = await fetch(`/api/posts/${postId}/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user?.id }),
+          })
+          break
+
+        case 'delete':
+          if (window.confirm('Are you sure you want to delete this post?')) {
+            const deleteResponse = await fetch(`/api/posts/${postId}/delete`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: user?.id }),
+            })
+            if (deleteResponse.ok) {
+              router.push('/home')
+            }
+          }
+          break
       }
     } catch (error) {
-      console.error('Failed to edit post:', error)
+      console.error(`Failed to ${action}:`, error)
     }
   }
 
-  const handleDelete = async (postId: string) => {
+  const generateTranscription = async () => {
+    if (!post?.audios) return
+    
+    setTranscription('🔄 Generating transcription...')
+    
     try {
-      const response = await fetch(`/api/posts/${postId}/delete`, {
-        method: 'DELETE'
-      })
+      // Placeholder for transcription API
+      setTimeout(() => {
+        setTranscription(`This is a sample transcription of the audio content. 
+        
+In a real implementation, this would be generated using:
+- OpenAI Whisper API
+- Google Speech-to-Text
+- Azure Cognitive Services
+- Or other transcription services
 
-      if (response.ok) {
-        router.push('/home')
-      }
+The transcription would include:
+- Speaker identification
+- Timestamps
+- Punctuation and formatting
+- Multiple language support`)
+      }, 2000)
     } catch (error) {
-      console.error('Failed to delete post:', error)
+      setTranscription('❌ Failed to generate transcription')
     }
   }
 
-  const handleSave = async (postId: string) => {
-    try {
-      await fetch(`/api/posts/${postId}/save`, {
-        method: 'POST'
-      })
-    } catch (error) {
-      console.error('Failed to save post:', error)
-    }
-  }
-
-  if (loading) {
+  if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-2xl mx-auto pt-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-2xl mx-auto pt-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Back
-            </button>
-            <div className="text-center py-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                {error || 'Post not found'}
-              </h2>
-              <p className="text-gray-600">
-                This post may have been deleted or you don't have permission to view it.
-              </p>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Post Not Found</h1>
+          <p className="text-gray-600 mb-4">{error || 'The post you are looking for does not exist.'}</p>
+          <button 
+            onClick={() => router.push('/home')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Home
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto pt-8">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-4 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
-        >
-          <ArrowLeftIcon className="h-5 w-5 mr-2" />
-          Back
-        </button>
-        
-        <ErrorBoundary>
-          <PostCard
-            id={post.id}
-            author={post.author}
-            content={post.content}
-            images={post.images}
-            videos={post.videos}
-            audios={post.audios}
-            documents={post.documents}
-            likes={post.likes}
-            comments={post.comments}
-            shares={post.shares}
-            createdAt={post.createdAt}
-            updatedAt={post.updatedAt}
-            isEdited={post.isEdited}
-            spoke={post.spoke}
-            location={post.location}
-            feeling={post.feeling}
-            tags={post.tags}
-            type={post.type}
-            isLikedByCurrentUser={post.isLikedByCurrentUser}
-            onLike={handleLike}
-            onComment={handleComment}
-            onShare={handleShare}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onSave={handleSave}
-            currentUserId={user?.id}
-          />
-        </ErrorBoundary>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex">
+          {/* Sidebar */}
+          {sidebarOpen && (
+            <div className="w-80 bg-white border-r border-gray-200 fixed h-full overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900">Post Details</h2>
+                  <button 
+                    onClick={() => setSidebarOpen(false)}
+                    className="p-1 hover:bg-gray-100 rounded"
+                  >
+                    <EllipsisHorizontalIcon className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Post Meta Info */}
+                <div className="space-y-4 mb-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">Post Information</h3>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div>📅 Created: {new Date(post.createdAt).toLocaleDateString()}</div>
+                      {post.isEdited && post.updatedAt && (
+                        <div>✏️ Edited: {new Date(post.updatedAt).toLocaleDateString()}</div>
+                      )}
+                      <div>👍 Likes: {post.likes.length}</div>
+                      <div>💬 Comments: {post.comments.length}</div>
+                      <div>🔄 Shares: {post.shares}</div>
+                      {post.location && <div>📍 Location: {post.location}</div>}
+                      {post.feeling && <div>😊 Feeling: {post.feeling}</div>}
+                    </div>
+                  </div>
+
+                  {/* Spoke Information */}
+                  {post.spoke && (
+                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                      <h3 className="font-medium text-green-900 mb-2">🎯 Spoke Analysis</h3>
+                      <p className="text-sm text-green-800">{post.spoke}</p>
+                    </div>
+                  )}
+
+                  {/* Tags */}
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                      <h3 className="font-medium text-blue-900 mb-2">🏷️ Tags</h3>
+                      <div className="flex flex-wrap gap-1">
+                        {post.tags.map((tag, index) => (
+                          <span key={index} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Transcription Section */}
+                {post.audios && (
+                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-medium text-purple-900 flex items-center">
+                        <SpeakerWaveIcon className="h-4 w-4 mr-2" />
+                        Audio Transcription
+                      </h3>
+                      <button
+                        onClick={() => {
+                          if (!transcription) generateTranscription()
+                          setShowTranscription(!showTranscription)
+                        }}
+                        className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded hover:bg-purple-200"
+                      >
+                        {showTranscription ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
+                    
+                    {showTranscription && (
+                      <div className="bg-white rounded p-3 text-sm text-gray-700 max-h-48 overflow-y-auto">
+                        {transcription || (
+                          <button 
+                            onClick={generateTranscription}
+                            className="text-purple-600 hover:underline"
+                          >
+                            Click to generate transcription
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Quick Actions */}
+                <div className="space-y-2">
+                  <button className="w-full flex items-center justify-center py-2 px-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
+                    <ShareIcon className="h-4 w-4 mr-2" />
+                    Share Post
+                  </button>
+                  <button className="w-full flex items-center justify-center py-2 px-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100">
+                    <BookmarkIcon className="h-4 w-4 mr-2" />
+                    Save Post
+                  </button>
+                  <button className="w-full flex items-center justify-center py-2 px-4 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">
+                    <DocumentTextIcon className="h-4 w-4 mr-2" />
+                    Generate Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Main Content */}
+          <div className={`flex-1 ${sidebarOpen ? 'ml-80' : ''}`}>
+            <div className="max-w-2xl mx-auto px-4 py-8">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <button 
+                  onClick={() => router.back()}
+                  className="flex items-center text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                  Back
+                </button>
+                
+                {!sidebarOpen && (
+                  <button 
+                    onClick={() => setSidebarOpen(true)}
+                    className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  >
+                    Show Details
+                  </button>
+                )}
+              </div>
+
+              {/* Post Content */}
+              <PostCard
+                {...post}
+                currentUserId={user?.id}
+                onLike={() => handlePostAction('like')}
+                onComment={(postId, comment) => handlePostAction('comment', comment)}
+                onShare={() => handlePostAction('share')}
+                onEdit={(postId, updatedPost) => handlePostAction('edit', updatedPost)}
+                onDelete={() => handlePostAction('delete')}
+                onSave={() => handlePostAction('save')}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   )
 } 

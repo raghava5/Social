@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { getOptimizedPrisma } from '@/lib/prisma-optimized'
+import { invalidatePostsCache } from '@/lib/posts-cache'
 
 export async function POST(
   req: Request,
@@ -16,6 +17,8 @@ export async function POST(
     const userId = body.userId || 'temp-user-id'
 
     console.log(`Like request: postId=${postId}, userId=${userId}`)
+
+    const prisma = getOptimizedPrisma()
 
     // Use transaction to prevent race conditions
     const result = await prisma.$transaction(async (tx: any) => {
@@ -88,6 +91,9 @@ export async function POST(
     })
 
     console.log(`Like processed: liked=${result.liked}, count=${result.likeCount}`)
+
+    // 🚀 CACHE INVALIDATION: Clear cache for this user
+    invalidatePostsCache({ userId })
 
     // 🚀 REAL-TIME UPDATE: Broadcast like update via WebSocket
     if (global.io) {

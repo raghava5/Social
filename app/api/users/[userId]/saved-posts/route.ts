@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { getOptimizedPrisma } from '@/lib/prisma-optimized'
 
 export async function GET(
   req: Request,
@@ -10,6 +10,8 @@ export async function GET(
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
     }
+
+    const prisma = getOptimizedPrisma()
 
     // Fetch saved posts for the user
     const savedPosts = await prisma.bookmark.findMany({
