@@ -18,7 +18,7 @@ export async function POST(
     console.log(`Like request: postId=${postId}, userId=${userId}`)
 
     // Use transaction to prevent race conditions
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Ensure user exists in database
       let user = await tx.user.findUnique({
         where: { id: userId }

@@ -89,8 +89,8 @@ export async function PATCH(
     }
 
     // Handle new file uploads
-    let newImageUrls: string[] = []
-    let newVideoUrls: string[] = []
+            const newImageUrls: string[] = []
+        const newVideoUrls: string[] = []
 
     if (files.length > 0) {
       try {

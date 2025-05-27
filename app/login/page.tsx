@@ -48,7 +48,7 @@ export default function Login() {
     }
 
     // Store redirectTo in sessionStorage if present
-    if (redirectTo) {
+    if (redirectTo && typeof window !== 'undefined') {
       sessionStorage.setItem('loginRedirectTo', redirectTo)
     }
   }, [params])
@@ -83,7 +83,7 @@ export default function Login() {
       }
 
       // Get stored redirect path
-      const redirectTo = sessionStorage.getItem('loginRedirectTo')
+      const redirectTo = typeof window !== 'undefined' ? sessionStorage.getItem('loginRedirectTo') : null
       console.log('Attempting sign in with redirect to:', redirectTo || '/home')
 
       const { success, error } = await signIn(email, password, redirectTo || undefined)
@@ -103,7 +103,9 @@ export default function Login() {
       }
 
       // Clear stored redirect path on successful login
-      sessionStorage.removeItem('loginRedirectTo')
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('loginRedirectTo')
+      }
       
       // Show success message briefly before redirect
       setSuccessMessage('Login successful!')

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import io from 'socket.io-client'
+import socketManager from '../lib/socket-manager'
 
 type PostType = 'help-request' | 'spend-time' | 'user-post' | 'campaign' | 'activity' | 'tool' | 'game';
 
@@ -31,6 +31,8 @@ interface Post {
   content: string
   images?: string
   videos?: string
+  audios?: string
+  documents?: string
   likes: number
   comments: number
   commentsList: Comment[]
@@ -73,31 +75,22 @@ export function usePosts() {
   useEffect(() => {
     let mounted = true
 
-    // Initialize socket connection (if not already available globally)
-    const initializeSocket = () => {
+    // Initialize optimized socket connection
+    const initializeSocket = async () => {
       try {
-        // Check if socket already exists globally (from home page)
-        if (typeof window !== 'undefined' && (window as any).socket) {
-          console.log('📡 Using existing global socket')
-          return (window as any).socket
-        }
-
-        const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
-          reconnectionAttempts: 3,
-          timeout: 10000,
-        })
-
-        socketInstance.on('connect_error', (err) => {
-          console.warn('Socket connection error:', err)
-        })
-
-        if (mounted) {
+        console.log('📡 Initializing optimized socket connection...')
+        const { optimizedSocketManager } = await import('../lib/socket-manager-optimized')
+        const socketInstance = await optimizedSocketManager.connect()
+        
+        if (mounted && socketInstance) {
           setSocket(socketInstance)
+          // Store globally for other components
+          ;(window as any).socket = socketInstance
         }
 
         return socketInstance
       } catch (error) {
-        console.warn('Failed to initialize socket:', error)
+        console.warn('Failed to initialize optimized socket:', error)
         return null
       }
     }
@@ -106,24 +99,31 @@ export function usePosts() {
     fetchPosts()
 
     // Initialize socket and set up listeners
-    const socketInstance = initializeSocket()
-    if (socketInstance) {
-      socketInstance.on('new-post', handleNewPost)
-      socketInstance.on('post-updated', handlePostUpdate)
-      socketInstance.on('post-deleted', handlePostDelete)
-      socketInstance.on('post-liked', handlePostLike)
-      socketInstance.on('new-comment', handleNewComment)
-    }
+    initializeSocket().then(socketInstance => {
+      if (socketInstance && mounted) {
+        // Use optimized socket manager's event methods
+        const { optimizedSocketManager } = require('../lib/socket-manager-optimized')
+        
+        optimizedSocketManager.on('new-post', handleNewPost)
+        optimizedSocketManager.on('post-updated', handlePostUpdate)
+        optimizedSocketManager.on('post-deleted', handlePostDelete)
+        optimizedSocketManager.on('post-liked', handlePostLike)
+        optimizedSocketManager.on('new-comment', handleNewComment)
+      }
+    }).catch(error => {
+      console.error('Failed to initialize optimized socket:', error)
+    })
 
     return () => {
       mounted = false
-      if (socketInstance) {
-        socketInstance.off('new-post', handleNewPost)
-        socketInstance.off('post-updated', handlePostUpdate)
-        socketInstance.off('post-deleted', handlePostDelete)
-        socketInstance.off('post-liked', handlePostLike)
-        socketInstance.off('new-comment', handleNewComment)
-        socketInstance.disconnect()
+      // Cleanup using optimized socket manager
+      if (typeof window !== 'undefined') {
+        const { optimizedSocketManager } = require('../lib/socket-manager-optimized')
+        optimizedSocketManager.off('new-post', handleNewPost)
+        optimizedSocketManager.off('post-updated', handlePostUpdate)
+        optimizedSocketManager.off('post-deleted', handlePostDelete)
+        optimizedSocketManager.off('post-liked', handlePostLike)
+        optimizedSocketManager.off('new-comment', handleNewComment)
       }
     }
   }, [])
@@ -250,6 +250,8 @@ export function usePosts() {
         content: post.content || '',
         images: images,
         videos: videos,
+        audios: post.audios,
+        documents: post.documents,
         likes: post.likes?.length || 0,
         comments: post.comments?.length || 0,
         commentsList: post.comments || [],
@@ -292,11 +294,20 @@ export function usePosts() {
       const files = formData.getAll('files') as File[]
       let permanentVideoUrl = undefined
       let permanentImageUrl = undefined
+      let permanentAudioUrl = undefined
+      let permanentDocumentUrl = undefined
       let hasMedia = false
       
-      // Separate video and image files
+      // Separate different file types
       const videoFile = files.find(file => file.type.startsWith('video/'))
       const imageFile = files.find(file => file.type.startsWith('image/'))
+      const audioFile = files.find(file => file.type.startsWith('audio/'))
+      const documentFile = files.find(file => 
+        file.type.includes('pdf') || 
+        file.type.includes('document') || 
+        file.type.includes('text') ||
+        file.type.includes('application/')
+      )
 
       // Upload video first if present
       if (videoFile && videoFile.size > 0) {
@@ -346,6 +357,73 @@ export function usePosts() {
         console.log('✅ Image uploaded successfully:', permanentImageUrl)
       }
 
+      // Upload audio if present
+      if (audioFile && audioFile.size > 0) {
+        hasMedia = true
+        setUploadingMedia(true)
+        console.log('📤 Uploading audio first...')
+        
+        const audioFormData = new FormData()
+        audioFormData.append('file', audioFile)
+        
+        const audioUploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: audioFormData,
+          credentials: 'include',
+        })
+        
+        if (!audioUploadResponse.ok) {
+          throw new Error('Failed to upload audio')
+        }
+        
+        const audioData = await audioUploadResponse.json()
+        permanentAudioUrl = audioData.url
+        console.log('✅ Audio uploaded successfully:', permanentAudioUrl)
+
+        // 🎵 OPTIMIZED AUDIO CLASSIFICATION: Non-blocking classification
+        try {
+          console.log('🧠 Starting optimized audio classification...')
+          const { optimizedAudioClassifier } = await import('../lib/audio-classifier-optimized')
+          
+          // Use optimized classifier (non-blocking with Web Workers)
+          const classification = await optimizedAudioClassifier.classifyAudio(permanentAudioUrl, audioFile.name)
+          
+          console.log(`🎯 Audio classified as: ${classification.type} (${Math.round(classification.confidence * 100)}% in ${classification.processingTime}ms)`)
+          
+          // Store classification for later use
+          ;(audioFile as any).classification = classification
+          
+        } catch (classificationError) {
+          console.warn('⚠️ Optimized audio classification failed, using fallback:', classificationError)
+          // Fallback classification
+          ;(audioFile as any).classification = { type: 'audio', confidence: 0.5 }
+        }
+      }
+
+      // Upload document if present
+      if (documentFile && documentFile.size > 0) {
+        hasMedia = true
+        setUploadingMedia(true)
+        console.log('📤 Uploading document first...')
+        
+        const documentFormData = new FormData()
+        documentFormData.append('file', documentFile)
+        
+        const documentUploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: documentFormData,
+          credentials: 'include',
+        })
+        
+        if (!documentUploadResponse.ok) {
+          throw new Error('Failed to upload document')
+        }
+        
+        const documentData = await documentUploadResponse.json()
+        permanentDocumentUrl = documentData.url
+        console.log('✅ Document uploaded successfully:', permanentDocumentUrl)
+      }
+
       // 🚀 STEP 2: Create optimistic post with PERMANENT URLs (no blob URLs!)
       const optimisticPost: Post = {
         id: `temp-${Date.now()}`, // Temporary ID
@@ -358,6 +436,8 @@ export function usePosts() {
         content: formData.get('content')?.toString() || '',
         images: permanentImageUrl,
         videos: permanentVideoUrl,
+        audios: permanentAudioUrl,
+        documents: permanentDocumentUrl,
         likes: 0,
         comments: 0,
         commentsList: [],
@@ -371,7 +451,12 @@ export function usePosts() {
       setPosts(prevPosts => {
         try {
           console.log('📱 OPTIMISTIC UI: Adding post with permanent media URLs')
-          console.log('🔍 Media URLs:', { images: permanentImageUrl, videos: permanentVideoUrl })
+          console.log('🔍 Media URLs:', { 
+            images: permanentImageUrl, 
+            videos: permanentVideoUrl, 
+            audios: permanentAudioUrl, 
+            documents: permanentDocumentUrl 
+          })
           
           // Validate that media URLs are NOT blob URLs
           if (permanentImageUrl && permanentImageUrl.startsWith('blob:')) {
@@ -419,6 +504,27 @@ export function usePosts() {
         postFormData.append('uploadedImageUrl', permanentImageUrl)
       }
 
+      if (permanentAudioUrl) {
+        // Create a dummy file for the backend API
+        const dummyAudioFile = new File([''], 'audio.mp3', { type: 'audio/mp3' })
+        postFormData.append('files', dummyAudioFile)
+        postFormData.append('uploadedAudioUrl', permanentAudioUrl)
+        
+        // Add audio classification if available
+        if ((audioFile as any)?.classification) {
+          const classification = (audioFile as any).classification
+          postFormData.append('audioType', classification.type)
+          postFormData.append('audioClassification', JSON.stringify(classification))
+        }
+      }
+
+      if (permanentDocumentUrl) {
+        // Create a dummy file for the backend API
+        const dummyDocumentFile = new File([''], 'document.pdf', { type: 'application/pdf' })
+        postFormData.append('files', dummyDocumentFile)
+        postFormData.append('uploadedDocumentUrl', permanentDocumentUrl)
+      }
+
       // 🚀 STEP 4: Send to backend
       const response = await fetch('/api/posts', {
         method: 'POST',
@@ -448,7 +554,9 @@ export function usePosts() {
           console.log('✅ REAL POST: Replaced optimistic post with real data')
           console.log('🔍 Final media URLs:', { 
             images: formattedPost.images, 
-            videos: formattedPost.videos 
+            videos: formattedPost.videos,
+            audios: formattedPost.audios,
+            documents: formattedPost.documents
           })
           return updatedPosts
         } catch (error) {
@@ -471,38 +579,35 @@ export function usePosts() {
         }
       }
       
-      // 🚀 STEP 5: Background spoke detection (async)
-      setTimeout(async () => {
-        try {
-          const spokeResponse = await fetch('/api/ai/process-events', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              postId: newPost.id, 
-              action: 'detect_spoke' 
-            })
-          })
-          
-          if (spokeResponse.ok) {
-            const spokeData = await spokeResponse.json()
-            // Update the post with detected spoke
-            if (spokeData.spoke) {
-              setPosts(prevPosts => 
-                prevPosts.map(post => 
-                  post.id === newPost.id 
-                    ? { ...post, spoke: spokeData.spoke }
-                    : post
-                )
+      // 🚀 STEP 5: Listen for real-time spoke updates (WebSocket)
+      // The backend will now handle spoke detection automatically
+      // We just need to listen for the spoke_updated event
+      if (typeof window !== 'undefined' && (window as any).socket) {
+        const handleSpokeUpdate = (data: any) => {
+          if (data.postId === newPost.id && data.spoke) {
+            setPosts(prevPosts => 
+              prevPosts.map(post => 
+                post.id === newPost.id 
+                  ? { ...post, spoke: data.spoke }
+                  : post
               )
-              console.log(`🎯 SPOKE UPDATED: ${newPost.id} -> ${spokeData.spoke}`)
-            }
+            )
+            console.log(`🎯 REAL-TIME SPOKE UPDATE: ${newPost.id} -> ${data.spoke}`)
           }
-          
-          console.log(`🎯 SPOKE DETECTION: Triggered for post: ${newPost.id}`)
-        } catch (spokeError) {
-          console.warn('Spoke detection failed:', spokeError)
         }
-      }, 100) // Run asynchronously without blocking UI
+
+        // Listen for spoke updates
+        ;(window as any).socket.on('post_spoke_updated', handleSpokeUpdate)
+        
+        // Cleanup listener after 30 seconds (spoke detection should complete by then)
+        setTimeout(() => {
+          if ((window as any).socket) {
+            (window as any).socket.off('post_spoke_updated', handleSpokeUpdate)
+          }
+        }, 30000)
+      }
+      
+      console.log(`✅ POST CREATION COMPLETED: ${newPost.id} (spoke detection handled by backend)`)
       
       setError(null)
       return true

@@ -68,6 +68,8 @@ model Post {
   content       String
   images        String?
   videos        String?
+  audios        String?
+  documents     String?
   feeling       String?
   location      String?
   isEdited      Boolean   @default(false)
@@ -87,6 +89,13 @@ model Post {
   bookmarks     Bookmark[]
   author        User      @relation("AuthoredPosts", fields: [authorId], references: [id])
   transcript    Transcript?
+
+  // 🚀 PERFORMANCE INDEXES - Essential for fast post queries
+  @@index([createdAt(sort: Desc)])
+  @@index([isDeleted, createdAt(sort: Desc)])
+  @@index([spoke, isDeleted, createdAt(sort: Desc)])
+  @@index([type, isDeleted, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Comment {
@@ -107,6 +116,10 @@ model Comment {
   parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id])
   replies         Comment[] @relation("CommentReplies")
   likes           Like[]
+
+  // 🚀 PERFORMANCE INDEXES
+  @@index([postId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Like {

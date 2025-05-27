@@ -10,14 +10,14 @@ import { detectSpoke } from '@/app/api/ai/text-analysis'
 
 const execAsync = promisify(exec)
 
-// Helper function to get local file path from video URL
-function getLocalVideoPath(videoUrl: string): string | null {
-  if (videoUrl.startsWith('http')) {
+// Helper function to get local file path from media URL (video or audio)
+function getLocalMediaPath(mediaUrl: string): string | null {
+  if (mediaUrl.startsWith('http')) {
     return null // External URL, can't process locally
   }
   
-  // For relative paths like /uploads/video.mp4
-  const localPath = path.join(process.cwd(), 'public', videoUrl.replace(/^\//, ''))
+  // For relative paths like /uploads/video.mp4 or /uploads/audio.wav
+  const localPath = path.join(process.cwd(), 'public', mediaUrl.replace(/^\//, ''))
   
   return fs.existsSync(localPath) ? localPath : null
 }
@@ -48,26 +48,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { postId, videoUrl } = await req.json()
+    const { postId, videoUrl, audioUrl, type } = await req.json()
+    const mediaUrl = audioUrl || videoUrl
+    const mediaType = type || 'video'
 
-    if (!postId || !videoUrl) {
-      return NextResponse.json({ error: 'Missing postId or videoUrl' }, { status: 400 })
+    if (!postId || !mediaUrl) {
+      return NextResponse.json({ error: 'Missing postId or media URL' }, { status: 400 })
     }
 
-    // Check if transcript already exists
+    // Check if transcript already exists (for now use videoUrl for both video and audio)
     const existingTranscript = await prisma.transcript.findFirst({
-      where: { postId, videoUrl }
+      where: { 
+        postId, 
+        videoUrl: mediaUrl
+      }
     })
 
     if (existingTranscript) {
       return NextResponse.json({ transcript: existingTranscript })
     }
 
-    // Check if we can process this video locally
-    const localVideoPath = getLocalVideoPath(videoUrl)
-    if (!localVideoPath) {
+    // Check if we can process this media locally
+    const localMediaPath = getLocalMediaPath(mediaUrl)
+    if (!localMediaPath) {
       return NextResponse.json({ 
-        error: 'Video not found locally. Upload the video first.' 
+        error: `${mediaType === 'audio' ? 'Audio' : 'Video'} not found locally. Upload the media first.` 
       }, { status: 400 })
     }
 
@@ -75,13 +80,13 @@ export async function POST(req: NextRequest) {
     const transcript = await prisma.transcript.create({
       data: {
         postId,
-        videoUrl,
+        videoUrl: mediaUrl,
         status: 'processing'
       }
     })
 
     // Process with FREE Whisper.cpp (no waiting, background processing)
-    processTranscriptionFree(transcript.id, videoUrl, localVideoPath)
+    processTranscriptionFree(transcript.id, mediaUrl, localMediaPath)
       .catch(error => {
         console.error('Background transcription failed:', error)
       })
@@ -141,10 +146,14 @@ export async function GET(req: NextRequest) {
 }
 
 // 🆓 FREE WHISPER.CPP BACKGROUND PROCESSING
-async function processTranscriptionFree(transcriptId: string, videoUrl: string, localVideoPath: string) {
+async function processTranscriptionFree(transcriptId: string, mediaUrl: string, localMediaPath: string) {
   try {
     console.log(`🆓 Starting FREE transcription for ${transcriptId}...`)
-    console.log(`📹 Video: ${localVideoPath}`)
+    console.log(`🎵 Media: ${localMediaPath}`)
+    
+    // Determine if this is audio or video
+    const isAudioFile = /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(localMediaPath)
+    console.log(`📊 Media type: ${isAudioFile ? 'AUDIO' : 'VIDEO'}`)
     
     // Create temp directory for output
     const tempDir = path.join(process.cwd(), 'temp')
@@ -160,31 +169,72 @@ async function processTranscriptionFree(transcriptId: string, videoUrl: string, 
       throw new Error(`❌ Whisper model not found at: ${modelPath}`)
     }
     
-    // Convert video to audio first using FFmpeg
+    // Handle audio conversion based on media type
     const audioPath = path.join(tempDir, `audio_${transcriptId}.wav`)
-    console.log(`🔄 Converting video to audio: ${audioPath}`)
     
-    // First, check if video has audio stream
-    const probeCommand = `ffprobe -v quiet -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "${localVideoPath}"`
+    if (isAudioFile) {
+      // For audio files, convert to proper format for Whisper
+      console.log(`🎵 Converting audio to proper format: ${audioPath}`)
+      
+      const ffmpegCommand = [
+        'ffmpeg',
+        '-i', `"${localMediaPath}"`,
+        '-ar', '16000', // 16kHz sample rate (Whisper's preferred)
+        '-ac', '1',     // Mono audio
+        '-c:a', 'pcm_s16le', // PCM 16-bit little-endian
+        '-y',           // Overwrite output file
+        `"${audioPath}"`
+      ].join(' ')
+      
+      console.log(`🎯 Running FFmpeg for audio: ${ffmpegCommand}`)
+      
+      const { stdout: ffmpegStdout, stderr: ffmpegStderr } = await execAsync(ffmpegCommand, {
+        timeout: 300000, // 5 minute timeout for conversion
+        maxBuffer: 1024 * 1024 * 5 // 5MB buffer
+      })
+      
+      console.log('✅ FFmpeg audio conversion completed!')
+      if (ffmpegStdout) console.log('📄 FFmpeg output:', ffmpegStdout)
+      if (ffmpegStderr && !ffmpegStderr.includes('time=')) console.log('⚠️ FFmpeg warnings:', ffmpegStderr)
+      
+    } else {
+      // For video files, extract audio as before
+      console.log(`🔄 Converting video to audio: ${audioPath}`)
+      
+      // First, check if video has audio stream
+      const probeCommand = `ffprobe -v quiet -select_streams a:0 -show_entries stream=codec_type -of csv=p=0 "${localMediaPath}"`
     
     let ffmpegCommand
     try {
       const { stdout: probeOutput } = await execAsync(probeCommand, { timeout: 30000 })
       
-      if (probeOutput.trim() === 'audio') {
-        // Video has audio - extract it
-        ffmpegCommand = [
-          'ffmpeg',
-          '-i', `"${localVideoPath}"`,
-          '-ar', '16000', // 16kHz sample rate (Whisper's preferred)
-          '-ac', '1',     // Mono audio
-          '-c:a', 'pcm_s16le', // PCM 16-bit little-endian
-          '-y',           // Overwrite output file
-          `"${audioPath}"`
-        ].join(' ')
-      } else {
-        // Video has no audio - create silent audio
-        console.log('⚠️ Video has no audio track, creating silent audio for processing')
+              if (probeOutput.trim() === 'audio') {
+          // Video has audio - extract it
+          ffmpegCommand = [
+            'ffmpeg',
+            '-i', `"${localMediaPath}"`,
+            '-ar', '16000', // 16kHz sample rate (Whisper's preferred)
+            '-ac', '1',     // Mono audio
+            '-c:a', 'pcm_s16le', // PCM 16-bit little-endian
+            '-y',           // Overwrite output file
+            `"${audioPath}"`
+          ].join(' ')
+        } else {
+          // Video has no audio - create silent audio
+          console.log('⚠️ Video has no audio track, creating silent audio for processing')
+          ffmpegCommand = [
+            'ffmpeg',
+            '-f', 'lavfi',
+            '-i', 'anullsrc=channel_layout=mono:sample_rate=16000',
+            '-t', '10', // 10 seconds of silence
+            '-c:a', 'pcm_s16le',
+            '-y',
+            `"${audioPath}"`
+          ].join(' ')
+        }
+      } catch (probeError) {
+        // If probe fails, assume no audio and create silent track
+        console.log('⚠️ Could not probe audio, creating silent audio for processing')
         ffmpegCommand = [
           'ffmpeg',
           '-f', 'lavfi',
@@ -195,30 +245,18 @@ async function processTranscriptionFree(transcriptId: string, videoUrl: string, 
           `"${audioPath}"`
         ].join(' ')
       }
-    } catch (probeError) {
-      // If probe fails, assume no audio and create silent track
-      console.log('⚠️ Could not probe audio, creating silent audio for processing')
-      ffmpegCommand = [
-        'ffmpeg',
-        '-f', 'lavfi',
-        '-i', 'anullsrc=channel_layout=mono:sample_rate=16000',
-        '-t', '10', // 10 seconds of silence
-        '-c:a', 'pcm_s16le',
-        '-y',
-        `"${audioPath}"`
-      ].join(' ')
+      
+      console.log(`🎯 Running FFmpeg for video: ${ffmpegCommand}`)
+      
+      const { stdout: ffmpegStdout, stderr: ffmpegStderr } = await execAsync(ffmpegCommand, {
+        timeout: 300000, // 5 minute timeout for conversion
+        maxBuffer: 1024 * 1024 * 5 // 5MB buffer
+      })
+      
+      console.log('✅ FFmpeg video conversion completed!')
+      if (ffmpegStdout) console.log('📄 FFmpeg output:', ffmpegStdout)
+      if (ffmpegStderr && !ffmpegStderr.includes('time=')) console.log('⚠️ FFmpeg warnings:', ffmpegStderr)
     }
-    
-    console.log(`🎯 Running FFmpeg: ${ffmpegCommand}`)
-    
-    const { stdout: ffmpegStdout, stderr: ffmpegStderr } = await execAsync(ffmpegCommand, {
-      timeout: 300000, // 5 minute timeout for conversion
-      maxBuffer: 1024 * 1024 * 5 // 5MB buffer
-    })
-    
-    console.log('✅ FFmpeg conversion completed!')
-    if (ffmpegStdout) console.log('📄 FFmpeg output:', ffmpegStdout)
-    if (ffmpegStderr && !ffmpegStderr.includes('time=')) console.log('⚠️ FFmpeg warnings:', ffmpegStderr)
     
     // Verify audio file was created
     if (!fs.existsSync(audioPath)) {
@@ -381,11 +419,11 @@ function parseTimestamp(timestamp: string): number {
 }
 
 // Helper function to auto-transcribe video during upload
-export async function autoTranscribeVideo(postId: string, videoUrl: string): Promise<void> {
+async function autoTranscribeVideo(postId: string, videoUrl: string): Promise<void> {
   try {
     console.log(`🔄 Auto-transcribing video for post ${postId}: ${videoUrl}`)
     
-    const localVideoPath = getLocalVideoPath(videoUrl)
+    const localVideoPath = getLocalMediaPath(videoUrl)
     if (!localVideoPath) {
       console.log('⚠️ Cannot auto-transcribe: video not found locally')
       return

@@ -154,4 +154,88 @@ export async function analyzeText(text: string): Promise<TextAnalysisResult> {
     },
     spokeTag
   };
+}
+
+// Analyze conversation for smart replies
+export async function analyzeConversation(messages: string[]): Promise<{
+  context: string;
+  tone: 'formal' | 'casual' | 'supportive' | 'professional';
+  suggestedReplies: string[];
+}> {
+  const lastMessage = messages[messages.length - 1] || '';
+  const normalizedText = lastMessage.toLowerCase();
+  
+  // Determine tone
+  let tone: 'formal' | 'casual' | 'supportive' | 'professional' = 'casual';
+  if (normalizedText.includes('please') || normalizedText.includes('thank you')) {
+    tone = 'formal';
+  } else if (normalizedText.includes('help') || normalizedText.includes('support')) {
+    tone = 'supportive';
+  } else if (normalizedText.includes('work') || normalizedText.includes('business')) {
+    tone = 'professional';
+  }
+  
+  // Generate context
+  const context = `Conversation about ${messages.length > 1 ? 'ongoing discussion' : 'initial message'}`;
+  
+  // Generate suggested replies based on tone and content
+  const suggestedReplies: string[] = [];
+  
+  if (normalizedText.includes('?')) {
+    suggestedReplies.push("That's a great question!");
+    suggestedReplies.push("Let me think about that...");
+    suggestedReplies.push("I'd be happy to help with that.");
+  } else if (normalizedText.includes('thank')) {
+    suggestedReplies.push("You're welcome!");
+    suggestedReplies.push("Happy to help!");
+    suggestedReplies.push("Anytime!");
+  } else {
+    suggestedReplies.push("That's interesting!");
+    suggestedReplies.push("Tell me more about that.");
+    suggestedReplies.push("I understand.");
+  }
+  
+  return {
+    context,
+    tone,
+    suggestedReplies
+  };
+}
+
+// Summarize text content
+export async function summarizeText(text: string, maxLength: number = 100): Promise<{
+  summary: string;
+  keyPoints: string[];
+  wordCount: number;
+}> {
+  const words = text.split(/\s+/);
+  const wordCount = words.length;
+  
+  // Simple summarization - take first few sentences
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const maxSentences = Math.max(1, Math.floor(maxLength / 20));
+  const summarySentences = sentences.slice(0, maxSentences);
+  const summary = summarySentences.join('. ') + (summarySentences.length > 0 ? '.' : '');
+  
+  // Extract key points (simple approach - look for important words)
+  const keyWords = ['important', 'key', 'main', 'significant', 'crucial', 'essential'];
+  const keyPoints: string[] = [];
+  
+  sentences.forEach(sentence => {
+    const lowerSentence = sentence.toLowerCase();
+    if (keyWords.some(word => lowerSentence.includes(word))) {
+      keyPoints.push(sentence.trim());
+    }
+  });
+  
+  // If no key points found, use first few sentences
+  if (keyPoints.length === 0 && sentences.length > 0) {
+    keyPoints.push(sentences[0].trim());
+  }
+  
+  return {
+    summary: summary.length > maxLength ? summary.substring(0, maxLength) + '...' : summary,
+    keyPoints: keyPoints.slice(0, 3), // Limit to 3 key points
+    wordCount
+  };
 } 

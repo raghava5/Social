@@ -118,6 +118,17 @@ app.prepare().then(() => {
       });
     });
 
+    // Handle test messages for performance testing
+    socket.on('test_message', (data) => {
+      console.log(`🧪 Test message received: ${data.content}`);
+      
+      // Echo back for performance testing
+      socket.emit('test_echo', {
+        ...data,
+        timestamp: new Date().toISOString()
+      });
+    });
+
     // Handle disconnection
     socket.on('disconnect', () => {
       console.log(`🔌 User disconnected: ${socket.id}`);

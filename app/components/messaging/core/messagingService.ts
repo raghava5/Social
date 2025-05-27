@@ -137,7 +137,7 @@ class MessagingService {
       // In a real app, you'd update the message in the state
       // For now, notify listeners of a new message event
       const event: MessageEvent = {
-        type: 'message_edit',
+        type: 'message_edited',
         messageId,
         content
       };

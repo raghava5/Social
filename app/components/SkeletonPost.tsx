@@ -1,6 +1,6 @@
 export default function SkeletonPost() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 animate-pulse">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 animate-pulse w-full max-w-full overflow-hidden">
       {/* Post Header */}
       <div className="p-4 pb-3">
         <div className="flex items-start space-x-3">
@@ -22,7 +22,7 @@ export default function SkeletonPost() {
       {/* Post Content */}
       <div className="px-4 pb-3">
         {/* Text content skeleton */}
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-hidden">
           <div className="h-4 bg-gray-200 rounded w-full"></div>
           <div className="h-4 bg-gray-200 rounded w-3/4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -36,7 +36,7 @@ export default function SkeletonPost() {
 
       {/* Media skeleton (randomly show or hide) */}
       {Math.random() > 0.5 && (
-        <div className="mb-3">
+        <div className="mb-3 w-full overflow-hidden">
           <div className="w-full h-64 bg-gray-200"></div>
         </div>
       )}

@@ -100,8 +100,8 @@ export async function DELETE(
   }
 }
 
-// POST /api/physical-health/reminders/:id/complete
-export async function completeReminder(
+// Helper functions (not exported as route handlers)
+async function completeReminderHelper(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -121,8 +121,7 @@ export async function completeReminder(
   }
 }
 
-// GET /api/physical-health/reminders/logs
-export async function getReminderLogs(request: NextRequest) {
+async function getReminderLogsHelper(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get('startDate')
@@ -130,7 +129,7 @@ export async function getReminderLogs(request: NextRequest) {
 
     // TODO: Get user ID from session
     // TODO: Fetch logs from database with date range filter
-    const logs: ReminderLog[] = []
+    const logs: any[] = []
 
     return NextResponse.json({ logs })
   } catch (error) {
@@ -142,8 +141,7 @@ export async function getReminderLogs(request: NextRequest) {
   }
 }
 
-// POST /api/physical-health/reminders/bulk-update
-export async function bulkUpdateReminders(request: NextRequest) {
+async function bulkUpdateRemindersHelper(request: NextRequest) {
   try {
     const updates = await request.json()
 

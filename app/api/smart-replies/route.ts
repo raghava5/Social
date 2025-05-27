@@ -24,25 +24,25 @@ export async function POST(request: NextRequest) {
     const conversationAnalysis = await analyzeConversation(body.messages)
     
     // Get suggested responses from the analysis
-    const suggestions = conversationAnalysis.suggestedResponses || []
+    const suggestions = conversationAnalysis.suggestedReplies || []
     
     // If we don't have suggestions from the analysis, generate fallbacks based on intent
     if (suggestions.length === 0) {
       const lastMessage = body.messages[body.messages.length - 1]
-      const fallbackSuggestions = generateFallbackSuggestions(lastMessage, conversationAnalysis.topTopics)
+      const fallbackSuggestions = generateFallbackSuggestions(lastMessage, [])
       
       return NextResponse.json({
         suggestions: fallbackSuggestions,
-        sentiment: conversationAnalysis.overallSentiment,
-        topics: conversationAnalysis.topTopics
+        tone: conversationAnalysis.tone,
+        context: conversationAnalysis.context
       })
     }
     
     // Return the suggestions
     return NextResponse.json({
       suggestions,
-      sentiment: conversationAnalysis.overallSentiment,
-      topics: conversationAnalysis.topTopics
+      tone: conversationAnalysis.tone,
+      context: conversationAnalysis.context
     })
   } catch (error) {
     console.error('Error generating smart replies:', error)

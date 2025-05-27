@@ -13,7 +13,9 @@ import {
   DocumentTextIcon,
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
-  PlayIcon
+  PlayIcon,
+  MicrophoneIcon,
+  DocumentIcon
 } from '@heroicons/react/24/outline'
 import { formatDistanceToNow } from 'date-fns'
 import PostCard from './PostCard'
@@ -207,6 +209,18 @@ export default function MediaViewer({
 
   const isVideo = (url: string) => {
     return url.match(/\.(mp4|webm|ogg|mov|avi)$/i)
+  }
+
+  const isAudio = (url: string) => {
+    return url.match(/\.(mp3|wav|ogg|m4a|aac|flac)$/i)
+  }
+
+  const isDocument = (url: string) => {
+    return url.match(/\.(pdf|doc|docx|txt|xls|xlsx|ppt|pptx)$/i)
+  }
+
+  const isImage = (url: string) => {
+    return url.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
   }
 
   const handleEditComment = (commentId: string, currentContent: string) => {
@@ -614,23 +628,95 @@ export default function MediaViewer({
                 // Clean up previous event listener
                 if (videoTimeUpdateRef.current && videoRef) {
                   videoRef.removeEventListener('timeupdate', videoTimeUpdateRef.current)
+                  videoRef.removeEventListener('loadedmetadata', videoTimeUpdateRef.current)
+                }
+                
+                // Clean up previous video ref if exists
+                if (videoRef && videoTimeUpdateRef.current) {
+                  videoRef.removeEventListener('timeupdate', videoTimeUpdateRef.current)
+                  videoRef.pause()
                 }
                 
                 setVideoRef(el)
                 if (el) {
-                  // Set initial video time
-                  if (initialVideoTime > 0) {
-                    el.currentTime = initialVideoTime
+                  // Prevent duplicate event listeners
+                  if (videoTimeUpdateRef.current) {
+                    el.removeEventListener('timeupdate', videoTimeUpdateRef.current)
                   }
                   
                   // Create new event listener
                   videoTimeUpdateRef.current = () => {
                     setCurrentVideoTime(el.currentTime)
                   }
+                  
+                  // Set initial video time after metadata loads
+                  const handleLoadedMetadata = () => {
+                    if (initialVideoTime > 0 && initialVideoTime < el.duration) {
+                      el.currentTime = initialVideoTime
+                      // Reset play state to prevent auto-play issues
+                      el.pause()
+                    }
+                    el.removeEventListener('loadedmetadata', handleLoadedMetadata)
+                  }
+                  
+                  // Remove any existing event listeners before adding new ones
+                  el.removeEventListener('timeupdate', videoTimeUpdateRef.current)
+                  el.removeEventListener('loadedmetadata', handleLoadedMetadata)
+                  
                   el.addEventListener('timeupdate', videoTimeUpdateRef.current)
+                  el.addEventListener('loadedmetadata', handleLoadedMetadata)
+                  
+                  // If metadata is already loaded, set time immediately and pause
+                  if (el.readyState >= 1 && initialVideoTime > 0 && initialVideoTime < el.duration) {
+                    el.currentTime = initialVideoTime
+                    el.pause()
+                  }
                 }
               }}
             />
+          ) : isAudio(media[currentIndex]) ? (
+            <div className="bg-white rounded-lg p-8 shadow-lg max-w-md">
+              <div className="text-center mb-6">
+                <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <MicrophoneIcon className="w-10 h-10 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Audio File</h3>
+                <p className="text-sm text-gray-500">
+                  {media[currentIndex].split('/').pop() || `Audio ${currentIndex + 1}`}
+                </p>
+              </div>
+              <audio 
+                src={media[currentIndex]} 
+                controls 
+                className="w-full"
+                preload="metadata"
+                autoPlay={false}
+              />
+            </div>
+          ) : isDocument(media[currentIndex]) ? (
+            <div className="bg-white rounded-lg p-8 shadow-lg max-w-md">
+              <div className="text-center">
+                <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <DocumentIcon className="w-10 h-10 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Document</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {media[currentIndex].split('/').pop() || `Document ${currentIndex + 1}`}
+                </p>
+                <div className="space-y-3">
+                  <a
+                    href={media[currentIndex]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
+                    Open Document
+                  </a>
+                  <p className="text-xs text-gray-400">Opens in new tab</p>
+                </div>
+              </div>
+            </div>
           ) : (
             <img
               src={media[currentIndex]}

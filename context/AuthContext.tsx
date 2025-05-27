@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
       
       // If user is logged in and there's a redirectTo path, navigate there
-      if (session?.user) {
+      if (session?.user && typeof window !== 'undefined') {
         const redirectTo = sessionStorage.getItem('loginRedirectTo')
         if (redirectTo) {
           router.push(redirectTo)
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data?.user) {
         // Store the redirect path if provided
-        if (redirectTo) {
+        if (redirectTo && typeof window !== 'undefined') {
           sessionStorage.setItem('loginRedirectTo', redirectTo)
         }
         return { success: true }

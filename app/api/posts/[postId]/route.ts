@@ -163,7 +163,7 @@ export async function GET(
 
     // Add user-specific like status
     const isLikedByCurrentUser = session?.user?.id 
-      ? post.likes.some(like => like.userId === session.user.id) 
+      ? post.likes.some((like: any) => like.userId === session.user.id) 
       : false
 
     const postWithLikeStatus = {

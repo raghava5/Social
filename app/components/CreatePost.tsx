@@ -2,11 +2,12 @@
 
 import { useState, useRef } from 'react'
 import {
-  PhotoIcon,
-  VideoCameraIcon,
   FaceSmileIcon,
   MapPinIcon,
   XMarkIcon,
+  MicrophoneIcon,
+  DocumentIcon,
+  PaperClipIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/context/AuthContext'
 
@@ -35,50 +36,43 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
   const [showFeelings, setShowFeelings] = useState(false)
   const [showLocationInput, setShowLocationInput] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const videoInputRef = useRef<HTMLInputElement>(null)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
+  const audioInputRef = useRef<HTMLInputElement>(null)
+  const documentInputRef = useRef<HTMLInputElement>(null)
 
-  // Common locations for suggestions
   const commonLocations = [
-    'Home',
-    'Work',
-    'Coffee Shop',
-    'Park',
-    'Gym',
-    'Library',
-    'Downtown',
-    'Beach',
-    'School',
-    'Restaurant'
+    'Home', 'Work', 'Coffee Shop', 'Park', 'Gym', 'Library', 'Downtown', 'Beach', 'School', 'Restaurant'
   ]
 
-  // Location Input
   const [locationSuggestions, setLocationSuggestions] = useState<string[]>([])
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'media' | 'audio' | 'document') => {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const files = Array.from(e.target.files)
     const validFiles = files.filter(file => {
-      if (type === 'image') {
-        return file.type.startsWith('image/')
-      } else {
-        return file.type.startsWith('video/')
+      if (type === 'media') {
+        return file.type.startsWith('image/') || file.type.startsWith('video/')
+      } else if (type === 'audio') {
+        return file.type.startsWith('audio/')
+      } else if (type === 'document') {
+        return file.type.includes('pdf') || file.type.includes('document') || file.type.includes('text') || 
+               file.type.includes('spreadsheet') || file.type.includes('presentation') ||
+               file.name.endsWith('.doc') || file.name.endsWith('.docx') || file.name.endsWith('.pdf') ||
+               file.name.endsWith('.txt') || file.name.endsWith('.xls') || file.name.endsWith('.xlsx') ||
+               file.name.endsWith('.ppt') || file.name.endsWith('.pptx')
       }
+      return false
     })
 
     if (validFiles.length === 0) return;
 
-    // Add to selected files
     setSelectedFiles(prev => [...prev, ...validFiles])
-
-    // Create and store preview URLs
     validFiles.forEach(file => {
       const url = URL.createObjectURL(file)
       setPreviewUrls(prev => [...prev, url])
     })
     
-    // Reset file input
     e.target.value = ''
   }
 
@@ -86,7 +80,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
     setPreviewUrls(prev => {
       const newUrls = prev.filter((_, i) => i !== index)
-      // Cleanup old URL
       URL.revokeObjectURL(prev[index])
       return newUrls
     })
@@ -97,7 +90,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
     
     if (!content.trim() && selectedFiles.length === 0) return
 
-    // Create form data
     const formData = new FormData()
     formData.append('content', content)
     if (feeling) formData.append('feeling', feeling)
@@ -110,7 +102,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
       setIsSubmitting(true)
       await onSubmit(formData)
 
-      // Reset form
       setContent('')
       setSelectedFiles([])
       setPreviewUrls([])
@@ -129,7 +120,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
     const value = e.target.value
     setLocation(value)
     
-    // Show suggestions if the user has typed something
     if (value.trim().length > 0) {
       const filteredLocations = commonLocations.filter(loc => 
         loc.toLowerCase().includes(value.toLowerCase())
@@ -145,13 +135,10 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
     setLocationSuggestions([])
   }
 
-  // Add geolocation functionality
   const addCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // For real implementation, you might want to reverse geocode
-          // these coordinates to get a human-readable address
           setLocation(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`)
         },
         (error) => {
@@ -161,6 +148,30 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
       )
     } else {
       alert("Geolocation is not supported by your browser")
+    }
+  }
+
+  const getFilePreview = (file: File, url: string, index: number) => {
+    if (file.type.startsWith('image/')) {
+      return <img src={url} alt="Preview" className="rounded-lg object-cover h-40 w-full" />
+    } else if (file.type.startsWith('video/')) {
+      return <video src={url} className="rounded-lg h-40 w-full" controls />
+    } else if (file.type.startsWith('audio/')) {
+      return (
+        <div className="rounded-lg h-40 w-full bg-gray-100 flex flex-col items-center justify-center">
+          <MicrophoneIcon className="h-12 w-12 text-gray-400 mb-2" />
+          <p className="text-sm text-gray-600 text-center px-2">{file.name}</p>
+          <audio src={url} controls className="mt-2" />
+        </div>
+      )
+    } else {
+      return (
+        <div className="rounded-lg h-40 w-full bg-gray-100 flex flex-col items-center justify-center">
+          <DocumentIcon className="h-12 w-12 text-gray-400 mb-2" />
+          <p className="text-sm text-gray-600 text-center px-2">{file.name}</p>
+          <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        </div>
+      )
     }
   }
 
@@ -202,16 +213,11 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
               />
             </div>
 
-            {/* Media Previews */}
             {previewUrls.length > 0 && (
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {previewUrls.map((url, index) => (
                   <div key={url} className="relative">
-                    {selectedFiles[index]?.type.startsWith('image/') ? (
-                      <img src={url} alt="Preview" className="rounded-lg object-cover h-40 w-full" />
-                    ) : (
-                      <video src={url} className="rounded-lg h-40 w-full" controls />
-                    )}
+                    {getFilePreview(selectedFiles[index], url, index)}
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
@@ -224,7 +230,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
               </div>
             )}
 
-            {/* Feeling and Location Tags */}
             {(feeling || location) && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {feeling && (
@@ -255,7 +260,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
               </div>
             )}
 
-            {/* Feelings Selector */}
             {showFeelings && (
               <div className="mt-2 p-2 bg-gray-50 rounded-lg">
                 <div className="grid grid-cols-4 gap-2">
@@ -276,7 +280,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
               </div>
             )}
 
-            {/* Location Input */}
             {showLocationInput && (
               <div className="mt-2 relative">
                 <div className="flex items-center">
@@ -296,7 +299,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
                   </button>
                 </div>
                 
-                {/* Location suggestions */}
                 {locationSuggestions.length > 0 && (
                   <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-sm">
                     {locationSuggestions.map(loc => (
@@ -319,45 +321,72 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
           <div className="flex items-center space-x-4">
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="text-gray-500 hover:text-gray-600"
+              onClick={() => mediaInputRef.current?.click()}
+              className="flex items-center text-gray-500 hover:text-gray-600 space-x-1"
+              title="Add photos or videos"
             >
-              <PhotoIcon className="h-6 w-6" />
+              <PaperClipIcon className="h-6 w-6" />
+              <span className="text-sm hidden sm:inline">Media</span>
               <input
                 type="file"
-                ref={fileInputRef}
-                onChange={(e) => handleFileSelect(e, 'image')}
-                accept="image/*"
+                ref={mediaInputRef}
+                onChange={(e) => handleFileSelect(e, 'media')}
+                accept="image/*,video/*"
                 multiple
                 className="hidden"
               />
             </button>
+            
             <button
               type="button"
-              onClick={() => videoInputRef.current?.click()}
-              className="text-gray-500 hover:text-gray-600"
+              onClick={() => audioInputRef.current?.click()}
+              className="flex items-center text-gray-500 hover:text-gray-600 space-x-1"
+              title="Add audio"
             >
-              <VideoCameraIcon className="h-6 w-6" />
+              <MicrophoneIcon className="h-6 w-6" />
+              <span className="text-sm hidden sm:inline">Audio</span>
               <input
                 type="file"
-                ref={videoInputRef}
-                onChange={(e) => handleFileSelect(e, 'video')}
-                accept="video/*"
+                ref={audioInputRef}
+                onChange={(e) => handleFileSelect(e, 'audio')}
+                accept="audio/*"
                 multiple
                 className="hidden"
               />
             </button>
+            
+            <button
+              type="button"
+              onClick={() => documentInputRef.current?.click()}
+              className="flex items-center text-gray-500 hover:text-gray-600 space-x-1"
+              title="Add documents"
+            >
+              <DocumentIcon className="h-6 w-6" />
+              <span className="text-sm hidden sm:inline">Docs</span>
+              <input
+                type="file"
+                ref={documentInputRef}
+                onChange={(e) => handleFileSelect(e, 'document')}
+                accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
+                multiple
+                className="hidden"
+              />
+            </button>
+            
             <button
               type="button"
               onClick={() => setShowFeelings(!showFeelings)}
               className="text-gray-500 hover:text-gray-600"
+              title="Add feeling"
             >
               <FaceSmileIcon className="h-6 w-6" />
             </button>
+            
             <button
               type="button"
               onClick={() => setShowLocationInput(!showLocationInput)}
               className="text-gray-500 hover:text-gray-600"
+              title="Add location"
             >
               <MapPinIcon className="h-6 w-6" />
             </button>

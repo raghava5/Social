@@ -99,13 +99,13 @@ export async function DELETE(
   }
 }
 
-// GET /api/physical-health/nutrition/goals
-export async function getGoals(request: NextRequest) {
+// Helper functions (not exported as route handlers)
+async function getGoalsHelper(request: NextRequest) {
   try {
     // TODO: Get user ID from session
     // TODO: Fetch goals from database
 
-    const goals: NutritionGoal[] = []
+    const goals: any[] = []
 
     return NextResponse.json({ goals })
   } catch (error) {
@@ -117,8 +117,7 @@ export async function getGoals(request: NextRequest) {
   }
 }
 
-// POST /api/physical-health/nutrition/goals
-export async function createGoal(request: NextRequest) {
+async function createGoalHelper(request: NextRequest) {
   try {
     const goal = await request.json()
 
@@ -135,13 +134,12 @@ export async function createGoal(request: NextRequest) {
   }
 }
 
-// GET /api/physical-health/nutrition/grocery-list
-export async function getGroceryList(request: NextRequest) {
+async function getGroceryListHelper(request: NextRequest) {
   try {
     // TODO: Get user ID from session
     // TODO: Fetch grocery list from database
 
-    const list: GroceryList[] = []
+    const list: any[] = []
 
     return NextResponse.json({ list })
   } catch (error) {
@@ -153,8 +151,7 @@ export async function getGroceryList(request: NextRequest) {
   }
 }
 
-// POST /api/physical-health/nutrition/grocery-list
-export async function updateGroceryList(request: NextRequest) {
+async function updateGroceryListHelper(request: NextRequest) {
   try {
     const updates = await request.json()
 

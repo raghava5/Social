@@ -9,6 +9,10 @@ const publicApiRoutes = [
   '/api/auth/user',
   '/api/auth/validate-credentials',
   '/api/auth/resend-verification',
+  '/api/ai/process-events', // Allow spoke detection API
+  '/api/posts', // Allow posts API for testing (will add auth check in the route itself)
+  '/api/db-test', // Allow database testing
+  '/api/db-connection-test', // Allow database connection testing
   '/socket.io' // Add socket.io to public API routes
 ]
 
@@ -46,9 +50,12 @@ export async function middleware(request: NextRequest) {
 
   // Check if the request is for a public route
   const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))
+  
+  // Check if the request is for a public API route
+  const isPublicApiRoute = publicApiRoutes.some(route => request.nextUrl.pathname.startsWith(route))
 
   // If there's no session and trying to access a protected route
-  if (!session && !isPublicRoute) {
+  if (!session && !isPublicRoute && !isPublicApiRoute) {
     // Store the original URL to redirect back after login
     const redirectUrl = new URL('/login', request.url)
     redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname)

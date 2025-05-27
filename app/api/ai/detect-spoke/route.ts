@@ -19,7 +19,7 @@ const SPOKE_DEFINITIONS = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { text } = await request.json()
+    const { text, isMinimalContent, hasMedia, context } = await request.json()
 
     if (!text || typeof text !== 'string') {
       return NextResponse.json(
@@ -28,30 +28,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use OpenAI to analyze text and classify into spokes
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert content classifier. Your task is to analyze text content and classify it into one of these 9 "spokes" (life categories):
+    // Enhanced prompt for minimal content
+    const systemPrompt = isMinimalContent ? 
+      `You are an expert content classifier specializing in analyzing very short, minimal text content. Your task is to analyze brief text content and classify it into one of these 9 "spokes" (life categories):
+
+${Object.entries(SPOKE_DEFINITIONS).map(([spoke, definition]) => `${spoke}: ${definition}`).join('\n')}
+
+SPECIAL RULES FOR MINIMAL CONTENT:
+1. Return ONLY the spoke name (e.g., "Physical", "Mental", "Social")
+2. For very short text, use contextual inference and common patterns
+3. Examples: "jog" or "start the jog" = Physical, "learn english" = Personal, "family dinner" = Social
+4. Consider implied activities and common interpretations
+5. If content is too vague, return "Personal" as default for self-improvement
+6. Look for action verbs and activity keywords
+7. Consider the intent behind the message, not just literal words
+
+${hasMedia ? 'NOTE: This post contains images/videos which may provide additional context.' : ''}
+${context ? `CONTEXT: ${context}` : ''}` :
+      `You are an expert content classifier. Your task is to analyze text content and classify it into one of these 9 "spokes" (life categories):
 
 ${Object.entries(SPOKE_DEFINITIONS).map(([spoke, definition]) => `${spoke}: ${definition}`).join('\n')}
 
 Rules:
 1. Return ONLY the spoke name (e.g., "Physical", "Mental", "Social")
 2. Choose the MOST relevant spoke based on the primary theme
-3. If the content doesn't clearly fit any category, return "General"
+3. If the content doesn't clearly fit any category, return "Personal"
 4. Be concise - return only the spoke name, nothing else
-5. Consider the overall context and main focus of the content`
+5. Consider the overall context and main focus of the content`;
+
+    // Use OpenAI to analyze text and classify into spokes
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
         },
         {
           role: "user",
-          content: `Analyze this text and classify it into the most appropriate spoke:\n\n"${text}"`
+          content: isMinimalContent ? 
+            `Analyze this short text and classify it. Use contextual inference for brief content:\n\n"${text}"` :
+            `Analyze this text and classify it into the most appropriate spoke:\n\n"${text}"`
         }
       ],
       max_tokens: 20,
-      temperature: 0.1
+      temperature: isMinimalContent ? 0.3 : 0.1 // Slightly higher temperature for creativity with minimal content
     })
 
     const detectedSpoke = completion.choices[0]?.message?.content?.trim()

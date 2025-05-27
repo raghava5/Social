@@ -17,7 +17,7 @@ export async function POST(
     console.log(`Save post request: postId=${postId}, userId=${userId}`)
 
     // Use transaction for consistency
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Ensure user exists
       let user = await tx.user.findUnique({
         where: { id: userId }

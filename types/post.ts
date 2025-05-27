@@ -26,6 +26,8 @@ export interface Post {
   content: string;
   images?: string;
   videos?: string;
+  audios?: string;
+  documents?: string;
   likes: number;
   comments: number;
   commentsList: Comment[];
