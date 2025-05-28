@@ -135,7 +135,7 @@ export default function Login() {
             create a new account
           </Link>
         </p>
-        {isMockAuthEnabled && (
+        {isMockAuthEnabled() && (
           <div className="mt-2 text-center text-sm text-indigo-600 font-medium">
             Development Mode: Using mock authentication
           </div>

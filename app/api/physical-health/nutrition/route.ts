@@ -64,14 +64,21 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/physical-health/nutrition/meals/:id
+// PUT /api/physical-health/nutrition/meals
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
-    const updates = await request.json()
-    const success = await nutritionService.updateMeal(params.id, updates)
+    const { id, ...updates } = await request.json()
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Meal ID is required' },
+        { status: 400 }
+      )
+    }
+    
+    const success = await nutritionService.updateMeal(id, updates)
     return NextResponse.json({ success })
   } catch (error) {
     console.error('Error updating meal:', error)
@@ -82,13 +89,21 @@ export async function PUT(
   }
 }
 
-// DELETE /api/physical-health/nutrition/meals/:id
+// DELETE /api/physical-health/nutrition/meals
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
-    const success = await nutritionService.deleteMeal(params.id)
+    const { id } = await request.json()
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Meal ID is required' },
+        { status: 400 }
+      )
+    }
+    
+    const success = await nutritionService.deleteMeal(id)
     return NextResponse.json({ success })
   } catch (error) {
     console.error('Error deleting meal:', error)

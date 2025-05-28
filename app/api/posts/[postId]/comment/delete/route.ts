@@ -3,10 +3,10 @@ import { prisma } from '@/lib/db'
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
-    const { postId } = params
+    const { postId } = await params
     const body = await req.json()
     const { commentId, userId } = body
 

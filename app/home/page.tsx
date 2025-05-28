@@ -17,6 +17,7 @@ interface Author {
 interface Post {
   id: string
   content: string
+  title?: string
   images?: string
   videos?: string
   audios?: string

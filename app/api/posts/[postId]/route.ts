@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOptimizedPrisma } from '@/lib/prisma-optimized'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
     // Create Supabase server client
@@ -37,7 +39,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { postId } = params
+    const { postId } = await params
     const prisma = getOptimizedPrisma()
 
     // Check if the user owns the post
@@ -74,7 +76,7 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -82,8 +84,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { postId } = params
+    const { postId } = await params
     const { content, feeling, location } = await req.json()
+
+    const prisma = getOptimizedPrisma()
 
     // Check if the user owns the post
     const post = await prisma.post.findUnique({
@@ -130,10 +134,10 @@ export async function PATCH(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
-    const { postId } = params
+    const { postId } = await params
 
     // Get current user session
     const cookieStore = await cookies()

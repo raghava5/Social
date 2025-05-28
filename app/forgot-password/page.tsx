@@ -21,7 +21,7 @@ export default function ForgotPassword() {
     try {
       const { success, error } = await resetPassword(email)
       if (success) {
-        if (isMockAuthEnabled) {
+        if (isMockAuthEnabled()) {
           setSuccessMessage(
             'MOCK AUTH MODE: In development, your password has been reset to "password123". ' +
             'In production, reset instructions would be sent to your email.'
@@ -48,7 +48,7 @@ export default function ForgotPassword() {
         <p className="mt-2 text-center text-sm text-gray-600">
           Enter your email address and we'll send you instructions to reset your password.
         </p>
-        {isMockAuthEnabled && (
+        {isMockAuthEnabled() && (
           <div className="mt-2 text-center text-sm text-indigo-600 font-medium">
             Development Mode: Password will be reset to "password123"
           </div>

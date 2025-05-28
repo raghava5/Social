@@ -65,14 +65,21 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/physical-health/reminders/:id
+// PUT /api/physical-health/reminders
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
-    const updates = await request.json()
-    const success = await reminderService.updateReminder(params.id, updates)
+    const { id, ...updates } = await request.json()
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Reminder ID is required' },
+        { status: 400 }
+      )
+    }
+    
+    const success = await reminderService.updateReminder(id, updates)
     return NextResponse.json({ success })
   } catch (error) {
     console.error('Error updating reminder:', error)
@@ -83,13 +90,21 @@ export async function PUT(
   }
 }
 
-// DELETE /api/physical-health/reminders/:id
+// DELETE /api/physical-health/reminders
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
-    const success = await reminderService.deleteReminder(params.id)
+    const { id } = await request.json()
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Reminder ID is required' },
+        { status: 400 }
+      )
+    }
+    
+    const success = await reminderService.deleteReminder(id)
     return NextResponse.json({ success })
   } catch (error) {
     console.error('Error deleting reminder:', error)

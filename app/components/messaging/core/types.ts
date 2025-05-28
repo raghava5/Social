@@ -68,11 +68,16 @@ export type Conversation = {
 };
 
 export type MessageEvent = {
-  type: 'message_sent' | 'message_delivered' | 'message_read' | 'message_edited' | 'message_deleted' | 'typing_started' | 'typing_stopped' | 'message_reaction';
-  payload: any;
-  timestamp: string;
-  conversationId: string;
-  userId: string;
+  type: 'message_sent' | 'message_delivered' | 'message_read' | 'message_edited' | 'message_deleted' | 'typing_started' | 'typing_stopped' | 'message_reaction' | 'message_send' | 'message_edit' | 'message_delete';
+  payload?: any;
+  timestamp?: string;
+  conversationId?: string;
+  userId?: string;
+  messageId?: string;
+  content?: string;
+  forEveryone?: boolean;
+  emoji?: string;
+  message?: Message;
 };
 
 export type TypingStatus = {

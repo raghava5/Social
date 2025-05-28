@@ -46,13 +46,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/physical-health/fitness/workouts/:id
+// PUT /api/physical-health/fitness/workouts
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
-    const updates = await request.json()
+    const { id, ...updates } = await request.json()
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Workout ID is required' },
+        { status: 400 }
+      )
+    }
 
     // TODO: Validate updates
     // TODO: Update in database
@@ -67,12 +73,20 @@ export async function PUT(
   }
 }
 
-// DELETE /api/physical-health/fitness/workouts/:id
+// DELETE /api/physical-health/fitness/workouts
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest
 ) {
   try {
+    const { id } = await request.json()
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Workout ID is required' },
+        { status: 400 }
+      )
+    }
+
     // TODO: Delete from database
 
     return NextResponse.json({ success: true })

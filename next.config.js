@@ -3,12 +3,14 @@ const nextConfig = {
   // 🚀 PERFORMANCE OPTIMIZATIONS
   experimental: {
     optimizePackageImports: ['@heroicons/react', 'framer-motion', 'date-fns'],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  },
+  
+  // 🚀 Turbopack configuration (moved from experimental)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -77,8 +79,7 @@ const nextConfig = {
     return config
   },
 
-  // 🚀 Reduce compilation overhead
-  swcMinify: true,
+  // 🚀 Runtime optimizations (removed deprecated swcMinify)
   compress: true,
   
   // 🚀 Runtime optimizations

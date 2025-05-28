@@ -189,9 +189,9 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate content
+    // Validate content - Fix the validation logic for articles
     const hasContent = postMode === 'article' ? 
-      (articleContent.trim().length > 0 || (editor?.getHTML()?.trim().length || 0) > 0) : 
+      (editor?.getHTML()?.trim().length || 0) > 0 : 
       content.trim().length > 0
     const hasTitle = postMode === 'article' ? title.trim().length > 0 : true
     const hasFiles = selectedFiles.length > 0
@@ -206,12 +206,21 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
       return
     }
     
+    // Check article content size to prevent database errors
+    if (postMode === 'article' && editor) {
+      const contentBytes = new Blob([editor.getHTML()]).size
+      if (contentBytes > 1000000) { // 1MB limit
+        alert('Article content is too large (over 1MB). Please reduce the content size or use external links for large media.')
+        return
+      }
+    }
+    
     setShowContentError(false)
 
     const formData = new FormData()
     
     if (postMode === 'article') {
-      formData.append('content', editor?.getHTML() || articleContent || '')
+      formData.append('content', editor?.getHTML() || '')
       formData.append('articleJson', JSON.stringify(editor?.getJSON() || {}))
       if (slides.length > 0) {
         formData.append('slides', JSON.stringify(slides))
@@ -243,7 +252,7 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
     try {
       setIsSubmitting(true)
       console.log('🚀 Submitting post...', {
-        content: postMode === 'article' ? (articleContent || '').substring(0, 50) : content.substring(0, 50),
+        content: postMode === 'article' ? (editor?.getHTML() || '').substring(0, 50) : content.substring(0, 50),
         postMode,
         filesCount: selectedFiles.length,
         documentsCount: documents.length,

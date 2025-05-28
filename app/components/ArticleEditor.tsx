@@ -256,6 +256,13 @@ export default function ArticleEditor({ content, onChange, onEditorReady, onSlid
       <div className="bg-gray-50 border-t border-gray-200 px-4 py-2 flex justify-between items-center text-sm text-gray-500">
         <span>{editor.storage.characterCount?.characters() || 0} characters</span>
         <span>{editor.storage.characterCount?.words() || 0} words</span>
+        <span className={`${
+          new Blob([editor.getHTML()]).size > 800000 ? 'text-red-600 font-medium' :
+          new Blob([editor.getHTML()]).size > 500000 ? 'text-yellow-600' : ''
+        }`}>
+          {(new Blob([editor.getHTML()]).size / 1024).toFixed(1)}KB
+          {new Blob([editor.getHTML()]).size > 800000 && ' (Too Large!)'}
+        </span>
       </div>
     </div>
   )

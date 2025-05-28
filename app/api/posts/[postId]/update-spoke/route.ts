@@ -4,11 +4,11 @@ import { websocketManager } from '../../../../../lib/websocket-manager'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
     const { spoke } = await request.json()
-    const postId = params.postId
+    const { postId } = await params
 
     if (!postId || !spoke) {
       return NextResponse.json(

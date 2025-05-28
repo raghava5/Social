@@ -4,10 +4,10 @@ import { invalidatePostsCache } from '@/lib/posts-cache'
 
 export async function POST(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
-    const { postId } = params
+    const { postId } = await params
     if (!postId) {
       return NextResponse.json({ error: 'Post ID is required' }, { status: 400 })
     }

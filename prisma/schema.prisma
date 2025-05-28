@@ -97,7 +97,7 @@ model Post {
   @@index([authorId, isDeleted, createdAt(sort: Desc)], map: "posts_author_active")
   @@index([createdAt(sort: Desc)], map: "posts_chronological")
   @@index([isDeleted, spoke, type, createdAt(sort: Desc)], map: "posts_combined_filter")
-  @@index([isDeleted, createdAt(sort: Desc), id, content, images, videos, feeling, spoke, authorId], map: "posts_covering_main")
+  @@index([isDeleted, createdAt(sort: Desc), id, images, videos, feeling, spoke, authorId], map: "posts_covering_main")
   @@index([id, createdAt(sort: Desc)], map: "posts_id_cursor")
   @@index([isDeleted, createdAt(sort: Desc)], map: "posts_isdeleted_createdat_desc")
   @@index([isDeleted, spoke, createdAt(sort: Desc)], map: "posts_spoke_active_desc")

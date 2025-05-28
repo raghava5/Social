@@ -89,7 +89,7 @@ export default function PostOptionsMenu({
             // Options for own posts
             <>
               <button
-                onClick={onEdit}
+                onClick={() => handleMenuAction(onEdit)}
                 className="w-full flex items-center px-4 py-2 text-left hover:bg-gray-50 transition-colors"
               >
                 <PencilIcon className="w-4 h-4 mr-3 text-gray-500" />
@@ -97,7 +97,7 @@ export default function PostOptionsMenu({
               </button>
               
               <button
-                onClick={onDelete}
+                onClick={() => handleMenuAction(onDelete)}
                 className="w-full flex items-center px-4 py-2 text-left hover:bg-gray-50 transition-colors"
               >
                 <TrashIcon className="w-4 h-4 mr-3 text-red-500" />

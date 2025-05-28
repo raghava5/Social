@@ -100,6 +100,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Article title is required' }, { status: 400 })
     }
 
+    // Check content length to prevent database errors
+    const contentLength = Buffer.byteLength(content || '', 'utf8')
+    if (contentLength > 1000000) { // 1MB limit
+      console.log('❌ Validation failed - content too large:', contentLength)
+      return NextResponse.json({ 
+        error: 'Article content is too large. Please reduce the content size or use external links for large media.' 
+      }, { status: 400 })
+    }
+
     // Process file uploads
     const uploadedFiles = {
       images: [] as string[],

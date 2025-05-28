@@ -138,8 +138,10 @@ class MessagingService {
       // For now, notify listeners of a new message event
       const event: MessageEvent = {
         type: 'message_edited',
-        messageId,
-        content
+        payload: { messageId, content },
+        timestamp: new Date().toISOString(),
+        conversationId: '', // Will be filled by the caller
+        userId: this.userId
       };
       
       // Dispatch to callbacks
@@ -149,9 +151,11 @@ class MessagingService {
     // Handle deleted messages
     this.socket.on('message:deleted', ({ messageId, forEveryone }) => {
       const event: MessageEvent = {
-        type: 'message_delete',
-        messageId,
-        forEveryone
+        type: 'message_deleted',
+        payload: { messageId, forEveryone },
+        timestamp: new Date().toISOString(),
+        conversationId: '', // Will be filled by the caller
+        userId: this.userId
       };
       
       // Dispatch to callbacks
@@ -162,9 +166,10 @@ class MessagingService {
     this.socket.on('message:react', ({ messageId, emoji, userId }) => {
       const event: MessageEvent = {
         type: 'message_reaction',
-        messageId,
-        emoji,
-        userId
+        payload: { messageId, emoji, userId },
+        timestamp: new Date().toISOString(),
+        conversationId: '', // Will be filled by the caller
+        userId: this.userId
       };
       
       // Dispatch to callbacks

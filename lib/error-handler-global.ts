@@ -106,10 +106,10 @@ class GlobalErrorHandler {
   }
 
   private handleResourceError(event: Event): void {
-    const target = event.target as HTMLElement;
+    const target = event.target;
     
     // Only handle actual resource loading errors
-    if (!target || target === window || !('src' in target)) {
+    if (!target || target === window || !(target instanceof HTMLElement) || !('src' in target)) {
       return;
     }
 
@@ -127,7 +127,7 @@ class GlobalErrorHandler {
     this.reportError(errorReport);
 
     // Try to recover from resource loading errors
-    this.attemptResourceRecovery(target);
+    this.attemptResourceRecovery(target as HTMLElement);
   }
 
   private patchConsoleError(): void {

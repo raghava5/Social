@@ -3,10 +3,10 @@ import { prisma } from '@/lib/db'
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
-    const { postId } = params
+    const { postId } = await params
     const body = await req.json()
     const { userId } = body
 

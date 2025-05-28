@@ -3,10 +3,10 @@ import { getOptimizedPrisma } from '@/lib/prisma-optimized'
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
-    const { postId } = params
+    const { postId } = await params
     const body = await req.json()
     const { commentId, content, userId } = body
 
@@ -73,7 +73,7 @@ export async function PATCH(
 // ✅ ALSO SUPPORT PUT METHOD
 export async function PUT(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
   return PATCH(req, { params })
 } 

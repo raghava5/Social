@@ -161,7 +161,7 @@ export class PostService {
         await this.updatePostSpoke(post.id, detectedSpoke)
         
         // Broadcast spoke update to real-time clients
-        await websocketManager.emitToUser(post.authorId, 'post_spoke_updated', {
+        await websocketManager.broadcastToUser(post.authorId, 'post_spoke_updated', {
           postId: post.id,
           spoke: detectedSpoke
         })
