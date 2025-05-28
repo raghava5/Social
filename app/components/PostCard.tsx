@@ -65,8 +65,9 @@ interface PostProps {
   type?: string
   isLikedByCurrentUser?: boolean
   isSaved?: boolean
+  isAnonymous?: boolean
   onLike?: (postId: string) => Promise<any>
-  onComment?: (postId: string, comment: string) => Promise<any>
+  onComment?: (postId: string, comment: string, isAnonymous?: boolean) => Promise<any>
   onShare?: (postId: string) => Promise<void>
   onEdit?: (postId: string, updatedPost: any) => Promise<void>
   onDelete?: (postId: string) => Promise<void>
@@ -96,6 +97,7 @@ export default function PostCard({
   type = 'user-post',
   isLikedByCurrentUser = false,
   isSaved = false,
+  isAnonymous = false,
   onLike,
   onComment,
   onShare,
@@ -125,9 +127,14 @@ export default function PostCard({
   const [relativeTime, setRelativeTime] = useState('')
   const [editedRelativeTime, setEditedRelativeTime] = useState<string | null>(null)
   const [showPostModal, setShowPostModal] = useState(false)
+  const [isAnonymousComment, setIsAnonymousComment] = useState(false)
   
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement }>({})
   const [currentVideoTime, setCurrentVideoTime] = useState(0)
+
+  // Loading states
+  const [isCommentSubmitting, setIsCommentSubmitting] = useState(false)
+  const [isSaveToggling, setIsSaveToggling] = useState(false)
 
   // Memoized values to prevent recalculation
   const avatarUrl = useMemo(() => 
@@ -239,23 +246,41 @@ export default function PostCard({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+    <div className={`rounded-lg shadow-sm border mb-4 transition-colors ${
+      (isCommentSubmitting || isSaveToggling) 
+        ? 'bg-yellow-50 border-yellow-200' 
+        : 'bg-white border-gray-200'
+    }`}>
       {/* Post Header */}
       <div className="p-4 pb-3">
         <div className="flex items-start space-x-3">
-          <Link href={`/profile/${author.id}`}>
+          {isAnonymous ? (
             <img 
               src={avatarUrl} 
               alt={author.name || 'User'}
-              className="w-10 h-10 rounded-full object-cover hover:opacity-80 transition-opacity"
+              className="w-10 h-10 rounded-full object-cover"
             />
-          </Link>
+          ) : (
+            <Link href={`/profile/${author.id}`}>
+              <img 
+                src={avatarUrl} 
+                alt={author.name || 'User'}
+                className="w-10 h-10 rounded-full object-cover hover:opacity-80 transition-opacity"
+              />
+            </Link>
+          )}
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              <Link href={`/profile/${author.id}`} className="font-medium text-gray-900 hover:underline">
-                {author.name || 'Anonymous User'}
-              </Link>
+              {isAnonymous ? (
+                <span className="font-medium text-gray-900">
+                  {author.name || 'Anonymous User'}
+                </span>
+              ) : (
+                <Link href={`/profile/${author.id}`} className="font-medium text-gray-900 hover:underline">
+                  {author.name || 'Anonymous User'}
+                </Link>
+              )}
               {feeling && (
                 <span className="text-sm text-gray-500">is feeling {feeling}</span>
               )}
@@ -535,13 +560,31 @@ export default function PostCard({
 
         <button 
           onClick={async () => {
-            await onSave?.(id)
-            setSaved(!saved)
+            setIsSaveToggling(true)
+            try {
+              await onSave?.(id)
+              setSaved(!saved)
+            } catch (error) {
+              console.error('Save failed:', error)
+            } finally {
+              setIsSaveToggling(false)
+            }
           }}
-          className="flex-1 flex items-center justify-center py-2 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+          disabled={isSaveToggling}
+          className={`flex-1 flex items-center justify-center py-2 rounded-md transition-colors ${
+            isSaveToggling 
+              ? 'bg-yellow-100 border border-yellow-200 text-yellow-800' 
+              : 'text-gray-600 hover:bg-gray-50'
+          }`}
         >
-          <BookmarkIcon className={`w-5 h-5 mr-2 ${saved ? 'text-blue-500' : 'text-gray-500'}`} />
-          <span className="font-medium">{saved ? 'Saved' : 'Save'}</span>
+          {isSaveToggling ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600 mr-2"></div>
+          ) : (
+            <BookmarkIcon className={`w-5 h-5 mr-2 ${saved ? 'text-blue-500' : 'text-gray-500'}`} />
+          )}
+          <span className="font-medium">
+            {isSaveToggling ? 'Saving...' : (saved ? 'Saved' : 'Save')}
+          </span>
         </button>
       </div>
 
@@ -562,16 +605,41 @@ export default function PostCard({
               placeholder="Write a comment..."
               className="flex-1 p-2 rounded-full bg-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
               onKeyPress={async (e) => {
-                if (e.key === 'Enter' && commentText.trim()) {
+                if (e.key === 'Enter' && commentText.trim() && !isCommentSubmitting) {
+                  setIsCommentSubmitting(true)
                   try {
-                    await onComment?.(id, commentText)
+                    await onComment?.(id, commentText, isAnonymousComment)
                     setCommentText('')
                   } catch (error) {
                     console.error('Comment failed:', error)
+                  } finally {
+                    setIsCommentSubmitting(false)
                   }
                 }
               }}
+              disabled={isCommentSubmitting}
             />
+            {/* Show anonymous toggle only for anonymous posts */}
+            {isAnonymous && (
+              <button
+                onClick={() => setIsAnonymousComment(!isAnonymousComment)}
+                className={`p-2 rounded-full text-sm transition-colors ${
+                  isAnonymousComment 
+                    ? 'bg-gray-200 text-gray-700' 
+                    : 'text-gray-500 hover:bg-gray-100'
+                }`}
+                title={isAnonymousComment ? 'Comment anonymously' : 'Comment publicly'}
+                disabled={isCommentSubmitting}
+              >
+                {isAnonymousComment ? '🔒' : '👤'}
+              </button>
+            )}
+            {/* Loading indicator for comments */}
+            {isCommentSubmitting && (
+              <div className="p-2 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              </div>
+            )}
           </div>
 
           {/* Display Comments */}

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import { ErrorBoundary } from './ErrorBoundary'
+import EnhancedDocumentViewer from '../app/components/EnhancedDocumentViewer'
+import { EyeIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline'
 
 interface MediaRendererProps {
   images?: string | null
@@ -152,41 +154,138 @@ function AudioRenderer({ audios, postId }: { audios: string, postId?: string }) 
 }
 
 function DocumentRenderer({ documents, postId }: { documents: string, postId?: string }) {
+  const [isViewerOpen, setIsViewerOpen] = useState(false)
+  const [selectedDocumentIndex, setSelectedDocumentIndex] = useState(0)
+  
   try {
     const docUrls = documents.split(',').map(url => url.trim()).filter(Boolean)
     
+    const getDocumentIcon = (filename: string) => {
+      const extension = filename.split('.').pop()?.toLowerCase() || ''
+      const icons = {
+        pdf: '📄',
+        doc: '📝',
+        docx: '📝',
+        xls: '📊',
+        xlsx: '📊',
+        ppt: '📋',
+        pptx: '📋',
+        txt: '📃',
+        csv: '📈',
+        rtf: '📝'
+      }
+      return icons[extension as keyof typeof icons] || '📄'
+    }
+
+    const getDocumentColor = (filename: string) => {
+      const extension = filename.split('.').pop()?.toLowerCase() || ''
+      const colors = {
+        pdf: 'bg-red-50 border-red-200 hover:bg-red-100',
+        doc: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
+        docx: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
+        xls: 'bg-green-50 border-green-200 hover:bg-green-100',
+        xlsx: 'bg-green-50 border-green-200 hover:bg-green-100',
+        ppt: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
+        pptx: 'bg-orange-50 border-orange-200 hover:bg-orange-100',
+        txt: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
+        csv: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
+        rtf: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100'
+      }
+      return colors[extension as keyof typeof colors] || 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+    }
+
+    const openViewer = (index: number) => {
+      setSelectedDocumentIndex(index)
+      setIsViewerOpen(true)
+    }
+    
     return (
-      <div className="space-y-2">
-        {docUrls.map((doc, index) => {
-          const filename = doc.split('/').pop() || doc
-          const docUrl = doc.startsWith('http') ? doc : `/uploads/documents/${doc}`
-          
-          return (
-            <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl mr-3">📄</div>
-              <div className="flex-1">
-                <div className="font-medium text-sm">{filename}</div>
-                <a 
-                  href={docUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 text-sm"
-                  onClick={(e) => {
-                    // Check if file exists before opening
-                    fetch(docUrl, { method: 'HEAD' })
-                      .catch(() => {
-                        e.preventDefault()
-                        alert('Document not found')
-                      })
-                  }}
-                >
-                  Open Document →
-                </a>
+      <>
+        <div className="space-y-3">
+          {docUrls.map((doc, index) => {
+            const filename = doc.split('/').pop() || doc
+            const docUrl = doc.startsWith('http') ? doc : `/uploads/documents/${doc}`
+            const extension = filename.split('.').pop()?.toLowerCase() || ''
+            const fileSize = ''; // We don't have file size info here
+            
+            return (
+              <div 
+                key={index} 
+                className={`border rounded-lg p-4 transition-all duration-200 ${getDocumentColor(filename)}`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className="flex-shrink-0">
+                      <div className="h-12 w-12 rounded-lg bg-white shadow-sm flex items-center justify-center text-xl">
+                        {getDocumentIcon(filename)}
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-gray-900 truncate">
+                        {filename}
+                      </h4>
+                      <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1">
+                        <span className="uppercase font-medium">{extension}</span>
+                        {fileSize && <span>• {fileSize}</span>}
+                        <span>• Document</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 ml-4">
+                    {/* Preview Button */}
+                    <button
+                      onClick={() => openViewer(index)}
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      title="Preview document"
+                    >
+                      <EyeIcon className="h-3 w-3 mr-1" />
+                      Preview
+                    </button>
+                    
+                    {/* Download Button */}
+                    <a
+                      href={docUrl}
+                      download={filename}
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      title="Download document"
+                      onClick={(e) => {
+                        // Check if file exists before downloading
+                        fetch(docUrl, { method: 'HEAD' })
+                          .catch(() => {
+                            e.preventDefault()
+                            alert('Document not found')
+                          })
+                      }}
+                    >
+                      <ArrowDownTrayIcon className="h-3 w-3 mr-1" />
+                      Download
+                    </a>
+                  </div>
+                </div>
+                
+                {/* Quick Info */}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>Click Preview for interactive viewing</span>
+                    <span>Supports search, zoom, and text-to-speech</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+
+        {/* Enhanced Document Viewer */}
+        <EnhancedDocumentViewer
+          documents={documents}
+          postId={postId}
+          isOpen={isViewerOpen}
+          onClose={() => setIsViewerOpen(false)}
+          initialDocumentIndex={selectedDocumentIndex}
+        />
+      </>
     )
   } catch (error) {
     console.error('Error rendering documents:', error)

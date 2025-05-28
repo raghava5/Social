@@ -18,14 +18,15 @@ export async function POST(
       userEmail,
       userFirstName,
       userLastName,
-      userProfileImage
+      userProfileImage,
+      isAnonymous = false
     } = body
 
     if (!content || content.trim() === '') {
       return NextResponse.json({ error: 'Comment content is required' }, { status: 400 })
     }
 
-    console.log(`Comment request: postId=${postId}, userId=${userId}, content=${content.substring(0, 50)}...`)
+    console.log(`Comment request: postId=${postId}, userId=${userId}, content=${content.substring(0, 50)}..., isAnonymous=${isAnonymous}`)
 
     // Get post
     const post = await prisma.post.findUnique({
@@ -82,7 +83,8 @@ export async function POST(
       data: {
         postId,
         userId: userId,
-        content
+        content,
+        isAnonymous: isAnonymous
       },
       include: {
         user: true
@@ -96,39 +98,38 @@ export async function POST(
       where: { postId }
     })
 
+    // Prepare comment response with anonymous handling
+    const commentResponse = {
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      isAnonymous: isAnonymous,
+      user: isAnonymous ? {
+        id: 'anonymous',
+        firstName: 'Anonymous',
+        lastName: '',
+        profileImageUrl: null
+      } : {
+        id: comment.user.id,
+        firstName: comment.user.firstName,
+        lastName: comment.user.lastName,
+        profileImageUrl: comment.user.profileImageUrl
+      }
+    }
+
     // 🚀 REAL-TIME UPDATE: Broadcast comment update via WebSocket
     if (global.io) {
       global.io.emit('post_commented', {
         postId,
         commentCount,
-        comment: {
-          id: comment.id,
-          content: comment.content,
-          createdAt: comment.createdAt,
-          user: {
-            id: comment.user.id,
-            firstName: comment.user.firstName,
-            lastName: comment.user.lastName,
-            profileImageUrl: comment.user.profileImageUrl
-          }
-        }
+        comment: commentResponse
       })
       console.log(`📡 Broadcasted comment update for post ${postId}: ${commentCount} comments`)
     }
 
     return NextResponse.json({
       success: true,
-      comment: {
-        id: comment.id,
-        content: comment.content,
-        createdAt: comment.createdAt,
-        user: {
-          id: comment.user.id,
-          firstName: comment.user.firstName,
-          lastName: comment.user.lastName,
-          profileImageUrl: comment.user.profileImageUrl
-        }
-      },
+      comment: commentResponse,
       commentCount
     })
   } catch (error) {

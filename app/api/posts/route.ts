@@ -1,18 +1,43 @@
-import { NextResponse } from 'next/server'
-import { getOptimizedPrisma, optimizedPostsQuery, executeOptimizedQuery } from '@/lib/prisma-optimized'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { uploadToS3 } from '@/lib/s3'
-import { analyzeText } from '../ai/text-analysis'
-import { withPerformanceMonitoring, monitorDatabaseQuery } from '@/lib/performance-monitor'
-import { getCachedPosts, setCachedPosts, invalidatePostsCache } from '@/lib/posts-cache'
+import { PrismaClient } from '@prisma/client'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
+import { v4 as uuidv4 } from 'uuid'
 
-export async function POST(req: Request) {
+// Initialize Prisma client
+const prisma = new PrismaClient()
+
+// Enhanced upload function
+async function uploadFile(file: File, type: 'images' | 'videos' | 'audios' | 'documents'): Promise<string> {
+  const bytes = await file.arrayBuffer()
+  const buffer = Buffer.from(bytes)
+  
+  const uploadsDir = path.join(process.cwd(), 'public', 'uploads', type)
+  await mkdir(uploadsDir, { recursive: true })
+  
+  const extension = path.extname(file.name)
+  const filename = `${uuidv4()}${extension}`
+  const filepath = path.join(uploadsDir, filename)
+  
+  await writeFile(filepath, buffer)
+  return `/uploads/${type}/${filename}` // Return web-accessible path
+}
+
+// Determine file type based on MIME type
+function getFileType(file: File): 'images' | 'videos' | 'audios' | 'documents' {
+  if (file.type.startsWith('image/')) return 'images'
+  if (file.type.startsWith('video/')) return 'videos'
+  if (file.type.startsWith('audio/')) return 'audios'
+  return 'documents'
+}
+
+export async function POST(req: NextRequest) {
   try {
-    // Removed excessive logging for performance
-    console.log('📤 Creating new post...')
+    console.log('📝 POST /api/posts - Starting...')
     
-    // Create Supabase server client
+    // Authentication check
     const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,477 +60,271 @@ export async function POST(req: Request) {
       }
     )
 
-    // Get session
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) {
-      console.log('Unauthorized: No session')
+      console.log('❌ Unauthorized - no session')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    console.log('✅ User authenticated:', session.user.id)
+
     const formData = await req.formData()
     const content = formData.get('content') as string
-    const feeling = formData.get('feeling') as string || null
-    const location = formData.get('location') as string || null
-    const spoke = formData.get('spoke') as string || null
-    const type = formData.get('type') as string || 'user-post'
-    const tags = formData.getAll('tags') as string[]
+    const postMode = formData.get('postMode') as string || 'post'
+    const title = formData.get('title') as string
+    const feeling = formData.get('feeling') as string
+    const location = formData.get('location') as string
+    const latitude = formData.get('latitude') as string
+    const longitude = formData.get('longitude') as string
+    const isAnonymous = formData.get('isAnonymous') === 'true'
+    
     const files = formData.getAll('files') as File[]
-    
-    // Check for pre-uploaded media URLs
-    const uploadedVideoUrl = formData.get('uploadedVideoUrl') as string
-    const uploadedImageUrl = formData.get('uploadedImageUrl') as string
-    const uploadedAudioUrl = formData.get('uploadedAudioUrl') as string
-    const uploadedDocumentUrl = formData.get('uploadedDocumentUrl') as string
-    
-    // Audio classification data
-    const audioType = formData.get('audioType') as string
-    const audioClassificationJson = formData.get('audioClassification') as string
-    let audioClassification = null
-    
-    if (audioClassificationJson) {
-      try {
-        audioClassification = JSON.parse(audioClassificationJson)
-        console.log('🎵 Audio classification received:', audioClassification)
-      } catch (error) {
-        console.warn('Failed to parse audio classification:', error)
-      }
-    }
 
-    console.log('Post data:', { content, feeling, location, spoke, type, tags, audioType })
-    console.log('Pre-uploaded media:', { 
-      uploadedVideoUrl, 
-      uploadedImageUrl, 
-      uploadedAudioUrl, 
-      uploadedDocumentUrl 
+    console.log(`📝 Creating ${postMode}:`, {
+      userId: session.user.id,
+      contentLength: content?.length || 0,
+      filesCount: files.length,
+      isAnonymous,
+      hasLocation: !!location,
+      hasCoordinates: !!(latitude && longitude)
     })
 
-    if (!content) {
-      return NextResponse.json({ error: 'Content is required' }, { status: 400 })
+    // Validate required content
+    if (!content?.trim() && files.length === 0) {
+      console.log('❌ Validation failed - no content or files')
+      return NextResponse.json({ error: 'Post content or media is required' }, { status: 400 })
     }
 
-    // Analyze content and auto-assign spoke if not provided
-    let assignedSpoke = spoke;
-    try {
-      if (!assignedSpoke) {
-        const analysis = await analyzeText(content);
-        if (analysis.spokeTag.confidence > 0.4) {
-          assignedSpoke = analysis.spokeTag.spoke;
-          console.log(`Auto-assigned spoke: ${assignedSpoke} (confidence: ${analysis.spokeTag.confidence})`);
-          console.log(`Reasoning: ${analysis.spokeTag.reasoning}`);
+    if (postMode === 'article' && !title?.trim()) {
+      console.log('❌ Validation failed - no article title')
+      return NextResponse.json({ error: 'Article title is required' }, { status: 400 })
+    }
+
+    // Process file uploads
+    const uploadedFiles = {
+      images: [] as string[],
+      videos: [] as string[],
+      audios: [] as string[],
+      documents: [] as string[]
+    }
+
+    for (const file of files) {
+      if (file && file.size > 0) {
+        try {
+          const fileType = getFileType(file)
+          const filename = await uploadFile(file, fileType)
+          uploadedFiles[fileType].push(filename)
+          console.log(`✅ Uploaded ${fileType}: ${filename}`)
+        } catch (error) {
+          console.error(`❌ Upload failed for ${file.name}:`, error)
         }
       }
-    } catch (error) {
-      console.error('Error analyzing content for spoke tagging:', error);
-      // Continue without auto-assignment if analysis fails
     }
 
-    // Handle media files - use pre-uploaded URLs if available, otherwise upload new files
-    const imageUrls: string[] = []
-    const videoUrls: string[] = []
-    const audioUrls: string[] = []
-    const documentUrls: string[] = []
-
-    // Add pre-uploaded URLs first
-    if (uploadedVideoUrl) {
-      videoUrls.push(uploadedVideoUrl)
-      console.log('✅ Using pre-uploaded video URL:', uploadedVideoUrl)
-    }
-    
-    if (uploadedImageUrl) {
-      imageUrls.push(uploadedImageUrl)
-      console.log('✅ Using pre-uploaded image URL:', uploadedImageUrl)
-    }
-
-    if (uploadedAudioUrl) {
-      audioUrls.push(uploadedAudioUrl)
-      console.log('✅ Using pre-uploaded audio URL:', uploadedAudioUrl)
-    }
-
-    if (uploadedDocumentUrl) {
-      documentUrls.push(uploadedDocumentUrl)
-      console.log('✅ Using pre-uploaded document URL:', uploadedDocumentUrl)
-    }
-
-    // Upload any new files if not pre-uploaded
-    if (files.length > 0 && !uploadedVideoUrl && !uploadedImageUrl && !uploadedAudioUrl && !uploadedDocumentUrl) {
-      try {
-        for (const file of files) {
-          const url = await uploadToS3(file)
-          if (file.type.startsWith('image/')) {
-            imageUrls.push(url)
-          } else if (file.type.startsWith('video/')) {
-            videoUrls.push(url)
-          } else if (file.type.startsWith('audio/')) {
-            audioUrls.push(url)
-          } else if (file.type.includes('pdf') || file.type.includes('document') || file.type.includes('text') || file.type.includes('application/')) {
-            documentUrls.push(url)
-          }
-        }
-      } catch (uploadError) {
-        console.error('Error uploading files:', uploadError)
-        return NextResponse.json({ error: 'Failed to upload media files' }, { status: 500 })
-      }
-    }
-
-    console.log('Media URLs:', { imageUrls, videoUrls, audioUrls, documentUrls })
-
-    // Get or create user in database
-    const prisma = getOptimizedPrisma()
+    // Ensure user exists in database
     let user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: session.user.id }
     })
 
     if (!user) {
-      // Create user if they don't exist
+      console.log('🔄 Creating user in database...')
       user = await prisma.user.create({
         data: {
           id: session.user.id,
           email: session.user.email!,
           username: session.user.email!.split('@')[0],
-          firstName: session.user.user_metadata?.firstName || 'Anonymous',
-          lastName: session.user.user_metadata?.lastName || 'User',
+          firstName: session.user.user_metadata?.firstName || session.user.user_metadata?.name || 'User',
+          lastName: session.user.user_metadata?.lastName || '',
           passwordHash: '', // Not used with Supabase auth
-        },
-      })
-    }
-
-    // Create post in database
-    const post = await prisma.post.create({
-      data: {
-        content,
-        feeling: feeling || undefined,
-        location: location || undefined,
-        spoke: assignedSpoke || undefined,
-        type,
-        tags: tags.length > 0 ? tags.join(',') : undefined,
-        images: imageUrls.length > 0 ? imageUrls.join(',') : undefined,
-        videos: videoUrls.length > 0 ? videoUrls.join(',') : undefined,
-        audios: audioUrls.length > 0 ? audioUrls.join(',') : undefined,
-        documents: documentUrls.length > 0 ? documentUrls.join(',') : undefined,
-        userId: user.id,
-        authorId: user.id,
-      },
-      include: {
-        author: true,
-        likes: true,
-        comments: true,
-      },
-    })
-
-    console.log('Post created:', post)
-
-    // 🚀 CACHE INVALIDATION: Clear relevant cache entries
-    invalidatePostsCache({
-      spoke: assignedSpoke || undefined,
-      type: type,
-    })
-
-    // 🎯 AUTOMATIC SPOKE DETECTION: Trigger immediately after post creation
-    try {
-      console.log(`🎯 Triggering automatic spoke detection for post: ${post.id}`)
-      
-      // Call the process-events API to detect spoke
-      const spokeDetectionResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/ai/process-events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          postId: post.id, 
-          action: 'detect_spoke' 
-        })
-      })
-      
-      if (spokeDetectionResponse.ok) {
-        const spokeResult = await spokeDetectionResponse.json()
-        if (spokeResult.spoke) {
-          console.log(`✅ Spoke detected for post ${post.id}: ${spokeResult.spoke}`)
-          // Update the post object to return the detected spoke
-          post.spoke = spokeResult.spoke
-        } else {
-          console.log(`⚠️ No spoke detected for post ${post.id}`)
+          profileImageUrl: session.user.user_metadata?.avatar_url || null,
         }
-      } else {
-        console.error(`❌ Spoke detection failed for post ${post.id}:`, spokeDetectionResponse.status)
+      })
+      console.log('✅ User created:', user.id)
+    }
+
+    // Create post with enhanced data
+    const postData = {
+      userId: session.user.id,
+      authorId: session.user.id,
+      content: content?.trim() || '',
+      type: postMode === 'article' ? 'article' : 'user-post',
+      ...(postMode === 'article' && title && { title: title.trim() }),
+      ...(feeling && { feeling }),
+      ...(location && { location }),
+      ...(latitude && longitude && {
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude)
+      }),
+      isAnonymous: isAnonymous,
+      // File attachments
+      ...(uploadedFiles.images.length > 0 && { images: uploadedFiles.images.join(',') }),
+      ...(uploadedFiles.videos.length > 0 && { videos: uploadedFiles.videos.join(',') }),
+      ...(uploadedFiles.audios.length > 0 && { audios: uploadedFiles.audios.join(',') }),
+      ...(uploadedFiles.documents.length > 0 && { documents: uploadedFiles.documents.join(',') }),
+    }
+
+    console.log('🔄 Creating post in database...')
+    const post = await prisma.post.create({
+      data: postData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profileImageUrl: true,
+            email: true
+          }
+        },
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profileImageUrl: true,
+            email: true
+          }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          }
+        }
       }
-    } catch (spokeError) {
-      console.error(`❌ Spoke detection error for post ${post.id}:`, spokeError)
-      // Don't fail post creation if spoke detection fails
+    })
+
+    console.log('✅ Post created successfully:', post.id)
+
+    // Return post data with anonymous handling
+    const responsePost = {
+      ...post,
+      // Completely hide user info for anonymous posts
+      user: isAnonymous ? {
+        id: 'anonymous',
+        firstName: 'Anonymous',
+        lastName: '',
+        profileImageUrl: null,
+        email: ''
+      } : post.user,
+      author: isAnonymous ? {
+        id: 'anonymous',
+        firstName: 'Anonymous',
+        lastName: '',
+        profileImageUrl: null,
+        email: ''
+      } : post.author,
+      // Include engagement stats
+      likes_count: post._count.likes,
+      comments_count: post._count.comments,
+      shares_count: post.shares || 0
     }
 
-    // Emit socket event for real-time updates
-    if ((global as any).io) {
-      console.log('Emitting new-post event')
-      ;(global as any).io.emit('new-post', post)
-    } else {
-      console.log('WebSocket server not available')
-    }
+    return NextResponse.json(responsePost, { status: 201 })
 
-    // Auto-trigger FREE transcription for ALL videos
-    if (videoUrls.length > 0) {
-      try {
-        console.log(`🆓 Auto-triggering FREE transcription for ${videoUrls.length} video(s) in post:`, post.id)
-        
-        // Import the auto-transcribe function (commented out as it's not exported)
-        // const { autoTranscribeVideo } = await import('../transcribe-free/route')
-        
-        // Transcribe each video (commented out as function is not available)
-        // for (const videoUrl of videoUrls) {
-        //   console.log(`🎥 Transcribing video: ${videoUrl}`)
-        //   autoTranscribeVideo(post.id, videoUrl)
-        //     .catch((error: any) => {
-        //       console.error(`Failed to transcribe video ${videoUrl}:`, error)
-        //     })
-        // }
-        
-        console.log('✅ FREE transcription started for all videos')
-      } catch (transcribeError) {
-        console.warn('⚠️ Failed to auto-trigger transcription:', transcribeError)
-        // Don't fail the post creation if transcription fails
-      }
-    }
-
-    return NextResponse.json(post)
   } catch (error) {
-    console.error('Error creating post:', error)
+    console.error('❌ Post creation error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create post' },
+      { 
+        error: 'Failed to create post',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
 }
 
-// 🚀 ULTRA-FAST GET API - WITH REQUEST CANCELLATION PROTECTION
-export const GET = async function(req: Request) {
-  const startTime = Date.now()
-  console.log('🚀 ULTRA-FAST API START')
-  
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url)
-    const spoke = searchParams.get('spoke')
-    const type = searchParams.get('type')
-    const userId = searchParams.get('userId') // ✅ GET CURRENT USER ID FOR LIKE STATUS
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '5'), 5) // ✅ INCREASED: Allow up to 5 posts
+    console.log('📖 GET /api/posts - Starting...')
     
+    const { searchParams } = new URL(req.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const skip = (page - 1) * limit
+
     console.log(`📄 Fetching posts: page=${page}, limit=${limit}`)
 
-    // 🚀 CACHE CHECK: Try to get from cache first
-    const cacheParams = { page, limit, spoke: spoke || undefined, type: type || undefined, userId: userId || undefined }
-    const cachedResult = getCachedPosts(cacheParams)
-    
-    if (cachedResult) {
-      console.log(`⚡ CACHE HIT in ${Date.now() - startTime}ms`)
-      return new NextResponse(JSON.stringify(cachedResult), {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Cache': 'HIT',
-          'X-Query-Time': `${Date.now() - startTime}ms`,
-          'Access-Control-Allow-Origin': '*', // ✅ CORS HEADERS
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        },
-      })
-    }
-
-    console.log('🗄️ CACHE MISS - Fetching from database...')
-
-    // 🚀 REQUEST VALIDATION: Prevent invalid requests
-    if (page < 1 || limit < 1) {
-      console.warn('Invalid pagination parameters')
-      return NextResponse.json({ error: 'Invalid pagination parameters' }, { status: 400 })
-    }
-
-    // 🚀 NO AUTH CHECK - Skip for maximum speed
-    const where = {
-      isDeleted: false,
-      ...(spoke ? { spoke } : {}),
-      ...(type ? { type } : {}),
-    }
-
-    const prisma = getOptimizedPrisma()
-    
-    // 🚀 STEP 1: Get posts - ESSENTIAL FIELDS INCLUDING MEDIA
-    const queryStartTime = Date.now()
     const posts = await prisma.post.findMany({
-      where,
-      select: {
-        id: true,
-        content: true,
-        images: true,
-        videos: true,          // ✅ RESTORED: Essential for media display
-        audios: true,          // ✅ RESTORED: Essential for audio posts
-        documents: true,       // ✅ RESTORED: Essential for document posts
-        feeling: true,
-        spoke: true,
-        createdAt: true,
-        authorId: true,
+      where: {
+        isDeleted: false
       },
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
-    })
-    
-    console.log(`⚡ Posts query: ${Date.now() - queryStartTime}ms`)
-
-    if (posts.length === 0) {
-      const emptyResponse = {
-        posts: [],
-        pagination: { page, limit, hasMore: false, count: 0 }
-      }
-      setCachedPosts(cacheParams, emptyResponse, 60 * 1000) // Cache for 1 minute
-      return new NextResponse(JSON.stringify(emptyResponse), {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Cache': 'MISS',
-          'X-Query-Time': `${Date.now() - startTime}ms`,
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profileImageUrl: true,
+            email: true
+          }
         },
-      })
-    }
-
-    // 🚀 STEP 2: Get authors AND essential interaction data
-    const batchStartTime = Date.now()
-    const authorIds = [...new Set(posts.map((p: any) => p.authorId))]
-    const postIds = posts.map((p: any) => p.id)
-    
-    // Get authors, likes, comments, and bookmarks in parallel
-    const [authors, likes, comments, bookmarks] = await Promise.all([
-      prisma.user.findMany({
-        where: { id: { in: authorIds } },
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          profileImageUrl: true,
-        }
-      }),
-      prisma.like.findMany({
-        where: { postId: { in: postIds } },
-        select: { postId: true, userId: true }
-      }),
-      prisma.comment.findMany({
-        where: { postId: { in: postIds } },
-        select: { 
-          id: true,
-          postId: true, 
-          content: true,
-          createdAt: true,
-          updatedAt: true,
-          isEdited: true,
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              profileImageUrl: true
-            }
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profileImageUrl: true,
+            email: true
+          }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
           }
         }
-      }),
-      prisma.bookmark.findMany({
-        where: { 
-          postId: { in: postIds },
-          ...(userId ? { userId } : {})
-        },
-        select: { postId: true, userId: true }
-      })
-    ])
-
-    console.log(`⚡ Batch queries: ${Date.now() - batchStartTime}ms`)
-
-    // 🚀 STEP 3: Combine data - ESSENTIAL FIELDS WITH NULL SAFETY
-    const processingStartTime = Date.now()
-    const authorsMap = new Map(authors.map((author: any) => [author.id, author]))
-    
-    // Group likes, comments, and bookmarks by post
-    const likesMap = new Map()
-    const commentsMap = new Map()
-    const bookmarksMap = new Map()
-    
-    likes.forEach((like: any) => {
-      if (!likesMap.has(like.postId)) likesMap.set(like.postId, [])
-      likesMap.get(like.postId).push(like)
-    })
-    
-    comments.forEach((comment: any) => {
-      if (!commentsMap.has(comment.postId)) commentsMap.set(comment.postId, [])
-      commentsMap.get(comment.postId).push(comment)
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      skip,
+      take: limit
     })
 
-    bookmarks.forEach((bookmark: any) => {
-      if (!bookmarksMap.has(bookmark.postId)) bookmarksMap.set(bookmark.postId, [])
-      bookmarksMap.get(bookmark.postId).push(bookmark)
-    })
+    // Handle anonymous posts in response
+    const responsePosts = posts.map(post => ({
+      ...post,
+      // Hide user info for anonymous posts
+      user: (post as any).isAnonymous ? {
+        id: 'anonymous',
+        firstName: 'Anonymous',
+        lastName: '',
+        profileImageUrl: null,
+        email: ''
+      } : post.user,
+      author: (post as any).isAnonymous ? {
+        id: 'anonymous',
+        firstName: 'Anonymous',
+        lastName: '',
+        profileImageUrl: null,
+        email: ''
+      } : post.author,
+      likes_count: post._count.likes,
+      comments_count: post._count.comments,
+      shares_count: post.shares || 0
+    }))
 
-    const postsWithData = posts.map((post: any) => {
-      const postLikes = likesMap.get(post.id) || []
-      const postComments = commentsMap.get(post.id) || []
-      const postBookmarks = bookmarksMap.get(post.id) || []
-      
-      // ✅ CHECK IF CURRENT USER LIKED THIS POST
-      const isLikedByCurrentUser = userId ? postLikes.some((like: any) => like.userId === userId) : false
-      
-      // ✅ CHECK IF CURRENT USER SAVED THIS POST
-      const isSaved = userId ? postBookmarks.some((bookmark: any) => bookmark.userId === userId) : false
-      
-      return {
-        id: post.id,
-        content: post.content || '',                    // ✅ NULL SAFETY: Prevent crashes
-        images: post.images || null,                    // ✅ RESTORED: Media support
-        videos: post.videos || null,                    // ✅ RESTORED: Video support  
-        audios: post.audios || null,                    // ✅ RESTORED: Audio support
-        documents: post.documents || null,              // ✅ RESTORED: Document support
-        feeling: post.feeling || null,
-        spoke: post.spoke || null,                      // ✅ RESTORED: Spoke data
-        createdAt: post.createdAt,
-        author: authorsMap.get(post.authorId) || null,
-        likes: postLikes,                               // ✅ RESTORED: Real like data
-        comments: postComments,                         // ✅ RESTORED: Real comment data
-        shares: 0,                                      // Placeholder
-        isLikedByCurrentUser,                           // ✅ FIXED: Real like status
-        isSaved,                                        // ✅ ADDED: Real saved status
-      }
-    })
+    console.log(`✅ Fetched ${responsePosts.length} posts`)
 
-    console.log(`⚡ Data processing: ${Date.now() - processingStartTime}ms`)
-
-    const response = {
-      posts: postsWithData,
+    return NextResponse.json({
+      posts: responsePosts,
       pagination: {
         page,
         limit,
         hasMore: posts.length === limit,
-        count: posts.length,
+        count: posts.length
       }
-    }
-    
-    console.log(`⏱️ TOTAL API TIME: ${Date.now() - startTime}ms`)
-    
-    // 🚀 CACHE RESULT
-    setCachedPosts(cacheParams, response, 60 * 1000) // Cache for 1 minute
-    
-    return new NextResponse(JSON.stringify(response), {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Cache': 'MISS',
-        'X-Query-Time': `${Date.now() - startTime}ms`,
-        'Access-Control-Allow-Origin': '*', // ✅ CORS HEADERS
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      },
     })
+
   } catch (error) {
-    console.error('❌ API Error:', error)
-    
-    // ✅ ENHANCED ERROR RESPONSE
-    const errorResponse = {
-      error: 'Failed to fetch posts',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString(),
-    }
-    
-    return new NextResponse(JSON.stringify(errorResponse), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Error': 'true',
+    console.error('❌ Posts fetch error:', error)
+    return NextResponse.json(
+      { 
+        error: 'Failed to fetch posts',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
-    })
+      { status: 500 }
+    )
   }
 } 
