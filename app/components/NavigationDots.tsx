@@ -10,7 +10,7 @@ interface NavigationDotsProps {
 
 export default function NavigationDots({ totalPosts, currentIndex, onNavigate }: NavigationDotsProps) {
   return (
-    <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-3">
+    <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-[105] flex flex-col space-y-3">
       {Array.from({ length: totalPosts }, (_, index) => (
         <button
           key={index}

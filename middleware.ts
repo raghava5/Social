@@ -10,6 +10,9 @@ const publicApiRoutes = [
   '/api/auth/validate-credentials',
   '/api/auth/resend-verification',
   '/api/ai/process-events', // Allow spoke detection API
+  '/api/ai/detect-spoke', // Allow AI spoke detection
+  '/api/transcribe', // Allow transcription service
+  '/api/transcribe-free', // Allow free transcription service
   '/api/posts', // Allow posts API for testing (will add auth check in the route itself)
   '/api/db-test', // Allow database testing
   '/api/db-connection-test', // Allow database connection testing

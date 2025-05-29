@@ -87,16 +87,15 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
   const [showLocationInput, setShowLocationInput] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isAnonymous, setIsAnonymous] = useState(false)
-  const [postMode, setPostMode] = useState<'post' | 'article'>('post')
+  const [showArticleEditor, setShowArticleEditor] = useState(false)
   const [title, setTitle] = useState('')
   const [showContentError, setShowContentError] = useState(false)
   const [isGettingLocation, setIsGettingLocation] = useState(false)
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([])
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false)
   
-  // Document state (missing from original)
+  // Document state
   const [documents, setDocuments] = useState<Document[]>([])
-  const [showDocumentUploader, setShowDocumentUploader] = useState(false)
   
   // Article Editor state
   const [articleContent, setArticleContent] = useState('')
@@ -189,25 +188,26 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate content - Fix the validation logic for articles
-    const hasContent = postMode === 'article' ? 
-      (editor?.getHTML()?.trim().length || 0) > 0 : 
-      content.trim().length > 0
-    const hasTitle = postMode === 'article' ? title.trim().length > 0 : true
+    // Validate content - Enhanced validation for article mode
+    const hasBasicContent = content.trim().length > 0
+    const hasArticleContent = showArticleEditor && (editor?.getHTML()?.trim().length || 0) > 0
     const hasFiles = selectedFiles.length > 0
     const hasDocuments = documents.length > 0
     
-    if (!hasContent && !hasFiles && !hasDocuments) {
+    // Require explicit user action - don't auto-submit just because files exist
+    if (!hasBasicContent && !hasArticleContent && !hasFiles && !hasDocuments) {
       setShowContentError(true)
       return
     }
     
-    if (postMode === 'article' && !hasTitle) {
+    // Additional validation: ensure this is an intentional submit (not auto-triggered)
+    if (!e.isTrusted && !hasBasicContent && !hasArticleContent) {
+      console.log('🚫 Preventing auto-submission without content')
       return
     }
     
     // Check article content size to prevent database errors
-    if (postMode === 'article' && editor) {
+    if (showArticleEditor && editor) {
       const contentBytes = new Blob([editor.getHTML()]).size
       if (contentBytes > 1000000) { // 1MB limit
         alert('Article content is too large (over 1MB). Please reduce the content size or use external links for large media.')
@@ -219,18 +219,20 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
 
     const formData = new FormData()
     
-    if (postMode === 'article') {
-      formData.append('content', editor?.getHTML() || '')
-      formData.append('articleJson', JSON.stringify(editor?.getJSON() || {}))
+    // Always include basic content (even if empty)
+    formData.append('content', content)
+    
+    // Add article content if provided
+    if (showArticleEditor && editor?.getHTML()) {
+      formData.append('articleContent', editor.getHTML())
+      formData.append('articleJson', JSON.stringify(editor.getJSON() || {}))
       if (slides.length > 0) {
         formData.append('slides', JSON.stringify(slides))
       }
-    } else {
-      formData.append('content', content)
     }
     
-    formData.append('postMode', postMode)
-    if (postMode === 'article' && title) formData.append('title', title)
+    formData.append('postMode', 'post') // Always post mode now
+    if (title) formData.append('title', title)
     if (feeling) formData.append('feeling', feeling)
     if (location) formData.append('location', location)
     if (coordinates) {
@@ -252,8 +254,8 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
     try {
       setIsSubmitting(true)
       console.log('🚀 Submitting post...', {
-        content: postMode === 'article' ? (editor?.getHTML() || '').substring(0, 50) : content.substring(0, 50),
-        postMode,
+        content: content.substring(0, 50),
+        hasArticleContent: showArticleEditor && !!editor?.getHTML(),
         filesCount: selectedFiles.length,
         documentsCount: documents.length,
         slidesCount: slides.length,
@@ -280,7 +282,7 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
       setShowFeelings(false)
       setShowLocationInput(false)
       setShowContentError(false)
-      setShowDocumentUploader(false)
+      setShowArticleEditor(false)
       setLocationSuggestions([])
       setShowLocationSuggestions(false)
       if (editor) {
@@ -426,44 +428,6 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
 
   return (
     <div className={`bg-white rounded-lg shadow p-4 transition-colors ${isSubmitting ? 'bg-yellow-50 border-yellow-200 border' : ''}`}>
-      {/* Mode Selector */}
-      <div className="mb-4 flex space-x-1 bg-gray-100 rounded-lg p-1">
-        <button
-          type="button"
-          onClick={() => setPostMode('post')}
-          className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-            postMode === 'post'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
-          Post
-        </button>
-        <button
-          type="button"
-          onClick={() => setPostMode('article')}
-          className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-            postMode === 'article'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <PencilSquareIcon className="h-4 w-4 mr-2" />
-          Article
-        </button>
-      </div>
-
-      {/* Loading indicator */}
-      {isSubmitting && (
-        <div className="mb-4 flex items-center justify-center py-2 bg-yellow-100 rounded-lg">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-600 mr-2"></div>
-          <span className="text-yellow-800 text-sm font-medium">
-            {postMode === 'article' ? 'Publishing your article...' : 'Creating your post...'}
-          </span>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit}>
         <div className="flex items-start space-x-4">
           <div className="flex-shrink-0">
@@ -492,12 +456,12 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            {/* Article Title Input */}
-            {postMode === 'article' && (
+            {/* Title Input (Optional) */}
+            {title && (
               <div className="mb-3">
                 <input
                   type="text"
-                  placeholder="Article title..."
+                  placeholder="Post title (optional)..."
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="block w-full text-lg font-semibold border-0 border-b border-gray-200 focus:border-blue-600 focus:ring-0 p-0 pb-2"
@@ -505,31 +469,42 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
               </div>
             )}
 
-            {/* Content Input - Different for Article vs Post */}
-            {postMode === 'article' ? (
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {/* Main Content Input */}
+            <div className="border-b border-gray-200 focus-within:border-blue-600">
+              <textarea
+                rows={2}
+                name="content"
+                id="content"
+                className="block w-full resize-none border-0 border-b border-transparent p-0 pb-2 focus:ring-0 sm:text-sm"
+                placeholder="What's on your mind?"
+                value={content}
+                onChange={(e) => {
+                  setContent(e.target.value)
+                  if (showContentError && (e.target.value.trim() || selectedFiles.length > 0)) {
+                    setShowContentError(false)
+                  }
+                }}
+              />
+            </div>
+
+            {/* Article Editor Section */}
+            {showArticleEditor && (
+              <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">Rich Article Content (Optional)</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowArticleEditor(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
                 <ArticleEditor
                   content={articleContent}
                   onChange={setArticleContent}
                   onEditorReady={setEditor}
                   onSliderRequest={() => setShowSliderModal(true)}
-                />
-              </div>
-            ) : (
-              <div className="border-b border-gray-200 focus-within:border-blue-600">
-                <textarea
-                  rows={2}
-                  name="content"
-                  id="content"
-                  className="block w-full resize-none border-0 border-b border-transparent p-0 pb-2 focus:ring-0 sm:text-sm"
-                  placeholder="What's on your mind?"
-                  value={content}
-                  onChange={(e) => {
-                    setContent(e.target.value)
-                    if (showContentError && (e.target.value.trim() || selectedFiles.length > 0)) {
-                      setShowContentError(false)
-                    }
-                  }}
                 />
               </div>
             )}
@@ -734,124 +709,151 @@ export default function CreatePost({ onSubmit }: CreatePostProps) {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            {/* Feeling */}
+        {/* Submit button */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+          <div className="flex items-center space-x-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (mediaInputRef.current) {
+                  mediaInputRef.current.click()
+                }
+              }}
+              title="Add photos or videos"
+              className="p-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <PhotoIcon className="w-5 h-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (audioInputRef.current) {
+                  audioInputRef.current.click()
+                }
+              }}
+              title="Add audio files"
+              className="p-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <MicrophoneIcon className="w-5 h-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (documentInputRef.current) {
+                  documentInputRef.current.click()
+                }
+              }}
+              title="Add documents"
+              className="p-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <DocumentIcon className="w-5 h-5" />
+            </button>
+
             <button
               type="button"
               onClick={() => setShowFeelings(!showFeelings)}
-              className="text-gray-500 hover:text-gray-600"
               title="Add feeling"
+              className={`p-3 rounded-lg transition-colors ${
+                showFeelings 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
-              <FaceSmileIcon className="h-6 w-6" />
+              <FaceSmileIcon className="w-5 h-5" />
             </button>
 
-            {/* Media Upload */}
-            <button
-              type="button"
-              onClick={() => mediaInputRef.current?.click()}
-              className="flex items-center text-gray-500 hover:text-gray-600 space-x-1"
-              title="Add photos or videos"
-            >
-              <PaperClipIcon className="h-6 w-6" />
-              <span className="text-sm hidden sm:inline">Media</span>
-              <input
-                type="file"
-                ref={mediaInputRef}
-                onChange={(e) => handleFileSelect(e, 'media')}
-                accept="image/*,video/*"
-                multiple
-                className="hidden"
-              />
-            </button>
-            
-            {/* Audio Upload */}
-            <button
-              type="button"
-              onClick={() => audioInputRef.current?.click()}
-              className="flex items-center text-gray-500 hover:text-gray-600 space-x-1"
-              title="Add audio"
-            >
-              <MicrophoneIcon className="h-6 w-6" />
-              <span className="text-sm hidden sm:inline">Audio</span>
-              <input
-                type="file"
-                ref={audioInputRef}
-                onChange={(e) => handleFileSelect(e, 'audio')}
-                accept="audio/*"
-                multiple
-                className="hidden"
-              />
-            </button>
-            
-            {/* Document Upload */}
-            <button
-              type="button"
-              onClick={() => documentInputRef.current?.click()}
-              className="flex items-center text-gray-500 hover:text-gray-600 space-x-1"
-              title="Add documents"
-            >
-              <DocumentIcon className="h-6 w-6" />
-              <span className="text-sm hidden sm:inline">Docs</span>
-              <input
-                type="file"
-                ref={documentInputRef}
-                onChange={(e) => handleFileSelect(e, 'document')}
-                accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
-                multiple
-                className="hidden"
-              />
-            </button>
-
-            {/* Parallax Slider - Only in Article Mode */}
-            {postMode === 'article' && (
-              <button
-                type="button"
-                onClick={() => setShowSliderModal(true)}
-                className="flex items-center text-gray-500 hover:text-gray-600 space-x-1"
-                title="Add parallax slider"
-              >
-                <ArrowsPointingOutIcon className="h-6 w-6" />
-                <span className="text-sm hidden sm:inline">Slider</span>
-              </button>
-            )}
-
-            {/* Anonymous */}
-            <button
-              type="button"
-              onClick={() => setIsAnonymous(!isAnonymous)}
-              className={`text-gray-500 hover:text-gray-600 ${isAnonymous ? 'text-blue-600' : ''}`}
-              title="Post anonymously"
-            >
-              <EyeSlashIcon className="h-6 w-6" />
-            </button>
-            
-            {/* Location */}
             <button
               type="button"
               onClick={() => setShowLocationInput(!showLocationInput)}
-              className="text-gray-500 hover:text-gray-600"
               title="Add location"
+              className={`p-3 rounded-lg transition-colors ${
+                showLocationInput 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
-              <MapPinIcon className="h-6 w-6" />
+              <MapPinIcon className="w-5 h-5" />
             </button>
+
+            <button
+              type="button"
+              onClick={() => setIsAnonymous(!isAnonymous)}
+              title="Post anonymously"
+              className={`p-3 rounded-lg transition-colors ${
+                isAnonymous 
+                  ? 'bg-yellow-100 text-yellow-700' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <EyeSlashIcon className="w-5 h-5" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowArticleEditor(!showArticleEditor)}
+              title="Add rich article content"
+              className={`p-3 rounded-lg transition-colors ${
+                showArticleEditor 
+                  ? 'bg-purple-100 text-purple-700' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <PencilSquareIcon className="w-5 h-5" />
+            </button>
+
+            {showArticleEditor && (
+              <button
+                type="button"
+                onClick={() => setShowSliderModal(true)}
+                title="Add parallax slider"
+                className="p-3 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
+              >
+                <ArrowsPointingOutIcon className="w-5 h-5" />
+              </button>
+            )}
           </div>
+
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`px-6 py-2 text-sm font-medium rounded-lg transition-colors ${
+              isSubmitting
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
           >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {postMode === 'article' ? 'Publishing...' : 'Posting...'}
-              </>
-            ) : (
-              postMode === 'article' ? 'Publish' : 'Post'
-            )}
+            {isSubmitting ? 'Publishing...' : 'Post'}
           </button>
         </div>
       </form>
+
+      {/* Hidden File Inputs */}
+      <input
+        type="file"
+        ref={mediaInputRef}
+        onChange={(e) => handleFileSelect(e, 'media')}
+        accept="image/*,video/*"
+        multiple
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={audioInputRef}
+        onChange={(e) => handleFileSelect(e, 'audio')}
+        accept="audio/*"
+        multiple
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={documentInputRef}
+        onChange={(e) => handleFileSelect(e, 'document')}
+        accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx"
+        multiple
+        className="hidden"
+      />
 
       {/* Parallax Slider Modal */}
       {showSliderModal && (

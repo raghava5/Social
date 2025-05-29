@@ -3,6 +3,10 @@ const nextConfig = {
   // 🚀 PERFORMANCE OPTIMIZATIONS
   experimental: {
     optimizePackageImports: ['@heroicons/react', 'framer-motion', 'date-fns'],
+    // Increase body size limit for file uploads
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
   
   // 🚀 Turbopack configuration (moved from experimental)

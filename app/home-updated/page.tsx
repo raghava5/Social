@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import PostCard from '../components/PostCard'
 import FullScreenPost from '../components/FullScreenPost'
-import FullScreenModal from '../components/FullScreenModal'
 import NavigationDots from '../components/NavigationDots'
 import ViewModeToggle from '../components/ViewModeToggle'
 import CreatePost from '../components/CreatePost'
@@ -55,15 +54,19 @@ export default function HomePage() {
   const [viewMode, setViewMode] = useState<'traditional' | 'fullscreen'>('traditional')
   const [currentPostIndex, setCurrentPostIndex] = useState(0)
   const [isScrolling, setIsScrolling] = useState(false)
-  const [showFullScreenModal, setShowFullScreenModal] = useState(false)
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null)
   
   // Get spoke filter from URL parameters
   const spokeFilter = searchParams?.get('spoke')
 
-  // Mount detection
+  // Mount detection and view mode initialization
   useEffect(() => {
     setMounted(true)
+    
+    // Initialize view mode from localStorage
+    const savedViewMode = localStorage.getItem('viewMode') as 'traditional' | 'fullscreen' | null
+    if (savedViewMode) {
+      setViewMode(savedViewMode)
+    }
   }, [])
 
   // Redirect if not authenticated
@@ -235,17 +238,29 @@ export default function HomePage() {
     setCurrentPostIndex(index)
   }, [posts.length])
 
-  // View mode change handler
-  const handleViewModeChange = useCallback((mode: 'traditional' | 'fullscreen') => {
+  // Handle view mode change
+  const handleViewModeChange = (mode: 'traditional' | 'fullscreen') => {
     setViewMode(mode)
-    if (mode === 'fullscreen') {
-      setCurrentPostIndex(0)
-      // Scroll to top for full-screen mode
+    
+    // Store view mode in localStorage for layout to detect
+    localStorage.setItem('viewMode', mode)
+    
+    // Dispatch custom event to notify layout
+    window.dispatchEvent(new CustomEvent('viewModeChange', { detail: mode }))
+    
+    if (mode === 'fullscreen' && posts.length > 0) {
+      // Scroll to current post when switching to fullscreen
       setTimeout(() => {
-        containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+        if (containerRef.current) {
+          const targetPosition = currentPostIndex * window.innerHeight
+          containerRef.current.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+          })
+        }
       }, 100)
     }
-  }, [])
+  }
 
   // Optimized handlers
   const handleLike = useCallback(async (postId: string) => {
@@ -405,15 +420,18 @@ export default function HomePage() {
     }
   }, [user?.id])
 
-  const handleOpenFullScreen = useCallback((post: Post) => {
-    setSelectedPost(post)
-    setShowFullScreenModal(true)
-  }, [])
-
-  const handleCloseFullScreen = useCallback(() => {
-    setShowFullScreenModal(false)
-    setSelectedPost(null)
-  }, [])
+  // Handler for opening document posts in fullscreen mode
+  const handleOpenDocumentFullScreen = useCallback((post: Post) => {
+    // Switch to fullscreen mode and navigate to the document post
+    setViewMode('fullscreen')
+    const postIndex = posts.findIndex(p => p.id === post.id)
+    if (postIndex >= 0) {
+      setCurrentPostIndex(postIndex)
+      setTimeout(() => {
+        containerRef.current?.scrollTo({ top: postIndex * window.innerHeight, behavior: 'smooth' })
+      }, 100)
+    }
+  }, [posts])
 
   // Don't render until mounted and user is available
   if (!mounted || authLoading || !user) {
@@ -454,8 +472,8 @@ export default function HomePage() {
   // Full-screen mode
   if (viewMode === 'fullscreen') {
     return (
-      <div className="relative">
-        {/* View Mode Toggle */}
+      <div className="fixed inset-0 z-[100] bg-black">
+        {/* View Mode Toggle with increased z-index */}
         <ViewModeToggle 
           viewMode={viewMode} 
           onViewModeChange={handleViewModeChange} 
@@ -470,10 +488,10 @@ export default function HomePage() {
           />
         )}
 
-        {/* Full-screen Feed Container */}
+        {/* Full-screen Feed Container with Apple-style effects */}
         <div 
           ref={containerRef}
-          className="feed-container h-screen overflow-y-scroll"
+          className="feed-container h-screen w-screen overflow-y-scroll"
           style={{ 
             scrollSnapType: 'y mandatory',
             scrollBehavior: 'smooth',
@@ -481,11 +499,11 @@ export default function HomePage() {
           }}
         >
           {loading ? (
-            <div className="h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-              <div className="text-white text-xl">Loading posts...</div>
+            <div className="h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center snap-start">
+              <div className="text-white text-xl animate-pulse">Loading posts...</div>
             </div>
           ) : posts.length === 0 ? (
-            <div className="h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+            <div className="h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center snap-start">
               <div className="text-center text-white">
                 <h2 className="text-2xl font-bold mb-4">No posts yet</h2>
                 <p className="text-gray-300">Switch to traditional view to create your first post!</p>
@@ -493,18 +511,25 @@ export default function HomePage() {
             </div>
           ) : (
             posts.map((post, index) => (
-              <FullScreenPost
+              <div 
                 key={post.id}
-                {...post}
-                index={index}
-                isActive={index === currentPostIndex}
-                isAnonymous={(post as any).isAnonymous || false}
-                currentUserId={user.id}
-                onLike={handleLike}
-                onComment={handleComment}
-                onShare={handleShare}
-                onSave={handleSave}
-              />
+                className="h-screen w-full relative snap-start"
+                style={{
+                  scrollSnapAlign: 'start'
+                }}
+              >
+                <FullScreenPost
+                  {...post}
+                  index={index}
+                  isActive={index === currentPostIndex}
+                  isAnonymous={(post as any).isAnonymous || false}
+                  currentUserId={user.id}
+                  onLike={handleLike}
+                  onComment={handleComment}
+                  onShare={handleShare}
+                  onSave={handleSave}
+                />
+              </div>
             ))
           )}
         </div>
@@ -515,8 +540,8 @@ export default function HomePage() {
   // Traditional mode (existing implementation)
   return (
     <div className="min-h-screen bg-gray-50 py-8 relative">
-      {/* View Mode Toggle for Traditional View */}
-      <div className="fixed top-6 left-6 z-40">
+      {/* View Mode Toggle for Traditional View with increased z-index */}
+      <div className="fixed top-6 left-6 z-[60]">
         <ViewModeToggle 
           viewMode={viewMode} 
           onViewModeChange={handleViewModeChange} 
@@ -605,26 +630,12 @@ export default function HomePage() {
                 onDelete={handleDelete}
                 onSave={handleSave}
                 onRefresh={fetchPosts}
-                onFullScreen={() => handleOpenFullScreen(post)}
+                onFullScreen={() => handleOpenDocumentFullScreen(post)}
               />
             ))}
           </div>
         )}
       </div>
-
-      {/* Full Screen Modal */}
-      {showFullScreenModal && selectedPost && (
-        <FullScreenModal
-          {...selectedPost}
-          isAnonymous={(selectedPost as any).isAnonymous || false}
-          currentUserId={user.id}
-          onLike={handleLike}
-          onComment={handleComment}
-          onShare={handleShare}
-          onSave={handleSave}
-          onClose={handleCloseFullScreen}
-        />
-      )}
     </div>
   )
 } 

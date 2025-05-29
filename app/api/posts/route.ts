@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData()
     const content = formData.get('content') as string
+    const articleContent = formData.get('articleContent') as string
     const postMode = formData.get('postMode') as string || 'post'
     const title = formData.get('title') as string
     const feeling = formData.get('feeling') as string
@@ -83,29 +84,33 @@ export async function POST(req: NextRequest) {
     console.log(`📝 Creating ${postMode}:`, {
       userId: session.user.id,
       contentLength: content?.length || 0,
+      articleContentLength: articleContent?.length || 0,
       filesCount: files.length,
       isAnonymous,
       hasLocation: !!location,
       hasCoordinates: !!(latitude && longitude)
     })
 
-    // Validate required content
-    if (!content?.trim() && files.length === 0) {
+    // Validate required content - Enhanced for new structure
+    const hasBasicContent = content?.trim()
+    const hasArticleContent = articleContent?.trim()
+    const hasFiles = files.length > 0
+    
+    if (!hasBasicContent && !hasArticleContent && !hasFiles) {
       console.log('❌ Validation failed - no content or files')
       return NextResponse.json({ error: 'Post content or media is required' }, { status: 400 })
     }
 
-    if (postMode === 'article' && !title?.trim()) {
-      console.log('❌ Validation failed - no article title')
-      return NextResponse.json({ error: 'Article title is required' }, { status: 400 })
-    }
-
     // Check content length to prevent database errors
-    const contentLength = Buffer.byteLength(content || '', 'utf8')
+    const finalContent = hasArticleContent ? 
+      `${hasBasicContent || ''}\n\n${articleContent}`.trim() : 
+      (hasBasicContent || '')
+    
+    const contentLength = Buffer.byteLength(finalContent, 'utf8')
     if (contentLength > 1000000) { // 1MB limit
       console.log('❌ Validation failed - content too large:', contentLength)
       return NextResponse.json({ 
-        error: 'Article content is too large. Please reduce the content size or use external links for large media.' 
+        error: 'Content is too large. Please reduce the content size or use external links for large media.' 
       }, { status: 400 })
     }
 
@@ -155,9 +160,9 @@ export async function POST(req: NextRequest) {
     const postData = {
       userId: session.user.id,
       authorId: session.user.id,
-      content: content?.trim() || '',
-      type: postMode === 'article' ? 'article' : 'user-post',
-      ...(postMode === 'article' && title && { title: title.trim() }),
+      content: finalContent,
+      type: hasArticleContent ? 'article' : 'user-post',
+      ...(title && { title: title.trim() }),
       ...(feeling && { feeling }),
       ...(location && { location }),
       ...(latitude && longitude && {
@@ -204,6 +209,108 @@ export async function POST(req: NextRequest) {
     })
 
     console.log('✅ Post created successfully:', post.id)
+
+    // Background processing for AI features
+    try {
+      // 1. Generate tags/spoke using AI for all posts
+      if (finalContent?.trim() || uploadedFiles.images.length > 0 || uploadedFiles.videos.length > 0) {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                       (process.env.NODE_ENV === 'development' ? 'http://localhost:3002' : 'http://localhost:3000')
+        
+        const aiAnalysisPromise = fetch(`${baseUrl}/api/ai/detect-spoke`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: finalContent?.trim() || '',
+            isMinimalContent: (finalContent?.trim()?.length || 0) < 50,
+            hasMedia: uploadedFiles.images.length > 0 || uploadedFiles.videos.length > 0,
+            context: `${feeling ? `Feeling: ${feeling}. ` : ''}${location ? `Location: ${location}. ` : ''}`
+          })
+        }).then(async (response) => {
+          if (response.ok) {
+            const aiResult = await response.json()
+            console.log(`🤖 AI analysis result:`, aiResult)
+            if (aiResult.spoke) {
+              // Update post with detected spoke
+              await prisma.post.update({
+                where: { id: post.id },
+                data: { 
+                  spoke: aiResult.spoke,
+                  tags: aiResult.spoke ? aiResult.spoke : undefined
+                }
+              })
+              console.log(`🤖 AI detected spoke "${aiResult.spoke}" for post ${post.id}`)
+            } else {
+              console.log(`🤖 No spoke detected for post ${post.id}`)
+            }
+          } else {
+            console.warn(`⚠️ AI spoke detection failed: ${response.status} ${response.statusText}`)
+          }
+        }).catch(error => {
+          console.warn('⚠️ AI spoke detection failed:', error)
+        })
+
+        // Don't await - let it run in background
+        aiAnalysisPromise
+      }
+
+      // 2. Start transcription for video/audio files
+      if (uploadedFiles.videos.length > 0 || uploadedFiles.audios.length > 0) {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                       (process.env.NODE_ENV === 'development' ? 'http://localhost:3002' : 'http://localhost:3000')
+        const transcriptionPromises = []
+        
+        // Transcribe videos using FREE whisper.cpp
+        for (const videoPath of uploadedFiles.videos) {
+          const videoUrl = `${baseUrl}${videoPath}`
+          transcriptionPromises.push(
+            fetch(`${baseUrl}/api/transcribe-free`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                postId: post.id,
+                videoUrl: videoPath, // Use relative path for local processing
+                type: 'video'
+              })
+            }).then(response => {
+              if (response.ok) {
+                console.log(`🎤 Started FREE transcription for video: ${videoPath}`)
+              }
+            }).catch(error => {
+              console.warn(`⚠️ Failed to start transcription for ${videoPath}:`, error)
+            })
+          )
+        }
+
+        // Transcribe audios using FREE whisper.cpp
+        for (const audioPath of uploadedFiles.audios) {
+          const audioUrl = `${baseUrl}${audioPath}`
+          transcriptionPromises.push(
+            fetch(`${baseUrl}/api/transcribe-free`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                postId: post.id,
+                audioUrl: audioPath, // Use relative path for local processing
+                type: 'audio'
+              })
+            }).then(response => {
+              if (response.ok) {
+                console.log(`🎤 Started FREE transcription for audio: ${audioPath}`)
+              }
+            }).catch(error => {
+              console.warn(`⚠️ Failed to start transcription for ${audioPath}:`, error)
+            })
+          )
+        }
+
+        // Don't await - let transcriptions run in background
+        Promise.all(transcriptionPromises)
+      }
+    } catch (error) {
+      console.warn('⚠️ Background processing failed:', error)
+      // Don't fail the post creation if background processing fails
+    }
 
     // Return post data with anonymous handling
     const responsePost = {
@@ -336,4 +443,4 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     )
   }
-} 
+}

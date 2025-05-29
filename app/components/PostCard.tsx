@@ -23,6 +23,7 @@ import EditPostModal from './EditPostModal'
 import MediaViewer from './MediaViewer'
 import MusicPost from './MusicPost'
 import PostModal from './PostModal'
+import InlineDocumentViewer from './InlineDocumentViewer'
 import dynamic from 'next/dynamic'
 
 // Dynamically import ParallaxSliderViewer to avoid SSR issues
@@ -364,13 +365,53 @@ export default function PostCard({
     if (!mounted) return
     
     const target = e.target as HTMLElement
+    // Don't trigger fullscreen if clicking interactive elements
     if (target.tagName === 'BUTTON' || target.tagName === 'A' || target.closest('button') || target.closest('a')) {
       return
     }
     
-    console.log(`🔗 Opening post ${id} in modal`)
-    setShowPostModal(true)
-  }, [mounted, id])
+    console.log(`🔗 Opening post ${id} (type: ${type}) in fullscreen mode`)
+    
+    // Call the onFullScreen callback to switch to fullscreen mode
+    if (onFullScreen) {
+      onFullScreen()
+    } else {
+      // Fallback: open in modal if onFullScreen is not available
+      console.log(`📱 Fallback: Opening post ${id} in modal`)
+      setShowPostModal(true)
+    }
+  }, [mounted, id, type, onFullScreen])
+
+  // Handle document click to open in fullscreen instead of new tab
+  const handleDocumentClick = useCallback((e: React.MouseEvent, docUrl: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    console.log(`📄 Opening document post ${id} in fullscreen mode`)
+    
+    // Switch to fullscreen mode for document viewing
+    if (onFullScreen) {
+      onFullScreen()
+    } else {
+      // Fallback: open document in new tab
+      window.open(docUrl, '_blank', 'noopener,noreferrer')
+    }
+  }, [id, onFullScreen])
+
+  // Handle media click to open in fullscreen
+  const handleMediaClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    console.log(`🎬 Opening media post ${id} in fullscreen mode`)
+    
+    if (onFullScreen) {
+      onFullScreen()
+    } else {
+      // Fallback: open media viewer
+      setShowMediaViewer(true)
+    }
+  }, [id, onFullScreen])
 
   const toggleComments = useCallback(() => {
     setShowComments(prev => !prev)
@@ -478,9 +519,17 @@ export default function PostCard({
 
       {/* Post Content - Clickable */}
       <div 
-        className="px-4 pb-3 cursor-pointer" 
+        className="px-4 pb-3 cursor-pointer hover:bg-gray-50 transition-colors relative group" 
         onClick={handlePostClick}
       >
+        {/* Subtle fullscreen indicator */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-50 transition-opacity duration-200">
+          <div className="flex items-center space-x-1 text-xs text-gray-500 bg-white/80 px-2 py-1 rounded-full border">
+            <span>✨</span>
+            <span>Click for fullscreen</span>
+          </div>
+        </div>
+
         {/* Article Title and Type Indicator */}
         {type === 'article' && (
           <div className="mb-4">
@@ -495,6 +544,18 @@ export default function PostCard({
                 {title}
               </h2>
             )}
+          </div>
+        )}
+
+        {/* Document Type Indicator */}
+        {documents && (
+          <div className="mb-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200">
+                <span className="mr-1">📄</span>
+                Document Post
+              </span>
+            </div>
           </div>
         )}
 
@@ -535,7 +596,7 @@ export default function PostCard({
               src={img.trim()} 
               alt="Post image"
               className="w-full object-cover max-h-96 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => onFullScreen?.()}
+              onClick={handleMediaClick}
               onError={(e) => {
                 const target = e.target as HTMLImageElement
                 target.style.display = 'none'
@@ -553,7 +614,7 @@ export default function PostCard({
                 className="w-full object-cover max-h-96 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                 controls={false}
                 preload="metadata"
-                onClick={() => onFullScreen?.()}
+                onClick={handleMediaClick}
                 onError={(e) => {
                   const target = e.target as HTMLVideoElement
                   target.style.display = 'none'
@@ -582,7 +643,7 @@ export default function PostCard({
                 isMusic 
                   ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200' 
                   : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
-              }`} onClick={() => onFullScreen?.()}>
+              }`} onClick={handleMediaClick}>
                 <div className="space-y-3">
                   {/* Audio Header */}
                   <div className="flex items-center justify-between">
@@ -666,53 +727,25 @@ export default function PostCard({
             )
           })}
 
-          {/* Document Files */}
+          {/* Document Files - Inline Viewer */}
           {documents && documents.split(',').filter(doc => doc.trim()).map((document, index) => {
             const fileName = document.split('/').pop() || `Document ${index + 1}`
-            const fileExtension = fileName.split('.').pop()?.toLowerCase() || ''
             
-            const getDocumentIcon = (ext: string) => {
-              if (['pdf'].includes(ext)) return '📄'
-              if (['doc', 'docx'].includes(ext)) return '📝'
-              if (['xls', 'xlsx'].includes(ext)) return '📊'
-              if (['ppt', 'pptx'].includes(ext)) return '📋'
-              if (['txt'].includes(ext)) return '📃'
-              return '📄'
-            }
-
             return (
-              <div key={`doc-${index}`} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <span className="text-lg">{getDocumentIcon(fileExtension)}</span>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{fileName}</p>
-                      <p className="text-xs text-gray-500 uppercase">{fileExtension} document</p>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <a
-                      href={document.trim()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <ArrowDownTrayIcon className="h-3 w-3 mr-1" />
-                      Open
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <InlineDocumentViewer
+                key={`doc-${index}`}
+                url={document.trim()}
+                fileName={fileName}
+                onFullScreen={onFullScreen}
+                lazyLoad={true}
+                className="mb-4"
+              />
             )
           })}
 
           {/* Activities */}
           {activities && activities.split(',').filter(activity => activity.trim()).map((activity, index) => (
-            <div key={`activity-${index}`} className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onFullScreen?.()}>
+            <div key={`activity-${index}`} className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={handleMediaClick}>
               <div className="flex items-center space-x-3">
                 <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
                   <span className="text-2xl">🎯</span>
@@ -730,7 +763,7 @@ export default function PostCard({
 
           {/* Tools */}
           {tools && tools.split(',').filter(tool => tool.trim()).map((tool, index) => (
-            <div key={`tool-${index}`} className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onFullScreen?.()}>
+            <div key={`tool-${index}`} className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={handleMediaClick}>
               <div className="flex items-center space-x-3">
                 <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
                   <span className="text-2xl">🛠️</span>
@@ -748,7 +781,7 @@ export default function PostCard({
 
           {/* Games */}
           {games && games.split(',').filter(game => game.trim()).map((game, index) => (
-            <div key={`game-${index}`} className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onFullScreen?.()}>
+            <div key={`game-${index}`} className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={handleMediaClick}>
               <div className="flex items-center space-x-3">
                 <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <span className="text-2xl">🎮</span>
